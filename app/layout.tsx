@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Josefin_Sans, Geist } from "next/font/google";
+import { Inter, Josefin_Sans, Geist, DM_Serif_Display } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +12,12 @@ const inter = Inter({
 
 const josefinSans = Josefin_Sans({
   variable: "--font-secondary",
+  subsets: ["latin"],
+});
+
+const dmSerifDisplay = DM_Serif_Display({
+  weight: "400",
+  variable: "--font-serif",
   subsets: ["latin"],
 });
 
@@ -28,7 +34,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn("h-full", "bg-canvas", "antialiased", inter.variable, josefinSans.variable, "font-sans", geist.variable)}
+      className={cn("h-full", "bg-canvas", "antialiased", inter.variable, josefinSans.variable, dmSerifDisplay.variable, "font-sans", geist.variable)}
     >
       <body className="min-h-full flex flex-col font-sans">{children}</body>
     </html>

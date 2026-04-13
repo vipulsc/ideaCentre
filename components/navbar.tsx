@@ -28,7 +28,7 @@ function NavbarNav() {
         href="#get-started"
         className="absolute inset-e-0 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border border-primary bg-transparent px-5 py-2 text-xs font-medium text-foreground transition-colors hover:bg-primary/5 sm:text-sm md:text-base lg:text-lg"
       >
-        Get it Now — It&apos;s Free
+        Get it Now - It&apos;s Free
       </Link>
     </nav>
   );
@@ -61,7 +61,7 @@ function NavbarScrollDock() {
             href="#get-started"
             className="shrink-0 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-[inset_0_1px_0_color-mix(in_srgb,var(--palette-quinary)_55%,transparent),0_4px_14px_-4px_rgba(62,42,28,0.45)] transition-[transform,box-shadow,opacity] hover:-translate-y-px hover:opacity-[0.97] hover:shadow-[inset_0_1px_0_color-mix(in_srgb,var(--palette-quinary)_55%,transparent),0_8px_22px_-6px_rgba(62,42,28,0.5)] active:translate-y-0 sm:px-5 sm:py-2.5 sm:text-sm md:text-base"
           >
-            Get it Now — It&apos;s Free
+            Get it Now - It&apos;s Free
           </Link>
         </nav>
       </div>

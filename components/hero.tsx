@@ -1,64 +1,70 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowUpRight, Lightbulb } from "lucide-react";
 
 export function Hero() {
   return (
     <section
-      className="px-6 pb-10 sm:pb-12 lg:pb-14 "
+      className="px-6 pb-10 sm:pb-12 lg:pb-14"
       aria-labelledby="hero-heading"
     >
       <div className="mx-auto w-full max-w-screen-2xl 2xl:max-w-400">
-        <div className="isolate relative overflow-hidden rounded-2xl  bg-palette-primary px-6 py-10 text-primary-foreground sm:px-10 sm:py-12 md:px-12 md:py-14 lg:px-12 lg:py-16 xl:rounded-3xl xl:px-14 xl:py-20">
+        <div className="isolate relative overflow-hidden rounded-2xl bg-palette-primary px-6 py-10 text-primary-foreground sm:px-10 sm:py-12 md:px-12 md:py-14 lg:px-12 lg:py-16 xl:rounded-3xl xl:px-14 xl:py-20">
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 rounded-2xl bg-[url('/texture2.png')] bg-repeat xl:rounded-3xl"
           />
           <div className="relative z-10 grid items-center gap-10 lg:grid-cols-2 lg:gap-12 xl:gap-16">
             <div className="flex min-w-0 flex-col gap-6 text-primary-foreground sm:gap-7 lg:max-w-xl lg:gap-8">
-              <h1
-                id="hero-heading"
-                className="text-[2.75rem] font-bold leading-[0.95] tracking-tight sm:text-6xl md:text-6xl lg:text-7xl xl:text-[4.5rem]"
-              >
-                Grow
-                <span className="bg-linear-to-br from-orange-500 to-amber-400 bg-clip-text text-transparent">
-                  +
+              <div className="flex items-center gap-3">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary-foreground/15">
+                  <Lightbulb className="size-6 text-primary-foreground" />
                 </span>
-              </h1>
-              <p className="max-w-md text-base leading-relaxed text-primary-foreground/85 sm:text-lg md:text-lg lg:text-xl">
-                Ship campaigns faster, prove impact with live metrics, and keep
-                your team aligned in one calm workspace.
-              </p>
-
-              <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-                <div className="flex -space-x-2" aria-hidden>
-                  {[1, 2, 3].map((i) => (
-                    <span
-                      key={i}
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-primary-foreground/35 bg-primary-foreground/12 text-[10px] font-semibold text-primary-foreground/75"
-                    >
-                      {String.fromCharCode(64 + i)}
+                <div>
+                  <p className="text-sm font-bold leading-tight text-primary-foreground sm:text-base">
+                    1,000+ Ideas
+                  </p>
+                  <p className="text-sm text-primary-foreground/80">
+                    See What&apos;s{" "}
+                    <span className="font-bold underline underline-offset-2">
+                      Trending Now
                     </span>
-                  ))}
+                  </p>
                 </div>
-                <p className="max-w-xs text-sm leading-snug text-primary-foreground/80 sm:text-[15px]">
-                  “We replaced three tools and still ship twice as fast.”
-                </p>
               </div>
 
-              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+              <h1
+                id="hero-heading"
+                className="font-display-serif text-[5rem] leading-[0.9] tracking-tight sm:text-[7rem] md:text-[8rem] lg:text-[9rem] xl:text-[10rem]"
+              >
+                Idea
+                <sup className="relative -top-[0.35em] text-[0.4em]">+</sup>
+              </h1>
+
+              <hr className="border-primary-foreground/25" />
+
+              <p className="max-w-lg text-base leading-relaxed text-primary-foreground/90 sm:text-lg md:text-xl">
+                Discover Startup Ideas In Seconds. Swipe Through
+                Ideas Like Reels&nbsp;&mdash; Save, Vote, And Start
+                Building.
+              </p>
+
+              <hr className="border-primary-foreground/25" />
+
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
                 <Link
                   href="#get-started"
-                  className="inline-flex w-fit items-center justify-center rounded-lg bg-primary-foreground px-7 py-3 text-sm font-medium text-primary transition-opacity hover:opacity-90 sm:px-8 sm:py-3.5 sm:text-[15px]"
+                  className="inline-flex w-fit items-center justify-center rounded-full bg-primary-foreground px-8 py-3.5 text-sm font-medium text-primary transition-opacity hover:opacity-90 sm:px-9 sm:py-4 sm:text-[15px]"
                 >
-                  Start free trial
+                  <span className="font-bold">Start Idea Reel</span>
+                  &nbsp;&mdash; It&apos;s Free
                 </Link>
                 <Link
-                  href="#demo"
-                  className="inline-flex w-fit items-center gap-2 text-sm font-medium text-primary-foreground underline-offset-4 hover:underline sm:text-[15px]"
+                  href="#trending"
+                  className="inline-flex w-fit items-center gap-2 text-sm font-medium text-primary-foreground underline underline-offset-4 sm:text-[15px]"
                 >
-                  Book a demo
-                  <ArrowRight className="size-4 shrink-0" aria-hidden />
+                  See Trending
+                  <ArrowUpRight className="size-4 shrink-0" aria-hidden />
                 </Link>
               </div>
             </div>
