@@ -21,7 +21,7 @@
   --palette-4: var(--palette-quaternary);
   --palette-5: var(--palette-quinary);
 
-  --palette-text: color-mix(in srgb, var(--palette-primary) 52%, #1a120e);
+  --palette-text: #000000;
 
   --background: var(--palette-quaternary);
   --foreground: var(--palette-text);
@@ -34,7 +34,7 @@
   --secondary: var(--palette-secondary);
   --secondary-foreground: var(--palette-quaternary);
   --muted: color-mix(in srgb, var(--palette-tertiary) 38%, var(--palette-quaternary));
-  --muted-foreground: color-mix(in srgb, var(--palette-primary) 72%, var(--palette-quaternary));
+  --muted-foreground: color-mix(in srgb, #000000 62%, var(--palette-quaternary));
   --accent: var(--palette-tertiary);
   --accent-foreground: var(--palette-text);
   --destructive: oklch(0.577 0.245 27.325);
