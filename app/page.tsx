@@ -1,5 +1,6 @@
 import { AiInsights } from "@/components/ai-insights";
 import { Community } from "@/components/community";
+import { CuriosityPeek } from "@/components/curiosity-peek";
 import { FinalCta } from "@/components/final-cta";
 import { Hero } from "@/components/hero";
 import { HowItWorks } from "@/components/how-it-works";
@@ -16,6 +17,7 @@ export default function Home() {
       <Community />
       <HowItWorks />
       <AiInsights />
+      <CuriosityPeek />
       <FinalCta />
       <PostIdeaFab />
     </div>
