@@ -1,4 +1,6 @@
+import { AiInsights } from "@/components/ai-insights";
 import { Community } from "@/components/community";
+import { FinalCta } from "@/components/final-cta";
 import { Hero } from "@/components/hero";
 import { HowItWorks } from "@/components/how-it-works";
 import { Navbar } from "@/components/navbar";
@@ -13,6 +15,8 @@ export default function Home() {
       <Tagline />
       <Community />
       <HowItWorks />
+      <AiInsights />
+      <FinalCta />
       <PostIdeaFab />
     </div>
   );
