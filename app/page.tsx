@@ -2,6 +2,7 @@ import { Community } from "@/components/community";
 import { Hero } from "@/components/hero";
 import { HowItWorks } from "@/components/how-it-works";
 import { Navbar } from "@/components/navbar";
+import { PostIdeaFab } from "@/components/post-idea-fab";
 import { Tagline } from "@/components/tagline";
 
 export default function Home() {
@@ -12,6 +13,7 @@ export default function Home() {
       <Tagline />
       <Community />
       <HowItWorks />
+      <PostIdeaFab />
     </div>
   );
 }

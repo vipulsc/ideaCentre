@@ -15,21 +15,30 @@ const SCROLL_HIDE_BELOW = 32;
 function NavbarNav() {
   return (
     <nav
-      className="relative isolate min-h-14 w-full text-foreground"
+      className="relative isolate flex min-h-14 w-full items-center justify-between text-foreground"
       aria-label="Main"
     >
       <Link
         href="/"
-        className="absolute inset-s-0 top-1/2 max-w-[min(45%,11rem)] -translate-y-1/2 truncate text-sm font-semibold tracking-tight text-foreground hover:opacity-80 sm:text-base md:text-lg lg:text-xl"
+        className="max-w-[min(45%,11rem)] truncate text-sm font-semibold tracking-tight text-foreground hover:opacity-80 sm:text-base md:text-lg lg:text-xl"
       >
         ideaCentre
       </Link>
-      <Link
-        href="#get-started"
-        className="absolute inset-e-0 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border border-primary bg-transparent px-5 py-2 text-xs font-medium text-foreground transition-colors hover:bg-primary/5 sm:text-sm md:text-base lg:text-lg"
-      >
-        Get it Now - It&apos;s Free
-      </Link>
+      <div className="flex items-center gap-3 sm:gap-4">
+        <Link
+          href="/login"
+          className="text-xs font-medium text-foreground/70 transition-colors hover:text-foreground sm:text-sm"
+        >
+          Login
+        </Link>
+        <span className="h-4 w-px bg-foreground/20" aria-hidden />
+        <Link
+          href="/reel"
+          className="whitespace-nowrap rounded-full border border-primary bg-transparent px-5 py-2 text-xs font-medium text-foreground transition-colors hover:bg-primary/5 sm:text-sm"
+        >
+          Start Reel
+        </Link>
+      </div>
     </nav>
   );
 }
@@ -57,12 +66,21 @@ function NavbarScrollDock() {
           >
             ideaCentre
           </Link>
-          <Link
-            href="#get-started"
-            className="shrink-0 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-[inset_0_1px_0_color-mix(in_srgb,var(--palette-quinary)_55%,transparent),0_4px_14px_-4px_rgba(62,42,28,0.45)] transition-[transform,box-shadow,opacity] hover:-translate-y-px hover:opacity-[0.97] hover:shadow-[inset_0_1px_0_color-mix(in_srgb,var(--palette-quinary)_55%,transparent),0_8px_22px_-6px_rgba(62,42,28,0.5)] active:translate-y-0 sm:px-5 sm:py-2.5 sm:text-sm md:text-base"
-          >
-            Get it Now - It&apos;s Free
-          </Link>
+          <div className="flex items-center gap-2.5 sm:gap-3.5">
+            <Link
+              href="/login"
+              className="text-xs font-medium text-foreground/70 transition-colors hover:text-foreground sm:text-sm"
+            >
+              Login
+            </Link>
+            <span className="h-4 w-px bg-foreground/20" aria-hidden />
+            <Link
+              href="/reel"
+              className="shrink-0 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-[inset_0_1px_0_color-mix(in_srgb,var(--palette-quinary)_55%,transparent),0_4px_14px_-4px_rgba(62,42,28,0.45)] transition-[transform,box-shadow,opacity] hover:-translate-y-px hover:opacity-[0.97] hover:shadow-[inset_0_1px_0_color-mix(in_srgb,var(--palette-quinary)_55%,transparent),0_8px_22px_-6px_rgba(62,42,28,0.5)] active:translate-y-0 sm:px-5 sm:py-2.5 sm:text-sm"
+            >
+              Start Reel
+            </Link>
+          </div>
         </nav>
       </div>
     </div>
