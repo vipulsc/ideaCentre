@@ -8,9 +8,35 @@ import {
 } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 const SCROLL_REVEAL_AT = 56;
 const SCROLL_HIDE_BELOW = 32;
+
+function IdeaCentreWordmark({
+  sizeClassName,
+  className,
+}: {
+  sizeClassName: string;
+  className?: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex min-w-0 items-baseline gap-px leading-none",
+        sizeClassName,
+        className,
+      )}
+    >
+      <span className="font-display-serif font-normal tracking-tight text-foreground transition-colors duration-200 group-hover:text-palette-primary/90">
+        idea
+      </span>
+      <span className="font-display-serif font-semibold tracking-tight text-palette-primary transition-colors duration-200 group-hover:text-palette-secondary">
+        Centre
+      </span>
+    </span>
+  );
+}
 
 function NavbarNav() {
   return (
@@ -20,9 +46,10 @@ function NavbarNav() {
     >
       <Link
         href="/"
-        className="max-w-[min(45%,11rem)] truncate text-sm font-semibold tracking-tight text-foreground hover:opacity-80 sm:text-base md:text-lg lg:text-xl"
+        className="group max-w-[min(45%,12rem)] truncate overflow-hidden hover:opacity-95 sm:max-w-52"
+        aria-label="ideaCentre home"
       >
-        ideaCentre
+        <IdeaCentreWordmark sizeClassName="text-sm sm:text-base md:text-lg lg:text-xl" />
       </Link>
       <div className="flex items-center gap-3 sm:gap-4">
         <Link
@@ -62,9 +89,10 @@ function NavbarScrollDock() {
         >
           <Link
             href="/"
-            className="min-w-0 truncate text-sm font-semibold tracking-tight text-foreground transition-opacity hover:opacity-80 sm:text-base md:text-lg"
+            className="group min-w-0 max-w-full truncate overflow-hidden transition-opacity hover:opacity-95"
+            aria-label="ideaCentre home"
           >
-            ideaCentre
+            <IdeaCentreWordmark sizeClassName="text-sm sm:text-base md:text-lg" />
           </Link>
           <div className="flex items-center gap-2.5 sm:gap-3.5">
             <Link

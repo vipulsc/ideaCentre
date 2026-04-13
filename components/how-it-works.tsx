@@ -30,7 +30,7 @@ const steps = [
 export function HowItWorks() {
   return (
     <section
-      className="px-6 pt-2 pb-8 sm:pt-3 sm:pb-10 md:pt-4 md:pb-12 lg:pt-6 lg:pb-16"
+      className="px-6 py-8 sm:py-10 md:py-12 lg:py-16"
       aria-labelledby="how-it-works-heading"
     >
       <div className="mx-auto w-full max-w-screen-2xl 2xl:max-w-400">
