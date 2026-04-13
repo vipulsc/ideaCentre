@@ -1,5 +1,15 @@
-import Image from "next/image";
+import { BrandStrip } from "@/components/brand-strip";
+import { Hero } from "@/components/hero";
+import { Navbar } from "@/components/navbar";
 
 export default function Home() {
-  return <></>;
+  return (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <Navbar />
+
+      <Hero />
+      <Hero />
+      {/* <BrandStrip /> */}
+    </div>
+  );
 }
