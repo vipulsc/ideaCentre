@@ -5,22 +5,23 @@ import Link from "next/link";
 import { ArrowRight, Mail } from "lucide-react";
 import { Reveal } from "@/components/reveal";
 
-const footerLinks = {
-  Product: [
-    { label: "Idea Reel", href: "/reel" },
-    { label: "Trending", href: "/trending" },
-    { label: "Submit Idea", href: "/submit" },
-  ],
-  Company: [
-    { label: "About", href: "/about" },
-    { label: "Blog", href: "/blog" },
-    { label: "Changelog", href: "/changelog" },
-  ],
-  Legal: [
-    { label: "Privacy", href: "/privacy" },
-    { label: "Terms", href: "/terms" },
-  ],
-};
+const footerColumns = [
+  {
+    title: "Product",
+    links: [
+      { label: "Idea Reel", href: "/reel" },
+      { label: "Trending", href: "/trending" },
+      { label: "Submit Idea", href: "/submit" },
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      { label: "Privacy", href: "/privacy" },
+      { label: "Terms", href: "/terms" },
+    ],
+  },
+] as const;
 
 const socials = [
   { icon: Mail, href: "mailto:hello@ideacentre.app", label: "Email" },
@@ -28,7 +29,7 @@ const socials = [
 
 export function FinalCta() {
   return (
-    <section className="px-6 pt-8 pb-6 sm:pt-10 sm:pb-8 md:pt-12 lg:pt-16">
+    <section className="px-4 pt-8 pb-6 sm:px-6 sm:pt-10 sm:pb-8 md:pt-12 lg:pt-16">
       <div className="mx-auto w-full max-w-screen-2xl 2xl:max-w-400">
         <Reveal direction="up">
           <div className="relative isolate overflow-hidden rounded-2xl bg-palette-primary text-primary-foreground xl:rounded-3xl">
@@ -39,7 +40,7 @@ export function FinalCta() {
 
             <div className="relative z-10">
               {/* CTA */}
-              <div className="flex flex-col items-center gap-6 px-6 pt-14 pb-12 text-center sm:px-12 sm:pt-16 sm:pb-14 md:pt-20 md:pb-16">
+              <div className="flex flex-col items-center gap-6 px-4 pt-14 pb-12 text-center sm:px-12 sm:pt-16 sm:pb-14 md:pt-20 md:pb-16">
                 <Reveal direction="up" delay={0.1}>
                   <p className="text-sm font-semibold uppercase tracking-widest text-primary-foreground/70">
                     Stop overthinking. Start scrolling.
@@ -74,14 +75,17 @@ export function FinalCta() {
               </div>
 
               {/* Divider */}
-              <div className="mx-6 border-t border-primary-foreground/15 sm:mx-12" />
+              <div className="mx-4 border-t border-primary-foreground/15 sm:mx-12" />
 
               {/* Footer */}
-              <div className="px-6 pt-10 pb-8 sm:px-12 sm:pt-12 sm:pb-10">
-                <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
-                  {/* Brand */}
-                  <div className="flex flex-col gap-4 lg:col-span-2">
-                    <Link href="/" className="flex items-center gap-2.5">
+              <div className="px-4 pt-10 pb-8 sm:px-12 sm:pt-12 sm:pb-10">
+                <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between lg:gap-16">
+                  {/* Brand — centered on mobile, left on desktop */}
+                  <div className="flex flex-col items-center gap-4 text-center lg:max-w-xs lg:shrink-0 lg:items-start lg:text-left">
+                    <Link
+                      href="/"
+                      className="flex items-center gap-2.5"
+                    >
                       <Image
                         src="/logo.svg"
                         alt=""
@@ -93,11 +97,11 @@ export function FinalCta() {
                         ideaCentre
                       </span>
                     </Link>
-                    <p className="max-w-xs text-sm leading-relaxed text-primary-foreground/65">
+                    <p className="max-w-sm text-sm leading-relaxed text-primary-foreground/65 sm:max-w-xs">
                       Discover startup ideas in seconds. Swipe, save, vote — and
                       start building what matters.
                     </p>
-                    <div className="flex items-center gap-3 pt-1">
+                    <div className="flex items-center justify-center gap-3 pt-1 lg:justify-start">
                       {socials.map((s) => (
                         <a
                           key={s.label}
@@ -105,7 +109,7 @@ export function FinalCta() {
                           target="_blank"
                           rel="noopener noreferrer"
                           aria-label={s.label}
-                          className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-foreground/10 text-primary-foreground/70 transition-colors duration-200 hover:bg-primary-foreground/20 hover:text-primary-foreground"
+                          className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-foreground/10 text-primary-foreground/70 transition-colors duration-200 hover:bg-primary-foreground/20 hover:text-primary-foreground sm:h-9 sm:w-9"
                         >
                           <s.icon className="size-4" />
                         </a>
@@ -113,35 +117,44 @@ export function FinalCta() {
                     </div>
                   </div>
 
-                  {/* Link columns */}
-                  {Object.entries(footerLinks).map(([title, links]) => (
-                    <div key={title} className="flex flex-col gap-3">
-                      <p className="text-xs font-semibold uppercase tracking-widest text-primary-foreground/50">
-                        {title}
-                      </p>
-                      <ul className="flex flex-col gap-2.5">
-                        {links.map((link) => (
-                          <li key={link.href}>
-                            <Link
-                              href={link.href}
-                              className="text-sm text-primary-foreground/70 transition-colors duration-200 hover:text-primary-foreground"
-                            >
-                              {link.label}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
+                  {/* Product + Legal — equal columns; divider on small screens only */}
+                  <div className="grid w-full grid-cols-2 items-start gap-x-0 sm:gap-x-0 lg:ml-auto lg:w-max lg:shrink-0 lg:gap-x-16">
+                    {footerColumns.map((col, i) => (
+                      <div
+                        key={col.title}
+                        className={
+                          i === 0
+                            ? "flex min-w-0 flex-col gap-3 pr-4 text-left sm:pr-6 lg:pr-0"
+                            : "flex min-w-0 flex-col gap-3 border-l border-primary-foreground/15 pl-4 text-left sm:pl-6 lg:border-l-0 lg:pl-0"
+                        }
+                      >
+                        <p className="text-xs font-semibold uppercase tracking-widest text-primary-foreground/50">
+                          {col.title}
+                        </p>
+                        <ul className="flex flex-col gap-2.5">
+                          {col.links.map((link) => (
+                            <li key={link.href}>
+                              <Link
+                                href={link.href}
+                                className="inline-block text-left text-sm text-primary-foreground/70 transition-colors duration-200 hover:text-primary-foreground"
+                              >
+                                {link.label}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Bottom bar */}
-                <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-primary-foreground/10 pt-6 sm:flex-row">
-                  <p className="text-xs text-primary-foreground/45">
+                <div className="mt-10 flex flex-col items-center gap-3 border-t border-primary-foreground/10 pt-6 text-center sm:flex-row sm:justify-between sm:text-left">
+                  <p className="text-xs leading-relaxed text-primary-foreground/45">
                     &copy; {new Date().getFullYear()} ideaCentre. All rights
                     reserved.
                   </p>
-                  <p className="text-xs text-primary-foreground/45">
+                  <p className="text-xs leading-relaxed text-primary-foreground/45">
                     Built for builders, by builders.
                   </p>
                 </div>

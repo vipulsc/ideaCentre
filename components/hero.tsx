@@ -21,12 +21,12 @@ export function Hero() {
 
   return (
     <section
-      className="px-6 pt-1 pb-8 sm:pt-2 sm:pb-10 md:pt-3 md:pb-12 lg:pt-4 lg:pb-16"
+      className="px-4 pt-1 pb-8 sm:px-6 sm:pt-2 sm:pb-10 md:pt-3 md:pb-12 lg:pt-4 lg:pb-16"
       aria-labelledby="hero-heading"
     >
       <div className="mx-auto w-full max-w-screen-2xl 2xl:max-w-400">
         <motion.div
-          className="isolate relative overflow-hidden rounded-2xl bg-palette-primary px-6 py-10 text-primary-foreground sm:px-10 sm:py-12 md:px-12 md:py-14 lg:px-12 lg:py-16 xl:rounded-3xl xl:px-14 xl:py-20"
+          className="isolate relative overflow-hidden rounded-2xl bg-palette-primary px-4 py-10 text-primary-foreground sm:px-10 sm:py-12 md:px-12 md:py-14 lg:px-12 lg:py-16 xl:rounded-3xl xl:px-14 xl:py-20"
           initial={reduce ? {} : { opacity: 0, scale: 0.97 }}
           animate={reduce ? {} : { opacity: 1, scale: 1 }}
           transition={{ duration: 0.7, ease }}

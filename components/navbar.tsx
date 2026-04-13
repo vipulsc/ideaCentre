@@ -128,7 +128,7 @@ export function Navbar() {
   return (
     <>
       <header
-        className="w-full px-12 py-4"
+        className="w-full px-4 py-4 sm:px-12"
         aria-hidden={reveal}
         inert={reveal ? true : undefined}
       >

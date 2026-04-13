@@ -32,7 +32,7 @@ const audienceTags = [
 export function AiInsights() {
   return (
     <section
-      className="px-6 py-8 sm:py-10 md:py-12 lg:py-16"
+      className="px-4 py-8 sm:px-6 sm:py-10 md:py-12 lg:py-16"
       aria-labelledby="ai-insights-heading"
     >
       <div className="mx-auto w-full max-w-screen-2xl 2xl:max-w-400">

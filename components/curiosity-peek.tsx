@@ -96,7 +96,7 @@ export function CuriosityPeek() {
       <div className="pointer-events-none absolute -z-10 size-[min(88vw,36rem)] rounded-full bg-palette-secondary/10 blur-3xl" style={{ left: "8%", top: "20%" }} aria-hidden />
 
       {/* Fake stock metadata — sets the fiction */}
-      <div className="mx-auto mb-10 flex w-full max-w-screen-2xl flex-wrap items-center justify-center gap-x-8 gap-y-2 px-6 font-mono text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground sm:mb-12 sm:justify-between 2xl:max-w-400">
+      <div className="mx-auto mb-10 flex w-full max-w-screen-2xl flex-wrap items-center justify-center gap-x-8 gap-y-2 px-4 font-mono text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground sm:mb-12 sm:justify-between sm:px-6 2xl:max-w-400">
         <span className="tabular-nums">1,000+ ideas queued</span>
         <span className="hidden text-center sm:block">
           Blurred until you swipe
@@ -110,7 +110,7 @@ export function CuriosityPeek() {
         </span>
       </div>
 
-      <div className="mx-auto flex w-full max-w-screen-2xl flex-col items-center gap-12 px-6 sm:gap-14 2xl:max-w-400">
+      <div className="mx-auto flex w-full max-w-screen-2xl flex-col items-center gap-12 px-4 sm:gap-14 sm:px-6 2xl:max-w-400">
         {/* Typographic stack — centered on page */}
         <div className="relative flex max-w-2xl flex-col items-center text-center">
           <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.35em] text-palette-primary/80">
