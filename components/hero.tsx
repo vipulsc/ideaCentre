@@ -5,7 +5,7 @@ import { ArrowUpRight, Lightbulb } from "lucide-react";
 export function Hero() {
   return (
     <section
-      className="px-6 pb-10 sm:pb-12 lg:pb-14"
+      className="px-6 pt-1 pb-8 sm:pt-2 sm:pb-10 md:pt-3 md:pb-12 lg:pt-4 lg:pb-16"
       aria-labelledby="hero-heading"
     >
       <div className="mx-auto w-full max-w-screen-2xl 2xl:max-w-400">

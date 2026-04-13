@@ -1,0 +1,86 @@
+import { Scroll, Bookmark, Rocket } from "lucide-react";
+
+const steps = [
+  {
+    number: "01",
+    icon: Scroll,
+    title: "Swipe Ideas",
+    description:
+      "Scroll through a never-ending feed of startup ideas — just like reels. Each card is short, clear, and ready to inspire.",
+  },
+  {
+    number: "02",
+    icon: Bookmark,
+    title: "Save What Clicks",
+    description:
+      "Found something worth building? Bookmark it instantly. Your saved ideas live in one place, ready when you are.",
+  },
+  {
+    number: "03",
+    icon: Rocket,
+    title: "Start Building",
+    description:
+      "Vote on ideas you believe in, submit your own, and watch the community surface what deserves to exist.",
+  },
+] as const;
+
+export function HowItWorks() {
+  return (
+    <section
+      className="px-6 pt-2 pb-8 sm:pt-3 sm:pb-10 md:pt-4 md:pb-12 lg:pt-6 lg:pb-16"
+      aria-labelledby="how-it-works-heading"
+    >
+      <div className="mx-auto w-full max-w-screen-2xl 2xl:max-w-400">
+        <div className="mb-8 flex max-w-2xl flex-col gap-3 sm:mb-10">
+          <p className="text-sm font-semibold uppercase tracking-widest text-palette-primary">
+            How it works
+          </p>
+          <h2
+            id="how-it-works-heading"
+            className="font-display-serif text-3xl leading-tight tracking-tight text-foreground sm:text-4xl md:text-5xl"
+          >
+            Idea discovery,
+            <br />
+            stupidly simple.
+          </h2>
+          <p className="max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base">
+            Three steps. Zero friction. Go from browsing to building in
+            under a minute.
+          </p>
+        </div>
+
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+          {steps.map((step) => (
+            <div
+              key={step.number}
+              className="group relative overflow-hidden rounded-2xl border border-border bg-card p-7 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg sm:p-9"
+            >
+              <span className="absolute -right-2 -top-3 font-display-serif text-[7rem] leading-none text-palette-primary/6 transition-colors duration-200 group-hover:text-palette-primary/12 sm:text-[8rem]">
+                {step.number}
+              </span>
+
+              <div className="relative z-10 flex flex-col gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-palette-primary/10 transition-colors duration-200 group-hover:bg-palette-primary/15">
+                    <step.icon className="size-5 text-palette-primary" />
+                  </div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-palette-primary/50">
+                    Step {step.number}
+                  </span>
+                </div>
+
+                <h3 className="text-lg font-bold tracking-tight text-foreground">
+                  {step.title}
+                </h3>
+
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  {step.description}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
