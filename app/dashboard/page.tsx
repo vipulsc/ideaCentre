@@ -275,6 +275,14 @@ export default function DashboardPage() {
               <Bookmark className="size-5" />
               Saved
             </button>
+            <button
+              type="button"
+              onClick={() => setShowProfile(true)}
+              className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-white/40 transition-colors hover:bg-white/6 hover:text-white/80"
+            >
+              <User className="size-5" />
+              My Ideas
+            </button>
           </nav>
 
           <div className="mt-auto">
