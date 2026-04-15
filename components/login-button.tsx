@@ -18,7 +18,10 @@ export default function LoginButton({ className }: LoginButtonProps) {
   useEffect(() => {
     if (!showConfirm) return;
     function onClickOutside(e: MouseEvent) {
-      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
+      if (
+        popoverRef.current &&
+        !popoverRef.current.contains(e.target as Node)
+      ) {
         close();
       }
     }
@@ -72,9 +75,7 @@ export default function LoginButton({ className }: LoginButtonProps) {
             className="absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-border bg-background p-4 shadow-lg"
           >
             <div className="mb-3 flex items-start justify-between">
-              <p className="text-sm font-medium text-foreground">
-                Sign out?
-              </p>
+              <p className="text-sm font-medium text-foreground">Sign out?</p>
               <button
                 type="button"
                 onClick={close}

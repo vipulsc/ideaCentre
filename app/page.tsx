@@ -7,8 +7,17 @@ import { HowItWorks } from "@/components/how-it-works";
 import { Navbar } from "@/components/navbar";
 import { PostIdeaFab } from "@/components/post-idea-fab";
 import { Tagline } from "@/components/tagline";
+import { authOptions } from "@/lib/auth";
+import { getServerSession } from "next-auth/next";
+import { redirect } from "next/navigation";
 
-export default function Home() {
+export default async function Home() {
+  const session = await getServerSession(authOptions);
+
+  if (session) {
+    redirect("/dashboard");
+  }
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <Navbar />
