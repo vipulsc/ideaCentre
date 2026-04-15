@@ -59,7 +59,8 @@ export function Tagline() {
                   : "tagline-text-fill inline-block"
               }
               initial={{ clipPath: "inset(0 100% 0 0)" }}
-              animate={{ clipPath: "inset(0 0% 0 0)" }}
+              whileInView={{ clipPath: "inset(0 0% 0 0)" }}
+              viewport={{ once: true }}
               transition={{
                 delay: i * 0.055,
                 duration: 0.42,

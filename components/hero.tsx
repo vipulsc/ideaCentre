@@ -13,9 +13,10 @@ function useFade(delay: number) {
     initial: reduce
       ? { opacity: 0 }
       : { opacity: 0, y: 18, filter: "blur(4px)" },
-    animate: reduce
+    whileInView: reduce
       ? { opacity: 1 }
       : { opacity: 1, y: 0, filter: "blur(0px)" },
+    viewport: { once: true } as const,
     transition: { duration: reduce ? 0.15 : 0.6, delay, ease },
   };
 }
@@ -31,8 +32,9 @@ export function Hero() {
       <div className="mx-auto w-full max-w-screen-2xl 2xl:max-w-800">
         <motion.div
           className="isolate relative overflow-hidden rounded-2xl bg-palette-primary px-4 py-10 text-primary-foreground sm:px-10 sm:py-12 md:px-12 md:py-14 lg:px-12 lg:py-16 xl:rounded-3xl xl:px-14 xl:py-20"
-          initial={reduce ? {} : { opacity: 0, scale: 0.97 }}
-          animate={reduce ? {} : { opacity: 1, scale: 1 }}
+          initial={reduce ? false : { opacity: 0, scale: 0.97 }}
+          whileInView={reduce ? undefined : { opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
           transition={{ duration: 0.7, ease }}
         >
           <div
@@ -75,8 +77,9 @@ export function Hero() {
               {/* Divider */}
               <motion.hr
                 className="border-primary-foreground/25"
-                initial={reduce ? {} : { scaleX: 0 }}
-                animate={reduce ? {} : { scaleX: 1 }}
+                initial={reduce ? false : { scaleX: 0 }}
+                whileInView={reduce ? undefined : { scaleX: 1 }}
+                viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.45, ease }}
                 style={{ transformOrigin: "left" }}
               />
@@ -93,8 +96,9 @@ export function Hero() {
               {/* Divider */}
               <motion.hr
                 className="border-primary-foreground/25"
-                initial={reduce ? {} : { scaleX: 0 }}
-                animate={reduce ? {} : { scaleX: 1 }}
+                initial={reduce ? false : { scaleX: 0 }}
+                whileInView={reduce ? undefined : { scaleX: 1 }}
+                viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.6, ease }}
                 style={{ transformOrigin: "left" }}
               />
@@ -127,8 +131,9 @@ export function Hero() {
             {/* Right column — image + floating cards */}
             <motion.div
               className="relative mx-auto w-full max-w-md lg:mx-0 lg:max-w-none"
-              initial={reduce ? {} : { opacity: 0, x: 30 }}
-              animate={reduce ? {} : { opacity: 1, x: 0 }}
+              initial={reduce ? false : { opacity: 0, x: 30 }}
+              whileInView={reduce ? undefined : { opacity: 1, x: 0 }}
+              viewport={{ once: true }}
               transition={{ duration: 0.7, delay: 0.35, ease }}
             >
               <div
@@ -150,8 +155,9 @@ export function Hero() {
               {/* Floating stat card */}
               <motion.div
                 className="absolute right-0 top-6 z-20 w-[min(100%,11rem)] rounded-lg border border-primary/15 bg-primary-foreground/95 px-4 py-3 shadow-lg backdrop-blur-md sm:right-2 sm:top-8 sm:w-44"
-                initial={reduce ? {} : { opacity: 0, y: -12, scale: 0.92 }}
-                animate={reduce ? {} : { opacity: 1, y: 0, scale: 1 }}
+                initial={reduce ? false : { opacity: 0, y: -12, scale: 0.92 }}
+                whileInView={reduce ? undefined : { opacity: 1, y: 0, scale: 1 }}
+                viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.7, ease }}
               >
                 <p className="text-2xl font-bold tracking-tight text-primary sm:text-3xl">
@@ -165,8 +171,9 @@ export function Hero() {
               {/* Floating product card */}
               <motion.div
                 className="absolute bottom-[18%] left-0 z-20 flex max-w-44 items-center gap-3 rounded-lg border border-primary/15 bg-primary-foreground/95 px-3 py-2.5 shadow-lg backdrop-blur-md sm:bottom-[20%] sm:left-2 sm:max-w-xs sm:px-4 sm:py-3"
-                initial={reduce ? {} : { opacity: 0, y: 12, scale: 0.92 }}
-                animate={reduce ? {} : { opacity: 1, y: 0, scale: 1 }}
+                initial={reduce ? false : { opacity: 0, y: 12, scale: 0.92 }}
+                whileInView={reduce ? undefined : { opacity: 1, y: 0, scale: 1 }}
+                viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.85, ease }}
               >
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-primary text-lg text-primary-foreground">

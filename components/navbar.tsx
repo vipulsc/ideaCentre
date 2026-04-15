@@ -52,11 +52,10 @@ function NavbarNav() {
       >
         <IdeaCentreWordmark sizeClassName="text-sm sm:text-base md:text-lg lg:text-xl" />
       </Link>
-      <div className="flex items-center gap-3 sm:gap-4">
+      <div className="flex items-center gap-2 sm:gap-3">
         <LoginButton
           className="text-xs font-medium text-foreground/70 transition-colors hover:text-foreground sm:text-sm"
         />
-        <span className="h-4 w-px bg-foreground/20" aria-hidden />
         <Link
           href="/reel"
           className="whitespace-nowrap rounded-full border border-primary bg-transparent px-5 py-2 text-xs font-medium text-foreground transition-colors hover:bg-primary/5 sm:text-sm"
@@ -76,10 +75,10 @@ function NavbarScrollDock() {
         aria-hidden
         className="pointer-events-none absolute -inset-px rounded-full bg-linear-to-br from-palette-secondary/45 via-palette-primary/35 to-palette-tertiary/50 opacity-90 blur-sm"
       />
-      <div className="relative overflow-hidden rounded-full border border-primary-foreground/25 bg-linear-to-b from-card/45 via-background/30 to-card/40 px-4 py-2.5 shadow-[0_18px_50px_-14px_rgba(62,42,28,0.32)] ring-1 ring-inset ring-primary-foreground/15 backdrop-blur-3xl backdrop-saturate-150 supports-backdrop-filter:from-card/35 supports-backdrop-filter:via-background/22 supports-backdrop-filter:to-card/32 sm:px-6 sm:py-3">
+      <div className="relative overflow-visible rounded-full border border-primary-foreground/25 bg-linear-to-b from-card/45 via-background/30 to-card/40 px-4 py-2.5 shadow-[0_18px_50px_-14px_rgba(62,42,28,0.32)] ring-1 ring-inset ring-primary-foreground/15 backdrop-blur-3xl backdrop-saturate-150 supports-backdrop-filter:from-card/35 supports-backdrop-filter:via-background/22 supports-backdrop-filter:to-card/32 sm:px-6 sm:py-3">
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_80%_at_50%_-20%,color-mix(in_srgb,var(--palette-quinary)_42%,transparent),transparent_60%)]"
+          className="pointer-events-none absolute inset-0 overflow-hidden rounded-full bg-[radial-gradient(120%_80%_at_50%_-20%,color-mix(in_srgb,var(--palette-quinary)_42%,transparent),transparent_60%)]"
         />
         <nav
           className="relative flex w-full items-center justify-between gap-4 sm:gap-8"
@@ -92,11 +91,10 @@ function NavbarScrollDock() {
           >
             <IdeaCentreWordmark sizeClassName="text-sm sm:text-base md:text-lg" />
           </Link>
-          <div className="flex items-center gap-2.5 sm:gap-3.5">
+          <div className="flex items-center gap-2 sm:gap-3">
             <LoginButton
               className="text-xs font-medium text-foreground/70 transition-colors hover:text-foreground sm:text-sm"
             />
-            <span className="h-4 w-px bg-foreground/20" aria-hidden />
             <Link
               href="/reel"
               className="shrink-0 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-[inset_0_1px_0_color-mix(in_srgb,var(--palette-quinary)_55%,transparent),0_4px_14px_-4px_rgba(62,42,28,0.45)] transition-[transform,box-shadow,opacity] hover:-translate-y-px hover:opacity-[0.97] hover:shadow-[inset_0_1px_0_color-mix(in_srgb,var(--palette-quinary)_55%,transparent),0_8px_22px_-6px_rgba(62,42,28,0.5)] active:translate-y-0 sm:px-5 sm:py-2.5 sm:text-sm"
@@ -123,7 +121,7 @@ export function Navbar() {
   return (
     <>
       <header
-        className="w-full px-4 py-4 sm:px-12"
+        className="relative z-40 w-full px-4 py-4 sm:px-12"
         aria-hidden={reveal}
         inert={reveal ? true : undefined}
       >

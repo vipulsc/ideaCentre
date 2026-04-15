@@ -1,9 +1,8 @@
 "use client";
 
-import { type ReactNode, useRef } from "react";
+import { type ReactNode } from "react";
 import {
   motion,
-  useInView,
   useReducedMotion,
   type Variant,
 } from "framer-motion";
@@ -37,8 +36,6 @@ export function Reveal({
   once = true,
   amount = 0.2,
 }: RevealProps) {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once, amount });
   const reduceMotion = useReducedMotion();
 
   const { x, y } = offsets[direction];
@@ -53,13 +50,19 @@ export function Reveal({
 
   return (
     <motion.div
-      ref={ref}
-      initial={hidden}
-      animate={inView ? visible : hidden}
-      transition={{
-        duration: reduceMotion ? 0.15 : duration,
-        delay,
-        ease: [0.22, 1, 0.36, 1],
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once, amount }}
+      variants={{
+        hidden,
+        visible: {
+          ...visible,
+          transition: {
+            duration: reduceMotion ? 0.15 : duration,
+            delay,
+            ease: [0.22, 1, 0.36, 1],
+          },
+        },
       }}
       className={className}
     >
