@@ -21,7 +21,10 @@ export function Tagline() {
   }, []);
 
   return (
-    <section className="w-full py-8 sm:py-10 md:py-12 lg:py-16" aria-labelledby="tagline-heading">
+    <section
+      className="w-full py-8 sm:py-10 md:py-12 lg:py-16"
+      aria-labelledby="tagline-heading"
+    >
       <h2
         id="tagline-heading"
         className="font-display-serif flex w-full flex-wrap justify-center gap-y-1 px-4 text-center text-3xl leading-tight tracking-tight sm:px-6 sm:text-4xl md:text-5xl lg:text-6xl"

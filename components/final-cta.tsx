@@ -30,7 +30,7 @@ const socials = [
 export function FinalCta() {
   return (
     <section className="px-4 pt-8 pb-6 sm:px-6 sm:pt-10 sm:pb-8 md:pt-12 lg:pt-16">
-      <div className="mx-auto w-full max-w-screen-2xl 2xl:max-w-400">
+      <div className="mx-auto w-full max-w-screen-2xl 2xl:max-w-800">
         <Reveal direction="up">
           <div className="relative isolate overflow-hidden rounded-2xl bg-palette-primary text-primary-foreground xl:rounded-3xl">
             <div

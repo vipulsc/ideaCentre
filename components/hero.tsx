@@ -10,8 +10,12 @@ const ease = [0.22, 1, 0.36, 1] as const;
 function useFade(delay: number) {
   const reduce = useReducedMotion();
   return {
-    initial: reduce ? { opacity: 0 } : { opacity: 0, y: 18, filter: "blur(4px)" },
-    animate: reduce ? { opacity: 1 } : { opacity: 1, y: 0, filter: "blur(0px)" },
+    initial: reduce
+      ? { opacity: 0 }
+      : { opacity: 0, y: 18, filter: "blur(4px)" },
+    animate: reduce
+      ? { opacity: 1 }
+      : { opacity: 1, y: 0, filter: "blur(0px)" },
     transition: { duration: reduce ? 0.15 : 0.6, delay, ease },
   };
 }
@@ -21,10 +25,10 @@ export function Hero() {
 
   return (
     <section
-      className="px-4 pt-1 pb-8 sm:px-6 sm:pt-2 sm:pb-10 md:pt-3 md:pb-12 lg:pt-4 lg:pb-16"
+      className="px-4 pb-8 sm:px-6 sm:pb-10 md:pb-12  lg:pb-16"
       aria-labelledby="hero-heading"
     >
-      <div className="mx-auto w-full max-w-screen-2xl 2xl:max-w-400">
+      <div className="mx-auto w-full max-w-screen-2xl 2xl:max-w-800">
         <motion.div
           className="isolate relative overflow-hidden rounded-2xl bg-palette-primary px-4 py-10 text-primary-foreground sm:px-10 sm:py-12 md:px-12 md:py-14 lg:px-12 lg:py-16 xl:rounded-3xl xl:px-14 xl:py-20"
           initial={reduce ? {} : { opacity: 0, scale: 0.97 }}
@@ -38,7 +42,10 @@ export function Hero() {
           <div className="relative z-10 grid items-center gap-10 lg:grid-cols-2 lg:gap-12 xl:gap-16">
             <div className="flex min-w-0 flex-col gap-6 text-primary-foreground sm:gap-7 lg:max-w-xl lg:gap-8">
               {/* Badge */}
-              <motion.div className="flex items-center gap-3" {...useFade(0.15)}>
+              <motion.div
+                className="flex items-center gap-3"
+                {...useFade(0.15)}
+              >
                 <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary-foreground/15">
                   <Lightbulb className="size-6 text-primary-foreground" />
                 </span>
@@ -79,9 +86,8 @@ export function Hero() {
                 className="max-w-lg text-base leading-relaxed text-primary-foreground/90 sm:text-lg md:text-xl"
                 {...useFade(0.5)}
               >
-                Discover Startup Ideas In Seconds. Swipe Through
-                Ideas Like Reels&nbsp;&mdash; Save, Vote, And Start
-                Building.
+                Discover Startup Ideas In Seconds. Swipe Through Ideas Like
+                Reels&nbsp;&mdash; Save, Vote, And Start Building.
               </motion.p>
 
               {/* Divider */}
@@ -110,7 +116,10 @@ export function Hero() {
                   className="group inline-flex w-fit items-center gap-2 text-sm font-medium text-primary-foreground underline underline-offset-4 transition-all duration-200 hover:underline-offset-[6px] sm:text-[15px]"
                 >
                   See Trending
-                  <ArrowUpRight className="size-4 shrink-0 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden />
+                  <ArrowUpRight
+                    className="size-4 shrink-0 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                    aria-hidden
+                  />
                 </Link>
               </motion.div>
             </div>

@@ -33,7 +33,7 @@ export function HowItWorks() {
       className="px-4 py-8 sm:px-6 sm:py-10 md:py-12 lg:py-16"
       aria-labelledby="how-it-works-heading"
     >
-      <div className="mx-auto w-full max-w-screen-2xl 2xl:max-w-400">
+      <div className="mx-auto w-full max-w-screen-2xl 2xl:max-w-800">
         <div className="mb-8 flex max-w-2xl flex-col gap-3 sm:mb-10">
           <Reveal direction="up">
             <p className="text-sm font-semibold uppercase tracking-widest text-palette-primary">

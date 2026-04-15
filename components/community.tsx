@@ -34,7 +34,7 @@ export function Community() {
       className="px-4 py-8 sm:px-6 sm:py-10 md:py-12 lg:py-16"
       aria-labelledby="community-heading"
     >
-      <div className="mx-auto w-full max-w-screen-2xl 2xl:max-w-400">
+      <div className="mx-auto w-full max-w-screen-2xl 2xl:max-w-800">
         <Reveal direction="up" duration={0.6}>
           <div className="overflow-hidden rounded-2xl border border-border bg-card xl:rounded-3xl">
             <div className="grid items-center lg:grid-cols-2">

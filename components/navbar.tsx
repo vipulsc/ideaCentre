@@ -9,6 +9,7 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import LoginButton from "@/components/login-button";
 
 const SCROLL_REVEAL_AT = 56;
 const SCROLL_HIDE_BELOW = 32;
@@ -52,12 +53,9 @@ function NavbarNav() {
         <IdeaCentreWordmark sizeClassName="text-sm sm:text-base md:text-lg lg:text-xl" />
       </Link>
       <div className="flex items-center gap-3 sm:gap-4">
-        <Link
-          href="/login"
+        <LoginButton
           className="text-xs font-medium text-foreground/70 transition-colors hover:text-foreground sm:text-sm"
-        >
-          Login
-        </Link>
+        />
         <span className="h-4 w-px bg-foreground/20" aria-hidden />
         <Link
           href="/reel"
@@ -95,12 +93,9 @@ function NavbarScrollDock() {
             <IdeaCentreWordmark sizeClassName="text-sm sm:text-base md:text-lg" />
           </Link>
           <div className="flex items-center gap-2.5 sm:gap-3.5">
-            <Link
-              href="/login"
+            <LoginButton
               className="text-xs font-medium text-foreground/70 transition-colors hover:text-foreground sm:text-sm"
-            >
-              Login
-            </Link>
+            />
             <span className="h-4 w-px bg-foreground/20" aria-hidden />
             <Link
               href="/reel"
