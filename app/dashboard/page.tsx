@@ -14,11 +14,11 @@ type PostedIdea = {
 };
 
 const DEMO_REELS = [
-  { id: 1, title: "AI-powered meal planner", idea: "An app that scans your fridge, suggests healthy recipes, and auto-generates a weekly grocery list using AI.", author: "Sarah K.", color: "#0a1a12", tag: "AI / Health" },
-  { id: 2, title: "Neighborhood tool library", idea: "A community platform where neighbors can lend and borrow tools, appliances, and gear instead of buying new.", author: "Mike R.", color: "#0a1225", tag: "Community" },
-  { id: 3, title: "Micro-SaaS for freelancers", idea: "An all-in-one dashboard for freelancers to track invoices, contracts, and client communications in one place.", author: "Priya D.", color: "#120a1a", tag: "SaaS" },
-  { id: 4, title: "Pet health tracker app", idea: "Track your pet's vaccinations, vet visits, diet, and activity levels with smart reminders and health insights.", author: "Jordan L.", color: "#0a1a12", tag: "Pets / Health" },
-  { id: 5, title: "Community skill exchange", idea: "A marketplace where people trade skills instead of money — teach guitar, learn coding, swap tutoring hours.", author: "Alex T.", color: "#0a1225", tag: "Education" },
+  { id: 1, title: "AI-powered meal planner", idea: "An app that scans your fridge, suggests healthy recipes, and auto-generates a weekly grocery list using AI.", author: "Sarah K.", color: "#0a1a12", tag: "AI / Health", trending: true },
+  { id: 2, title: "Neighborhood tool library", idea: "A community platform where neighbors can lend and borrow tools, appliances, and gear instead of buying new.", author: "Mike R.", color: "#0a1225", tag: "Community", trending: false },
+  { id: 3, title: "Micro-SaaS for freelancers", idea: "An all-in-one dashboard for freelancers to track invoices, contracts, and client communications in one place.", author: "Priya D.", color: "#120a1a", tag: "SaaS", trending: true },
+  { id: 4, title: "Pet health tracker app", idea: "Track your pet's vaccinations, vet visits, diet, and activity levels with smart reminders and health insights.", author: "Jordan L.", color: "#0a1a12", tag: "Pets / Health", trending: false },
+  { id: 5, title: "Community skill exchange", idea: "A marketplace where people trade skills instead of money — teach guitar, learn coding, swap tutoring hours.", author: "Alex T.", color: "#0a1225", tag: "Education", trending: true },
 ];
 
 function ReelCard({
@@ -27,18 +27,26 @@ function ReelCard({
   author,
   color,
   tag,
+  trending,
 }: {
   title: string;
   idea: string;
   author: string;
   color: string;
   tag: string;
+  trending?: boolean;
 }) {
   return (
     <div
       className="relative flex h-full w-full snap-start snap-always flex-col justify-center px-6 pr-16 sm:px-10 sm:pr-20"
       style={{ backgroundColor: color }}
     >
+      {trending && (
+        <span className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-[#FF0099]/15 px-3 py-1 text-xs font-semibold text-[#FF0099] backdrop-blur-sm sm:right-5 sm:top-5">
+          <Flame className="size-3.5" />
+          Trending
+        </span>
+      )}
       <div className="flex w-full max-w-2xl flex-col gap-6">
         <span className="w-fit rounded-full bg-[#00FF85]/15 px-4 py-1 text-xs font-medium text-[#00FF85] sm:text-sm">
           {tag}
@@ -83,18 +91,26 @@ function IdeaCard({
   author,
   color,
   tag,
+  trending,
 }: {
   title: string;
   idea: string;
   author: string;
   color: string;
   tag: string;
+  trending?: boolean;
 }) {
   return (
     <div
-      className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-white/8 p-5 transition-all hover:border-[#00FF85]/30"
+      className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-white/8 p-5 transition-all hover:border-[#00FF85]/30"
       style={{ backgroundColor: color }}
     >
+      {trending && (
+        <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-[#FF0099]/15 px-2.5 py-0.5 text-[10px] font-semibold text-[#FF0099]">
+          <Flame className="size-3" />
+          Trending
+        </span>
+      )}
       <div className="flex flex-col gap-3">
         <span className="w-fit rounded-full bg-[#00FF85]/15 px-3 py-0.5 text-[11px] font-medium text-[#00FF85]">
           {tag}
@@ -131,7 +147,7 @@ function IdeaCard({
 
 export default function DashboardPage() {
   const { data: session } = useSession();
-  const firstName = session?.user?.name?.split(" ")[0] || "You";
+  const userName = session?.user?.name?.trim() || "You";
   const profileImage = session?.user?.image;
   const [reelMode, setReelMode] = useState(false);
   const [profileMenu, setProfileMenu] = useState(false);
@@ -167,7 +183,7 @@ export default function DashboardPage() {
         <div className="hide-scrollbar flex-1 snap-y snap-mandatory overflow-y-auto">
           {DEMO_REELS.map((reel) => (
             <div key={reel.id} className="h-full w-full shrink-0">
-              <ReelCard title={reel.title} idea={reel.idea} author={reel.author} color={reel.color} tag={reel.tag} />
+              <ReelCard title={reel.title} idea={reel.idea} author={reel.author} color={reel.color} tag={reel.tag} trending={reel.trending} />
             </div>
           ))}
         </div>
@@ -211,13 +227,13 @@ export default function DashboardPage() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={profileImage}
-                    alt={firstName}
+                    alt={userName}
                     className="h-6 w-6 rounded-full object-cover ring-2 ring-[#1E90FF]"
                     referrerPolicy="no-referrer"
                   />
                 ) : (
                   <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#1E90FF] text-[10px] font-semibold text-white">
-                    {firstName.charAt(0).toUpperCase()}
+                    {userName.charAt(0).toUpperCase()}
                   </span>
                 )}
                 <span className="text-[11px] font-medium">Profile</span>
@@ -300,16 +316,16 @@ export default function DashboardPage() {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={profileImage}
-                  alt={firstName}
+                  alt={userName}
                   className="h-8 w-8 rounded-full object-cover ring-2 ring-[#1E90FF]/50"
                   referrerPolicy="no-referrer"
                 />
               ) : (
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#1E90FF] text-xs font-semibold text-white">
-                  {firstName.charAt(0).toUpperCase()}
+                  {userName.charAt(0).toUpperCase()}
                 </span>
               )}
-              <span className="text-sm font-medium text-white/70">{firstName}</span>
+              <span className="text-sm font-medium text-white/70">{userName}</span>
             </div>
           </div>
         </aside>
@@ -335,6 +351,7 @@ export default function DashboardPage() {
                 author={reel.author}
                 color={reel.color}
                 tag={reel.tag}
+                trending={reel.trending}
               />
             ))}
           </div>

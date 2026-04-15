@@ -38,7 +38,6 @@ export default function LoginButton({ className }: LoginButtonProps) {
 
   if (status === "authenticated") {
     const userName = session.user?.name?.trim() || "User";
-    const firstName = userName.split(" ")[0];
     const image = session.user?.image;
 
     return (
@@ -47,17 +46,17 @@ export default function LoginButton({ className }: LoginButtonProps) {
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={image}
-            alt={firstName}
+            alt={userName}
             className="h-7 w-7 rounded-full object-cover"
             referrerPolicy="no-referrer"
           />
         ) : (
           <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/15 text-[11px] font-semibold text-primary">
-            {firstName.charAt(0).toUpperCase()}
+            {userName.charAt(0).toUpperCase()}
           </span>
         )}
         <span className="hidden text-xs font-medium text-foreground/75 sm:inline sm:text-sm">
-          {firstName}
+          {userName}
         </span>
         <button
           type="button"
