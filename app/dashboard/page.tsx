@@ -1,6 +1,21 @@
 "use client";
 
-import { ArrowLeft, Bookmark, FileText, Flame, Grid, Heart, LogOut, MessageCircle, Play, Plus, Share2, Sparkles, Trash2, User } from "lucide-react";
+import {
+  ArrowLeft,
+  Bookmark,
+  FileText,
+  Flame,
+  Grid,
+  Heart,
+  LogOut,
+  MessageCircle,
+  Play,
+  Plus,
+  Share2,
+  Sparkles,
+  Trash2,
+  User,
+} from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import NewIdeaModal from "@/components/new-idea-modal";
@@ -14,11 +29,51 @@ type PostedIdea = {
 };
 
 const DEMO_REELS = [
-  { id: 1, title: "AI-powered meal planner", idea: "An app that scans your fridge, suggests healthy recipes, and auto-generates a weekly grocery list using AI.", author: "Sarah K.", color: "#0a1a12", tag: "AI / Health", trending: true },
-  { id: 2, title: "Neighborhood tool library", idea: "A community platform where neighbors can lend and borrow tools, appliances, and gear instead of buying new.", author: "Mike R.", color: "#0a1225", tag: "Community", trending: false },
-  { id: 3, title: "Micro-SaaS for freelancers", idea: "An all-in-one dashboard for freelancers to track invoices, contracts, and client communications in one place.", author: "Priya D.", color: "#120a1a", tag: "SaaS", trending: true },
-  { id: 4, title: "Pet health tracker app", idea: "Track your pet's vaccinations, vet visits, diet, and activity levels with smart reminders and health insights.", author: "Jordan L.", color: "#0a1a12", tag: "Pets / Health", trending: false },
-  { id: 5, title: "Community skill exchange", idea: "A marketplace where people trade skills instead of money — teach guitar, learn coding, swap tutoring hours.", author: "Alex T.", color: "#0a1225", tag: "Education", trending: true },
+  {
+    id: 1,
+    title: "AI-powered meal planner",
+    idea: "An app that scans your fridge, suggests healthy recipes, and auto-generates a weekly grocery list using AI.",
+    author: "Sarah K.",
+    color: "#0a1a12",
+    tag: "AI / Health",
+    trending: true,
+  },
+  {
+    id: 2,
+    title: "Neighborhood tool library",
+    idea: "A community platform where neighbors can lend and borrow tools, appliances, and gear instead of buying new.",
+    author: "Mike R.",
+    color: "#0a1225",
+    tag: "Community",
+    trending: false,
+  },
+  {
+    id: 3,
+    title: "Micro-SaaS for freelancers",
+    idea: "An all-in-one dashboard for freelancers to track invoices, contracts, and client communications in one place.",
+    author: "Priya D.",
+    color: "#120a1a",
+    tag: "SaaS",
+    trending: true,
+  },
+  {
+    id: 4,
+    title: "Pet health tracker app",
+    idea: "Track your pet's vaccinations, vet visits, diet, and activity levels with smart reminders and health insights.",
+    author: "Jordan L.",
+    color: "#0a1a12",
+    tag: "Pets / Health",
+    trending: false,
+  },
+  {
+    id: 5,
+    title: "Community skill exchange",
+    idea: "A marketplace where people trade skills instead of money — teach guitar, learn coding, swap tutoring hours.",
+    author: "Alex T.",
+    color: "#0a1225",
+    tag: "Education",
+    trending: true,
+  },
 ];
 
 function ReelCard({
@@ -51,32 +106,51 @@ function ReelCard({
         <span className="w-fit rounded-full bg-[#00FF85]/15 px-4 py-1 text-xs font-medium text-[#00FF85] sm:text-sm">
           {tag}
         </span>
-        <h2 className="text-3xl font-bold leading-tight text-white sm:text-4xl md:text-5xl">{title}</h2>
-        <p className="text-base leading-relaxed text-white/70 sm:text-lg md:text-xl">{idea}</p>
+        <h2 className="text-3xl font-bold leading-tight text-white sm:text-4xl md:text-5xl">
+          {title}
+        </h2>
+        <p className="text-base leading-relaxed text-white/70 sm:text-lg md:text-xl">
+          {idea}
+        </p>
         <p className="text-sm text-white/35">by {author}</p>
       </div>
 
       <div className="absolute bottom-28 right-5 flex flex-col items-center gap-6 sm:right-6 sm:gap-7">
-        <button type="button" className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#FF0099]">
+        <button
+          type="button"
+          className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#FF0099]"
+        >
           <Heart className="size-7 text-white sm:size-8" />
           <span className="text-xs text-white/60">Like</span>
         </button>
-        <button type="button" className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#1E90FF]">
+        <button
+          type="button"
+          className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#1E90FF]"
+        >
           <MessageCircle className="size-7 text-white sm:size-8" />
           <span className="text-xs text-white/60">Comment</span>
         </button>
-        <button type="button" className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#00FF85]">
+        <button
+          type="button"
+          className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#00FF85]"
+        >
           <Share2 className="size-7 text-white sm:size-8" />
           <span className="text-xs text-white/60">Share</span>
         </button>
       </div>
 
       <div className="absolute bottom-20 left-6 flex gap-3 sm:left-10">
-        <button type="button" className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-4 py-2 text-xs font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-[#1E90FF]/40 hover:text-[#1E90FF]">
+        <button
+          type="button"
+          className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-4 py-2 text-xs font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-[#1E90FF]/40 hover:text-[#1E90FF]"
+        >
           <FileText className="size-3.5" />
           Info
         </button>
-        <button type="button" className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-4 py-2 text-xs font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-[#00FF85]/40 hover:text-[#00FF85]">
+        <button
+          type="button"
+          className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-4 py-2 text-xs font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-[#00FF85]/40 hover:text-[#00FF85]"
+        >
           <Sparkles className="size-3.5" />
           AI
         </button>
@@ -120,23 +194,38 @@ function IdeaCard({
         <p className="text-xs text-white/30">by {author}</p>
       </div>
       <div className="mt-5 flex items-center gap-4 border-t border-white/8 pt-4 text-white/30">
-        <button type="button" className="flex items-center gap-1.5 transition-colors hover:text-[#FF0099]">
+        <button
+          type="button"
+          className="flex items-center gap-1.5 transition-colors hover:text-[#FF0099]"
+        >
           <Heart className="size-4" />
           <span className="text-xs">Like</span>
         </button>
-        <button type="button" className="flex items-center gap-1.5 transition-colors hover:text-[#1E90FF]">
+        <button
+          type="button"
+          className="flex items-center gap-1.5 transition-colors hover:text-[#1E90FF]"
+        >
           <MessageCircle className="size-4" />
           <span className="text-xs">Comment</span>
         </button>
-        <button type="button" className="flex items-center gap-1.5 transition-colors hover:text-[#00FF85]">
+        <button
+          type="button"
+          className="flex items-center gap-1.5 transition-colors hover:text-[#00FF85]"
+        >
           <Share2 className="size-4" />
           <span className="text-xs">Share</span>
         </button>
-        <button type="button" className="flex items-center gap-1.5 transition-colors hover:text-[#1E90FF]">
+        <button
+          type="button"
+          className="flex items-center gap-1.5 transition-colors hover:text-[#1E90FF]"
+        >
           <FileText className="size-4" />
           <span className="text-xs">Info</span>
         </button>
-        <button type="button" className="flex items-center gap-1.5 transition-colors hover:text-[#00FF85]">
+        <button
+          type="button"
+          className="flex items-center gap-1.5 transition-colors hover:text-[#00FF85]"
+        >
           <Sparkles className="size-4" />
           <span className="text-xs">AI</span>
         </button>
@@ -161,7 +250,10 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!profileMenu) return;
     function onClickOutside(e: MouseEvent) {
-      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(e.target as Node)
+      ) {
         closeMenu();
       }
     }
@@ -179,11 +271,20 @@ export default function DashboardPage() {
   return (
     <main className="h-screen overflow-hidden bg-[#0D0D0D]">
       {/* ─── REEL MODE (mobile always, desktop when toggled) ─── */}
-      <div className={`relative flex h-full flex-col ${reelMode ? "" : "md:hidden"}`}>
+      <div
+        className={`relative flex h-full flex-col ${reelMode ? "" : "md:hidden"}`}
+      >
         <div className="hide-scrollbar flex-1 snap-y snap-mandatory overflow-y-auto">
           {DEMO_REELS.map((reel) => (
             <div key={reel.id} className="h-full w-full shrink-0">
-              <ReelCard title={reel.title} idea={reel.idea} author={reel.author} color={reel.color} tag={reel.tag} trending={reel.trending} />
+              <ReelCard
+                title={reel.title}
+                idea={reel.idea}
+                author={reel.author}
+                color={reel.color}
+                tag={reel.tag}
+                trending={reel.trending}
+              />
             </div>
           ))}
         </div>
@@ -202,7 +303,10 @@ export default function DashboardPage() {
         <nav className="absolute inset-x-0 bottom-0 z-10 border-t border-white/8 bg-[#0D0D0D]/80 px-6 py-3 backdrop-blur-md">
           <ul className="flex items-center justify-between">
             <li>
-              <button type="button" className="inline-flex flex-col items-center gap-1 text-white/70 transition-colors hover:text-[#00FF85]">
+              <button
+                type="button"
+                className="inline-flex flex-col items-center gap-1 text-white/70 transition-colors hover:text-[#00FF85]"
+              >
                 <Flame className="size-6" />
                 <span className="text-[11px] font-medium">Trending</span>
               </button>
@@ -246,7 +350,10 @@ export default function DashboardPage() {
                 >
                   <button
                     type="button"
-                    onClick={() => { setProfileMenu(false); setShowProfile(true); }}
+                    onClick={() => {
+                      setProfileMenu(false);
+                      setShowProfile(true);
+                    }}
                     className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-white/70 transition-colors hover:bg-white/8 hover:text-white"
                   >
                     <User className="size-4" />
@@ -283,11 +390,17 @@ export default function DashboardPage() {
           </p>
 
           <nav className="flex flex-col gap-1">
-            <button type="button" className="flex items-center gap-3 rounded-xl bg-[#00FF85]/10 px-4 py-2.5 text-sm font-medium text-[#00FF85]">
+            <button
+              type="button"
+              className="flex items-center gap-3 rounded-xl bg-[#00FF85]/10 px-4 py-2.5 text-sm font-medium text-[#00FF85]"
+            >
               <Flame className="size-5" />
               Trending
             </button>
-            <button type="button" className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-white/40 transition-colors hover:bg-white/6 hover:text-white/80">
+            <button
+              type="button"
+              className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-white/40 transition-colors hover:bg-white/6 hover:text-white/80"
+            >
               <Bookmark className="size-5" />
               Saved
             </button>
@@ -325,7 +438,9 @@ export default function DashboardPage() {
                   {userName.charAt(0).toUpperCase()}
                 </span>
               )}
-              <span className="text-sm font-medium text-white/70">{userName}</span>
+              <span className="text-sm font-medium text-white/70">
+                {userName}
+              </span>
             </div>
           </div>
         </aside>
@@ -362,7 +477,13 @@ export default function DashboardPage() {
         onClose={() => setShowNewIdea(false)}
         onSubmit={(newIdea) => {
           setMyIdeas((prev) => [
-            { id: Date.now(), title: newIdea.title, idea: newIdea.idea, category: newIdea.category, color: newIdea.color },
+            {
+              id: Date.now(),
+              title: newIdea.title,
+              idea: newIdea.idea,
+              category: newIdea.category,
+              color: newIdea.color,
+            },
             ...prev,
           ]);
         }}
@@ -391,7 +512,10 @@ export default function DashboardPage() {
                 <p className="text-sm text-white/40">No ideas posted yet.</p>
                 <button
                   type="button"
-                  onClick={() => { setShowProfile(false); setShowNewIdea(true); }}
+                  onClick={() => {
+                    setShowProfile(false);
+                    setShowNewIdea(true);
+                  }}
                   className="mt-4 rounded-full bg-[#00FF85]/10 px-5 py-2 text-sm font-medium text-[#00FF85] transition-colors hover:bg-[#00FF85]/20"
                 >
                   Post your first idea
@@ -409,10 +533,16 @@ export default function DashboardPage() {
                       {item.category}
                     </span>
                     <p className="text-lg font-bold text-white">{item.title}</p>
-                    <p className="text-sm leading-relaxed text-white/65">{item.idea}</p>
+                    <p className="text-sm leading-relaxed text-white/65">
+                      {item.idea}
+                    </p>
                     <button
                       type="button"
-                      onClick={() => setMyIdeas((prev) => prev.filter((i) => i.id !== item.id))}
+                      onClick={() =>
+                        setMyIdeas((prev) =>
+                          prev.filter((i) => i.id !== item.id),
+                        )
+                      }
                       className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-black/30 text-white/50 opacity-0 backdrop-blur-sm transition-all group-hover:opacity-100 hover:bg-[#FF0099]/20 hover:text-[#FF0099]"
                       title="Delete idea"
                     >

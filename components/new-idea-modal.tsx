@@ -1,14 +1,24 @@
 "use client";
 
-import { FileText, Heart, MessageCircle, Share2, Sparkles, X } from "lucide-react";
+import {
+  FileText,
+  Heart,
+  MessageCircle,
+  Share2,
+  Sparkles,
+  X,
+} from "lucide-react";
 import { useState } from "react";
 
 const BG_COLORS = [
-  { value: "#0a1a12", label: "Forest" },
-  { value: "#0a1225", label: "Ocean" },
-  { value: "#120a1a", label: "Violet" },
-  { value: "#1a1209", label: "Amber" },
-  { value: "#1a0a0a", label: "Ruby" },
+  { value: "#000000", label: "Black" },
+  { value: "#2e2e2e", label: "Graphite" },
+  { value: "#2F3640", label: "Steel Blue" },
+  { value: "#353B48", label: "Slate" },
+  { value: "#2E3A24", label: "Olive Smoke" },
+  { value: "#1A1A1A", label: "Charcoal" },
+  { value: "#121212", label: "Jet" },
+  { value: "#1C1F26", label: "Gunmetal" },
 ];
 
 const CATEGORIES = [
@@ -47,7 +57,11 @@ type NewIdeaModalProps = {
   }) => void;
 };
 
-export default function NewIdeaModal({ open, onClose, onSubmit }: NewIdeaModalProps) {
+export default function NewIdeaModal({
+  open,
+  onClose,
+  onSubmit,
+}: NewIdeaModalProps) {
   const [color, setColor] = useState(BG_COLORS[0].value);
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState(CATEGORIES[0]);
@@ -129,7 +143,9 @@ export default function NewIdeaModal({ open, onClose, onSubmit }: NewIdeaModalPr
 
           {/* Background color */}
           <fieldset>
-            <legend className="mb-2 text-sm font-medium text-white/60">Background</legend>
+            <legend className="mb-2 text-sm font-medium text-white/60">
+              Background
+            </legend>
             <div className="flex gap-3">
               {BG_COLORS.map((c) => (
                 <button
@@ -151,8 +167,15 @@ export default function NewIdeaModal({ open, onClose, onSubmit }: NewIdeaModalPr
           {/* Title */}
           <div>
             <div className="mb-1.5 flex items-center justify-between">
-              <label htmlFor="idea-title" className="text-sm font-medium text-white/60">Title</label>
-              <span className={`text-xs ${titleWords > TITLE_MAX_WORDS ? "text-[#FF0099]" : "text-white/30"}`}>
+              <label
+                htmlFor="idea-title"
+                className="text-sm font-medium text-white/60"
+              >
+                Title
+              </label>
+              <span
+                className={`text-xs ${titleWords > TITLE_MAX_WORDS ? "text-[#FF0099]" : "text-white/30"}`}
+              >
                 {titleWords}/{TITLE_MAX_WORDS}
               </span>
             </div>
@@ -169,7 +192,12 @@ export default function NewIdeaModal({ open, onClose, onSubmit }: NewIdeaModalPr
 
           {/* Category */}
           <div>
-            <label htmlFor="idea-category" className="mb-1.5 block text-sm font-medium text-white/60">Category</label>
+            <label
+              htmlFor="idea-category"
+              className="mb-1.5 block text-sm font-medium text-white/60"
+            >
+              Category
+            </label>
             <select
               id="idea-category"
               value={category}
@@ -177,7 +205,13 @@ export default function NewIdeaModal({ open, onClose, onSubmit }: NewIdeaModalPr
               className="w-full appearance-none rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white outline-none transition-colors focus:border-[#1E90FF]/50"
             >
               {CATEGORIES.map((cat) => (
-                <option key={cat} value={cat} className="bg-[#161616] text-white">{cat}</option>
+                <option
+                  key={cat}
+                  value={cat}
+                  className="bg-[#161616] text-white"
+                >
+                  {cat}
+                </option>
               ))}
             </select>
           </div>
@@ -185,8 +219,15 @@ export default function NewIdeaModal({ open, onClose, onSubmit }: NewIdeaModalPr
           {/* Idea */}
           <div>
             <div className="mb-1.5 flex items-center justify-between">
-              <label htmlFor="idea-short" className="text-sm font-medium text-white/60">Idea</label>
-              <span className={`text-xs ${ideaWords > IDEA_MAX_WORDS ? "text-[#FF0099]" : "text-white/30"}`}>
+              <label
+                htmlFor="idea-short"
+                className="text-sm font-medium text-white/60"
+              >
+                Idea
+              </label>
+              <span
+                className={`text-xs ${ideaWords > IDEA_MAX_WORDS ? "text-[#FF0099]" : "text-white/30"}`}
+              >
                 {ideaWords}/{IDEA_MAX_WORDS}
               </span>
             </div>
@@ -203,7 +244,10 @@ export default function NewIdeaModal({ open, onClose, onSubmit }: NewIdeaModalPr
 
           {/* Description */}
           <div>
-            <label htmlFor="idea-desc" className="mb-1.5 block text-sm font-medium text-white/60">
+            <label
+              htmlFor="idea-desc"
+              className="mb-1.5 block text-sm font-medium text-white/60"
+            >
               Details <span className="text-white/25">(optional)</span>
             </label>
             <textarea
