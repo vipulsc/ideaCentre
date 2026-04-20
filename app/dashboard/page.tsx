@@ -388,6 +388,14 @@ export default function DashboardPage() {
           <p className="mb-10 text-lg font-bold tracking-tight text-white">
             idea<span className="text-[#00FF85]">Centre</span>
           </p>
+          <button
+            type="button"
+            onClick={() => setShowNewIdea(true)}
+            className="mb-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#00FF85] px-4 py-2.5 text-sm font-semibold text-[#0D0D0D] transition-colors hover:bg-[#00FF85]/85"
+          >
+            <Plus className="size-4 stroke-[2.5]" />
+            New Idea
+          </button>
 
           <nav className="flex flex-col gap-1">
             <button
@@ -415,15 +423,6 @@ export default function DashboardPage() {
           </nav>
 
           <div className="mt-auto">
-            <button
-              type="button"
-              onClick={() => setShowNewIdea(true)}
-              className="mb-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#00FF85] px-4 py-2.5 text-sm font-semibold text-[#0D0D0D] transition-colors hover:bg-[#00FF85]/85"
-            >
-              <Plus className="size-4 stroke-[2.5]" />
-              New Idea
-            </button>
-
             <div className="flex items-center gap-2.5">
               {profileImage ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -442,20 +441,30 @@ export default function DashboardPage() {
                 {userName}
               </span>
             </div>
+            <button
+              type="button"
+              onClick={() => signOut({ callbackUrl: "/" })}
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-[#FF0099]/30 bg-[#FF0099]/10 px-4 py-2.5 text-sm font-medium text-[#FF0099] transition-colors hover:bg-[#FF0099]/20"
+            >
+              <LogOut className="size-4" />
+              Logout
+            </button>
           </div>
         </aside>
 
         <div className="flex-1 overflow-y-auto bg-[#0D0D0D] px-8 py-8 lg:px-12">
           <div className="mb-6 flex items-center justify-between">
             <h1 className="text-2xl font-bold text-white">Discover Ideas</h1>
-            <button
-              type="button"
-              onClick={() => setReelMode(true)}
-              className="inline-flex items-center gap-2 rounded-full border border-[#00FF85]/30 bg-[#00FF85]/10 px-4 py-2 text-sm font-medium text-[#00FF85] transition-colors hover:bg-[#00FF85]/20"
-            >
-              <Play className="size-4" />
-              Reel Mode
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setReelMode(true)}
+                className="inline-flex items-center gap-2 rounded-full border border-[#00FF85]/30 bg-[#00FF85]/10 px-4 py-2 text-sm font-medium text-[#00FF85] transition-colors hover:bg-[#00FF85]/20"
+              >
+                <Play className="size-4" />
+                Reel Mode
+              </button>
+            </div>
           </div>
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
             {DEMO_REELS.map((reel) => (
