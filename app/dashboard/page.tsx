@@ -273,7 +273,7 @@ export default function DashboardPage() {
     <main className="h-screen overflow-hidden bg-[#0D0D0D]">
       {/* ─── REEL MODE (mobile always, desktop when toggled) ─── */}
       <div
-        className={`relative flex h-full flex-col ${reelMode ? "" : "md:hidden"}`}
+        className={`relative flex h-full flex-col ${reelMode ? "" : "lg:hidden"}`}
       >
         <div className="hide-scrollbar flex-1 snap-y snap-mandatory overflow-y-auto">
           {DEMO_REELS.map((reel) => (
@@ -294,7 +294,7 @@ export default function DashboardPage() {
           <button
             type="button"
             onClick={() => setReelMode(false)}
-            className="absolute left-4 top-4 z-20 hidden items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition-colors hover:bg-[#00FF85]/20 hover:text-[#00FF85] md:inline-flex"
+            className="absolute left-4 top-4 z-20 hidden items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition-colors hover:bg-[#00FF85]/20 hover:text-[#00FF85] lg:inline-flex"
           >
             <Grid className="size-4" />
             Grid View
@@ -384,7 +384,7 @@ export default function DashboardPage() {
       </div>
 
       {/* ─── DESKTOP: sidebar + scrollable grid feed ─── */}
-      <div className={`hidden h-full ${reelMode ? "" : "md:flex"}`}>
+      <div className={`hidden h-full ${reelMode ? "" : "lg:flex"}`}>
         <aside className="flex w-56 shrink-0 flex-col border-r border-white/8 bg-[#111111] px-5 py-8 lg:w-64">
           <p className="mb-10 text-lg font-bold tracking-tight text-white">
             idea<span className="text-[#00FF85]">Centre</span>
@@ -460,7 +460,10 @@ export default function DashboardPage() {
               <div className="flex items-center gap-2 pr-1 animate-reel-hint-in">
                 <span
                   className="relative top-px hidden text-[18px] leading-none tracking-wide text-[#00FF85]/90 sm:inline-block"
-                  style={{ fontFamily: "var(--font-handwritten), 'Caveat', 'Bradley Hand', cursive" }}
+                  style={{
+                    fontFamily:
+                      "var(--font-handwritten), 'Caveat', 'Bradley Hand', cursive",
+                  }}
                 >
                   feel the ideas, try
                 </span>
@@ -468,9 +471,18 @@ export default function DashboardPage() {
                   aria-hidden="true"
                   className="hidden items-center text-[#00FF85] sm:inline-flex"
                 >
-                  <ChevronRight className="-mr-2 size-5 animate-reel-chevron opacity-30 [animation-delay:0ms]" strokeWidth={2.5} />
-                  <ChevronRight className="-mr-2 size-5 animate-reel-chevron opacity-60 [animation-delay:150ms]" strokeWidth={2.5} />
-                  <ChevronRight className="size-5 animate-reel-chevron [animation-delay:300ms]" strokeWidth={2.5} />
+                  <ChevronRight
+                    className="-mr-2 size-5 animate-reel-chevron opacity-30 [animation-delay:0ms]"
+                    strokeWidth={2.5}
+                  />
+                  <ChevronRight
+                    className="-mr-2 size-5 animate-reel-chevron opacity-60 [animation-delay:150ms]"
+                    strokeWidth={2.5}
+                  />
+                  <ChevronRight
+                    className="size-5 animate-reel-chevron [animation-delay:300ms]"
+                    strokeWidth={2.5}
+                  />
                 </span>
               </div>
               <button
