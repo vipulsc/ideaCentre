@@ -1,7 +1,7 @@
 "use client";
 
 import { Gauge, Map, Sparkles, Swords, Users, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { IdeaInsights } from "@/lib/ai/insights";
 
 export type { IdeaInsights, RoadmapPhase } from "@/lib/ai/insights";
@@ -16,11 +16,14 @@ export function AiInsightsModal({ ideaId, title, onClose }: Props) {
   const [insights, setInsights] = useState<IdeaInsights | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!ideaId) {
       setInsights(null);
       setError(null);
+      setIsOpen(false);
       return;
     }
 
@@ -57,49 +60,76 @@ export function AiInsightsModal({ ideaId, title, onClose }: Props) {
 
   useEffect(() => {
     if (!ideaId) return;
+    const frame = requestAnimationFrame(() => setIsOpen(true));
+    return () => cancelAnimationFrame(frame);
+  }, [ideaId]);
+
+  const closeWithAnimation = useCallback(() => {
+    if (closeTimerRef.current) return;
+    setIsOpen(false);
+    closeTimerRef.current = setTimeout(() => {
+      closeTimerRef.current = null;
+      onClose();
+    }, 220);
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!ideaId) return;
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") closeWithAnimation();
     }
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [ideaId, onClose]);
+  }, [closeWithAnimation, ideaId]);
+
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    };
+  }, []);
 
   if (!ideaId) return null;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm"
-      onClick={onClose}
+      className={`fixed inset-0 z-50 flex items-end justify-center bg-black/70 px-0 backdrop-blur-sm transition-opacity duration-300 sm:items-center sm:px-4 ${
+        isOpen ? "opacity-100" : "opacity-0"
+      }`}
+      onClick={closeWithAnimation}
     >
       <div
-        className="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0F0F0F] shadow-2xl"
+        className={`relative flex max-h-[92vh] w-full max-w-full flex-col overflow-hidden rounded-t-2xl border border-white/12 border-b-0 bg-[#0B0B0B] shadow-2xl transition-transform duration-300 ease-out sm:max-h-[90vh] sm:max-w-3xl sm:rounded-2xl sm:border-b lg:max-w-4xl ${
+          isOpen ? "translate-y-0" : "translate-y-full sm:translate-y-4"
+        }`}
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="flex items-start justify-between gap-4 border-b border-white/8 px-6 py-5">
-          <div className="flex items-center gap-2.5">
-            <Sparkles className="size-4 text-white/70" />
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-white/50">
-                AI Insights
-              </p>
-              {title && (
-                <p className="mt-0.5 truncate text-sm font-medium text-white">
-                  {title}
+        <header className="border-b border-white/10 px-6 py-5 sm:px-7">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/6 px-3 py-1">
+                <Sparkles className="size-3.5 text-[#7DFF00]" />
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/65">
+                  AI Insights
                 </p>
+              </div>
+              {title && (
+                <h3 className="mt-3 line-clamp-2 text-base font-semibold leading-snug text-white/95 sm:text-lg">
+                  {title}
+                </h3>
               )}
             </div>
-          </div>
           <button
             type="button"
-            onClick={onClose}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-white/50 transition-colors hover:bg-white/8 hover:text-white"
+            onClick={closeWithAnimation}
+            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/12 bg-white/6 text-white/60 transition-colors hover:bg-white/12 hover:text-white"
             aria-label="Close"
           >
             <X className="size-5" />
           </button>
+          </div>
         </header>
 
-        <div className="hide-scrollbar flex-1 overflow-y-auto px-6 py-6">
+        <div className="hide-scrollbar flex-1 overflow-y-auto px-6 py-6 sm:px-7">
           {loading && <InsightsSkeleton />}
           {error && !loading && (
             <p className="py-8 text-center text-sm text-white/50">{error}</p>
@@ -113,28 +143,31 @@ export function AiInsightsModal({ ideaId, title, onClose }: Props) {
 
 function InsightsContent({ insights }: { insights: IdeaInsights }) {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5 sm:gap-6">
       {insights.summary && (
-        <p className="text-sm leading-relaxed text-white/75">
-          {insights.summary}
-        </p>
+        <section className="rounded-xl border border-white/10 bg-white/3 px-4 py-3.5 sm:px-5">
+          <p className="text-xs font-semibold uppercase tracking-widest text-white/45">
+            Summary
+          </p>
+          <p className="mt-2 text-sm leading-7 text-white/82">{insights.summary}</p>
+        </section>
       )}
 
       {insights.recommendedStack && (
-        <div className="rounded-xl border border-white/10 bg-white/3 px-4 py-3">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-white/45">
+        <div className="rounded-xl border border-white/10 bg-white/3 px-4 py-3.5 sm:px-5">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-white/45">
             Suggested stack
           </p>
-          <p className="mt-1.5 text-sm leading-relaxed text-white/85">
+          <p className="mt-2 text-sm leading-7 text-white/85">
             {insights.recommendedStack}
           </p>
         </div>
       )}
 
-      <section className="rounded-xl border border-white/10 p-5">
+      <section className="rounded-xl border border-white/10 bg-white/2 p-4 sm:p-5">
         <div className="mb-4 flex items-center gap-2">
-          <Gauge className="size-3.5 text-white/60" />
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-white/50">
+          <Gauge className="size-3.5 text-white/70" />
+          <span className="text-[11px] font-semibold uppercase tracking-widest text-white/50">
             Acceptance Score
           </span>
         </div>
@@ -151,7 +184,7 @@ function InsightsContent({ insights }: { insights: IdeaInsights }) {
             {insights.scoreTags.map((tag) => (
               <span
                 key={tag}
-                className="rounded-full border border-white/10 px-3 py-1 text-xs font-medium text-white/70"
+                className="rounded-full border border-white/12 bg-white/3 px-3 py-1 text-xs font-medium text-white/80"
               >
                 {tag}
               </span>
@@ -161,10 +194,10 @@ function InsightsContent({ insights }: { insights: IdeaInsights }) {
       </section>
 
       {insights.roadmap.length > 0 && (
-        <section className="rounded-xl border border-white/10 p-5">
+        <section className="rounded-xl border border-white/10 bg-white/2 p-4 sm:p-5">
           <div className="mb-5 flex items-center gap-2">
-            <Map className="size-3.5 text-white/60" />
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-white/50">
+            <Map className="size-3.5 text-white/70" />
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-white/50">
               Build Roadmap
             </span>
           </div>
@@ -176,28 +209,28 @@ function InsightsContent({ insights }: { insights: IdeaInsights }) {
                 </span>
                 <div className="flex min-w-0 flex-1 flex-col gap-2.5">
                   <div>
-                    <span className="text-sm font-semibold text-white">
+                    <span className="text-sm font-semibold text-white/95">
                       {step.phase}
                     </span>
                     {step.summary && (
-                      <p className="mt-1 text-sm leading-relaxed text-white/55">
+                      <p className="mt-1 text-sm leading-7 text-white/70">
                         {step.summary}
                       </p>
                     )}
                   </div>
                   {step.steps && step.steps.length > 0 ? (
-                    <ul className="flex flex-col gap-2 border-l border-white/10 pl-3">
+                    <ul className="flex flex-col gap-2 border-l border-white/12 pl-3.5">
                       {step.steps.map((line, j) => (
                         <li
                           key={`${step.phase}-${j}`}
-                          className="text-[13px] leading-relaxed text-white/70 text-pretty"
+                          className="text-[13px] leading-6 text-white/82 text-pretty"
                         >
                           {line}
                         </li>
                       ))}
                     </ul>
                   ) : step.detail ? (
-                    <p className="text-[13px] leading-relaxed text-white/65 text-pretty">
+                    <p className="text-[13px] leading-6 text-white/82 text-pretty">
                       {step.detail}
                     </p>
                   ) : null}
@@ -209,10 +242,10 @@ function InsightsContent({ insights }: { insights: IdeaInsights }) {
       )}
 
       {insights.competitors.length > 0 && (
-        <section className="rounded-xl border border-white/10 p-5">
+        <section className="rounded-xl border border-white/10 bg-white/2 p-4 sm:p-5">
           <div className="mb-4 flex items-center gap-2">
-            <Swords className="size-3.5 text-white/60" />
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-white/50">
+            <Swords className="size-3.5 text-white/70" />
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-white/50">
               Competitor Radar
             </span>
           </div>
@@ -220,16 +253,16 @@ function InsightsContent({ insights }: { insights: IdeaInsights }) {
             {insights.competitors.map((c) => (
               <li
                 key={c.name}
-                className="flex flex-col gap-1.5 rounded-lg border border-white/8 bg-white/3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+                className="flex flex-col gap-1.5 rounded-lg border border-white/10 bg-white/3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
               >
-                <span className="text-sm font-semibold text-white">
+                <span className="text-sm font-semibold text-white/92">
                   {c.name}
                 </span>
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-md border border-white/10 px-2 py-0.5 text-[11px] font-medium text-white/70">
+                  <span className="rounded-md border border-white/12 bg-white/2 px-2 py-0.5 text-[11px] font-medium text-white/82">
                     {c.strength}
                   </span>
-                  <span className="rounded-md border border-white/10 px-2 py-0.5 text-[11px] font-medium text-white/45">
+                  <span className="rounded-md border border-white/12 bg-white/2 px-2 py-0.5 text-[11px] font-medium text-white/60">
                     {c.gap}
                   </span>
                 </div>
@@ -240,10 +273,10 @@ function InsightsContent({ insights }: { insights: IdeaInsights }) {
       )}
 
       {insights.audience.length > 0 && (
-        <section className="rounded-xl border border-white/10 p-5">
+        <section className="rounded-xl border border-white/10 bg-white/2 p-4 sm:p-5">
           <div className="mb-4 flex items-center gap-2">
-            <Users className="size-3.5 text-white/60" />
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-white/50">
+            <Users className="size-3.5 text-white/70" />
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-white/50">
               Target Audience
             </span>
           </div>
@@ -251,7 +284,7 @@ function InsightsContent({ insights }: { insights: IdeaInsights }) {
             {insights.audience.map((tag) => (
               <span
                 key={tag}
-                className="rounded-full border border-white/10 px-3 py-1 text-xs font-medium text-white/75"
+                className="rounded-full border border-white/12 bg-white/3 px-3 py-1 text-xs font-medium text-white/82"
               >
                 {tag}
               </span>

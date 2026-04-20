@@ -14,6 +14,11 @@ type CreateIdeaBody = {
   category?: string;
 };
 
+function firstRelation<T>(value: T | T[] | null | undefined): T | null {
+  if (!value) return null;
+  return Array.isArray(value) ? (value[0] ?? null) : value;
+}
+
 function slugifyCategory(input: string) {
   return input
     .trim()
@@ -136,13 +141,11 @@ export async function GET() {
     }
 
     const baseIdeas = (data ?? []).map((row) => {
-      const categoryName = Array.isArray(row.categories)
-        ? row.categories[0]?.name
-        : undefined;
-      const authorName = Array.isArray(row.users) ? row.users[0]?.name : undefined;
-      const authorEmail = Array.isArray(row.users)
-        ? row.users[0]?.email
-        : undefined;
+      const category = firstRelation(row.categories);
+      const author = firstRelation(row.users);
+      const categoryName = category?.name;
+      const authorName = author?.name;
+      const authorEmail = author?.email;
 
       return {
         id: row.id,
@@ -259,15 +262,9 @@ export async function POST(request: Request) {
       );
     }
 
-    const createdCategory = Array.isArray(data.categories)
-      ? data.categories[0]?.name
-      : undefined;
-    const createdAuthorName = Array.isArray(data.users)
-      ? data.users[0]?.name
-      : undefined;
-    const createdAuthorEmail = Array.isArray(data.users)
-      ? data.users[0]?.email
-      : undefined;
+    const createdCategory = firstRelation(data.categories)?.name;
+    const createdAuthorName = firstRelation(data.users)?.name;
+    const createdAuthorEmail = firstRelation(data.users)?.email;
 
     return NextResponse.json({
       ok: true,

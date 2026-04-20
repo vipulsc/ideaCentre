@@ -114,17 +114,19 @@ function ReelCard({
 }) {
   return (
     <div
-      className="relative flex h-full w-full snap-start snap-always flex-col justify-center px-6 pr-16 sm:px-10 sm:pr-20"
-      style={{ backgroundColor: color }}
+      className="relative flex h-full w-full snap-start snap-always flex-col justify-center border border-white/15 bg-black px-6 pr-16 text-white sm:px-10 sm:pr-20"
+      style={{
+        background: `linear-gradient(155deg, color-mix(in srgb, ${color} 32%, var(--palette-primary)) 0%, var(--palette-primary) 55%, color-mix(in srgb, var(--palette-secondary) 62%, var(--palette-primary)) 100%)`,
+      }}
     >
       {trending && (
-        <span className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-[#FF0099]/15 px-3 py-1 text-xs font-semibold text-[#FF0099] backdrop-blur-sm sm:right-5 sm:top-5">
+        <span className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold text-white sm:right-5 sm:top-5">
           <Flame className="size-3.5" />
           Trending
         </span>
       )}
-      <div className="flex w-full max-w-2xl flex-col gap-6">
-        <span className="w-fit rounded-full bg-[#00FF85]/15 px-4 py-1 text-xs font-medium text-[#00FF85] sm:text-sm">
+      <div className="relative z-10 flex w-full max-w-2xl flex-col gap-6">
+        <span className="w-fit rounded-full border border-white/20 bg-white/10 px-4 py-1 text-xs font-medium text-white sm:text-sm">
           {tag}
         </span>
         <h2 className="text-3xl font-bold leading-tight text-white sm:text-4xl md:text-5xl">
@@ -136,11 +138,11 @@ function ReelCard({
         <p className="text-sm text-white/35">by {author}</p>
       </div>
 
-      <div className="absolute bottom-28 right-5 flex flex-col items-center gap-6 sm:right-6 sm:gap-7">
+      <div className="absolute bottom-28 right-5 z-10 flex flex-col items-center gap-6 sm:right-6 sm:gap-7">
         <button
           type="button"
           onClick={() => onLike(id)}
-          className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#FF0099]"
+          className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#FF2A6D]"
         >
           <Heart
             className={`size-7 sm:size-8 ${isLiked ? "fill-[#FF0099] text-[#FF0099]" : "text-white"}`}
@@ -150,7 +152,7 @@ function ReelCard({
         <button
           type="button"
           onClick={() => onComment(id)}
-          className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#1E90FF]"
+          className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#35A8FF]"
         >
           <MessageCircle className="size-7 text-white sm:size-8" />
           <span className="text-xs text-white/60">{commentCount}</span>
@@ -158,7 +160,7 @@ function ReelCard({
         <button
           type="button"
           onClick={() => onShare(id)}
-          className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#00FF85]"
+          className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#39FFB6]"
         >
           <Share2 className="size-7 text-white sm:size-8" />
           <span className="text-xs text-white/60">Share</span>
@@ -175,11 +177,11 @@ function ReelCard({
         </button>
       </div>
 
-      <div className="absolute bottom-20 left-6 flex gap-3 sm:left-10">
+      <div className="absolute bottom-20 left-6 z-10 flex gap-3 sm:left-10">
         <button
           type="button"
           onClick={() => onInfo(id)}
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-4 py-2 text-xs font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-[#1E90FF]/40 hover:text-[#1E90FF]"
+          className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-medium text-white/85 backdrop-blur-sm transition-colors hover:bg-white/15"
         >
           <FileText className="size-3.5" />
           Info
@@ -187,7 +189,7 @@ function ReelCard({
         <button
           type="button"
           onClick={() => onInsights(id)}
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-4 py-2 text-xs font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/40 hover:text-white"
+          className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-medium text-white/85 backdrop-blur-sm transition-colors hover:bg-white/15"
         >
           <Sparkles className="size-3.5" />
           AI
@@ -236,28 +238,14 @@ function IdeaCard({
 }) {
   return (
     <div
-      className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-white/15 p-5 ring-1 ring-inset ring-white/8 transition-all duration-300 hover:border-[#00FF85]/45 hover:ring-[#00FF85]/25"
+      className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-white/12 p-5 ring-1 ring-inset ring-white/8 transition-all duration-300 hover:border-white/22"
       style={{ backgroundColor: color }}
     >
-      {trending && (
-        <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-[#FF0099]/15 px-2.5 py-0.5 text-[10px] font-semibold text-[#FF0099]">
-          <Flame className="size-3" />
-          Trending
-        </span>
-      )}
-      <div className="flex flex-col gap-3">
-        <span className="w-fit rounded-full bg-[#00FF85]/15 px-3 py-0.5 text-[11px] font-medium text-[#00FF85]">
-          {tag}
-        </span>
-        <p className="text-lg font-bold text-white">{title}</p>
-        <p className="text-sm leading-relaxed text-white">{idea}</p>
-        <p className="text-xs text-white">by {author}</p>
-      </div>
-      <div className="mt-4 flex items-center gap-2">
+      <div className="absolute right-3 top-3 z-20 flex items-center gap-2">
         <button
           type="button"
           onClick={() => onInfo(id)}
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/25 px-3 py-1.5 text-[11px] font-semibold text-white/85 transition-colors hover:border-[#1E90FF]/50 hover:text-[#1E90FF]"
+          className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-3 py-1.5 text-[11px] font-semibold text-white/85 transition-colors hover:bg-white/12"
         >
           <FileText className="size-3.5" />
           <span>Info</span>
@@ -265,17 +253,33 @@ function IdeaCard({
         <button
           type="button"
           onClick={() => onInsights(id)}
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/25 px-3 py-1.5 text-[11px] font-semibold text-white/85 transition-colors hover:border-white/40 hover:text-white"
+          className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-3 py-1.5 text-[11px] font-semibold text-white/85 transition-colors hover:bg-white/12"
         >
           <Sparkles className="size-3.5" />
           <span>AI</span>
         </button>
       </div>
-      <div className="mt-4 flex items-center gap-4 border-t border-white/8 pt-4 text-white">
+      <div className="relative z-10 flex flex-col gap-3">
+        <span className="w-fit rounded-full border border-white/15 bg-white/8 px-3 py-0.5 text-[11px] font-medium text-white/90">
+          {tag}
+        </span>
+        <p className="text-lg font-bold text-white/95">{title}</p>
+        <p className="text-sm leading-relaxed text-white/75">{idea}</p>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-xs text-white/55">by {author}</p>
+          {trending && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-[#FF2A6D]/60 bg-[#FF2A6D]/14 px-2.5 py-0.5 text-[10px] font-semibold text-[#FF2A6D] shadow-[0_0_10px_rgba(255,42,109,0.45)]">
+              <Flame className="size-3" />
+              Trending
+            </span>
+          )}
+        </div>
+      </div>
+      <div className="relative z-10 mt-4 flex items-center gap-4 border-t border-white/8 pt-4 text-white/85">
         <button
           type="button"
           onClick={() => onLike(id)}
-          className="flex items-center gap-1.5 transition-colors hover:text-[#FF0099]"
+          className="flex items-center gap-1.5 transition-colors hover:text-[#FF2A6D]"
         >
           <Heart
             className={`size-4 ${isLiked ? "fill-[#FF0099] text-[#FF0099]" : ""}`}
@@ -285,7 +289,7 @@ function IdeaCard({
         <button
           type="button"
           onClick={() => onComment(id)}
-          className="flex items-center gap-1.5 transition-colors hover:text-[#1E90FF]"
+          className="flex items-center gap-1.5 transition-colors hover:text-[#35A8FF]"
         >
           <MessageCircle className="size-4" />
           <span className="text-xs">{commentCount}</span>
@@ -293,7 +297,7 @@ function IdeaCard({
         <button
           type="button"
           onClick={() => onShare(id)}
-          className="flex items-center gap-1.5 transition-colors hover:text-[#00FF85]"
+          className="flex items-center gap-1.5 transition-colors hover:text-[#39FFB6]"
         >
           <Share2 className="size-4" />
           <span className="text-xs">Share</span>
@@ -507,6 +511,8 @@ export default function DashboardPage() {
   const [commentsIdeaId, setCommentsIdeaId] = useState<string | null>(null);
   const [comments, setComments] = useState<FeedComment[]>([]);
   const [isLoadingComments, setIsLoadingComments] = useState(false);
+  const [isPostingIdea, setIsPostingIdea] = useState(false);
+  const [postIdeaProgress, setPostIdeaProgress] = useState(0);
   const [commentDraft, setCommentDraft] = useState("");
   const [isPostingComment, setIsPostingComment] = useState(false);
   const [ideas, setIdeas] = useState<FeedIdea[]>([]);
@@ -537,10 +543,10 @@ export default function DashboardPage() {
     activeFeed === "myIdeas"
       ? myIdeas
       : activeFeed === "saved"
-      ? savedIdeas
-      : activeFeed === "trending"
-        ? trendingIdeas
-        : ideas;
+        ? savedIdeas
+        : activeFeed === "trending"
+          ? trendingIdeas
+          : ideas;
   const selectedIdea = ideas.find((item) => item.id === selectedIdeaId) ?? null;
   const commentsIdea = ideas.find((item) => item.id === commentsIdeaId) ?? null;
   const analyticsIdea =
@@ -839,8 +845,20 @@ export default function DashboardPage() {
     setReelFocusIdeaId(null);
   }, [reelMode, reelFocusIdeaId, ideas]);
 
+  useEffect(() => {
+    if (!isPostingIdea) return;
+    const timer = setInterval(() => {
+      setPostIdeaProgress((prev) => {
+        if (prev >= 92) return prev;
+        const step = prev < 45 ? 7 : prev < 75 ? 4 : 2;
+        return Math.min(prev + step, 92);
+      });
+    }, 180);
+    return () => clearInterval(timer);
+  }, [isPostingIdea]);
+
   return (
-    <main className="h-screen overflow-hidden bg-[#0D0D0D] [&_button]:cursor-pointer">
+    <main className="relative h-screen overflow-hidden bg-black [&_button]:cursor-pointer">
       {/* ─── REEL MODE (mobile always, desktop when toggled) ─── */}
       <div
         className={`relative flex h-full flex-col ${reelMode ? "" : "lg:hidden"}`}
@@ -890,14 +908,14 @@ export default function DashboardPage() {
           <button
             type="button"
             onClick={() => setReelMode(false)}
-            className="absolute left-4 top-4 z-20 hidden items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition-colors hover:bg-[#00FF85]/20 hover:text-[#00FF85] lg:inline-flex"
+            className="absolute left-4 top-4 z-20 hidden items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-medium text-white/90 backdrop-blur-md transition-colors hover:bg-white/15 lg:inline-flex"
           >
             <Grid className="size-4" />
             Grid View
           </button>
         )}
 
-        <nav className="absolute inset-x-0 bottom-0 z-10 border-t border-white/8 bg-[#0D0D0D]/80 px-6 py-3 backdrop-blur-md">
+        <nav className="absolute inset-x-0 bottom-0 z-10 border-t border-white/15 bg-black/75 px-6 py-3 backdrop-blur-xl">
           <ul className="flex items-center justify-between">
             <li>
               <button
@@ -913,7 +931,7 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={() => setShowNewIdea(true)}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#00FF85] text-[#0D0D0D] transition-colors hover:bg-[#00FF85]/80"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition-colors hover:bg-white/20"
                 aria-label="Create"
               >
                 <Plus className="size-5 stroke-[2.5]" />
@@ -944,7 +962,7 @@ export default function DashboardPage() {
               {profileMenu && (
                 <div
                   ref={profileRef}
-                  className="absolute bottom-full right-0 z-20 mb-3 w-44 overflow-hidden rounded-xl border border-white/10 bg-[#161616] py-1 shadow-lg shadow-black/50"
+                  className="absolute bottom-full right-0 z-20 mb-3 w-44 overflow-hidden rounded-xl border border-white/15 bg-black/85 py-1 shadow-lg shadow-black/50 backdrop-blur-xl"
                 >
                   <button
                     type="button"
@@ -986,7 +1004,7 @@ export default function DashboardPage() {
       {/* ─── DESKTOP: sidebar + scrollable grid feed ─── */}
       <div className={`hidden h-full ${reelMode ? "" : "lg:flex"}`}>
         <aside
-          className={`relative flex shrink-0 flex-col border-r border-white/8 bg-[#111111] py-8 transition-all duration-300 ${
+          className={`relative flex shrink-0 flex-col border-r border-white/15 bg-black/70 py-8 backdrop-blur-xl transition-all duration-300 ${
             sidebarCollapsed ? "w-20 px-3" : "w-56 px-5 lg:w-64"
           }`}
         >
@@ -1000,13 +1018,15 @@ export default function DashboardPage() {
                 sidebarCollapsed ? "hidden" : ""
               }`}
             >
-              idea<span className="text-[#00FF85]">Centre</span>
+              idea<span className="text-[#a67a5b]">Centre</span>
             </p>
             <button
               type="button"
               onClick={() => setSidebarCollapsed((prev) => !prev)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
-              aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/15 bg-white/8 text-white/75 transition-colors hover:bg-white/15 hover:text-white"
+              aria-label={
+                sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
+              }
               title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
               {sidebarCollapsed ? (
@@ -1023,8 +1043,8 @@ export default function DashboardPage() {
               onClick={() => setActiveFeed("home")}
               className={`flex items-center rounded-xl px-4 py-2.5 text-sm transition-colors ${
                 activeFeed === "home"
-                  ? "bg-white/8 font-medium text-white"
-                  : "text-white/40 hover:bg-white/6 hover:text-white/80"
+                  ? "bg-white/15 font-medium text-white"
+                  : "text-white/45 hover:bg-white/8 hover:text-white/80"
               } ${sidebarCollapsed ? "justify-center px-2" : "gap-3"}`}
               title="Home"
             >
@@ -1036,8 +1056,8 @@ export default function DashboardPage() {
               onClick={() => setActiveFeed("trending")}
               className={`flex items-center rounded-xl px-4 py-2.5 text-sm transition-colors ${
                 activeFeed === "trending"
-                  ? "bg-[#00FF85]/10 font-medium text-[#00FF85]"
-                  : "text-white/40 hover:bg-white/6 hover:text-white/80"
+                  ? "bg-white/15 font-medium text-white"
+                  : "text-white/45 hover:bg-white/8 hover:text-white/80"
               } ${sidebarCollapsed ? "justify-center px-2" : "gap-3"}`}
               title="Trending"
             >
@@ -1049,8 +1069,8 @@ export default function DashboardPage() {
               onClick={() => setActiveFeed("saved")}
               className={`flex items-center rounded-xl px-4 py-2.5 text-sm transition-colors ${
                 activeFeed === "saved"
-                  ? "bg-[#1E90FF]/12 font-medium text-[#1E90FF]"
-                  : "text-white/40 hover:bg-white/6 hover:text-white/80"
+                  ? "bg-white/15 font-medium text-white"
+                  : "text-white/45 hover:bg-white/8 hover:text-white/80"
               } ${sidebarCollapsed ? "justify-center px-2" : "gap-3"}`}
               title="Saved"
             >
@@ -1062,8 +1082,8 @@ export default function DashboardPage() {
               onClick={() => setActiveFeed("myIdeas")}
               className={`flex items-center rounded-xl px-4 py-2.5 text-sm transition-colors ${
                 activeFeed === "myIdeas"
-                  ? "bg-[#1E90FF]/12 font-medium text-[#1E90FF]"
-                  : "text-white/40 hover:bg-white/6 hover:text-white/80"
+                  ? "bg-white/15 font-medium text-white"
+                  : "text-white/45 hover:bg-white/8 hover:text-white/80"
               } ${sidebarCollapsed ? "justify-center px-2" : "gap-3"}`}
               title="My Ideas"
             >
@@ -1075,9 +1095,7 @@ export default function DashboardPage() {
           <div className={`mt-auto ${sidebarCollapsed ? "" : "px-4"}`}>
             <div
               className={`flex items-center ${
-                sidebarCollapsed
-                  ? "justify-center"
-                  : "gap-2.5 px-3 py-2.5"
+                sidebarCollapsed ? "justify-center" : "gap-2.5 px-3 py-2.5"
               }`}
             >
               {profileImage ? (
@@ -1085,11 +1103,11 @@ export default function DashboardPage() {
                 <img
                   src={profileImage}
                   alt={userName}
-                  className="h-8 w-8 rounded-full object-cover ring-2 ring-[#1E90FF]/50"
+                  className="h-8 w-8 rounded-full object-cover ring-2 ring-white/30"
                   referrerPolicy="no-referrer"
                 />
               ) : (
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#1E90FF] text-xs font-semibold text-white">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15 text-xs font-semibold text-white">
                   {userName.charAt(0).toUpperCase()}
                 </span>
               )}
@@ -1104,8 +1122,10 @@ export default function DashboardPage() {
             <button
               type="button"
               onClick={() => signOut({ callbackUrl: "/" })}
-              className={`mt-3 flex w-full items-center rounded-xl border border-[#FF0099]/30 bg-[#FF0099]/10 px-4 py-2.5 text-sm font-medium text-[#FF0099] transition-colors hover:bg-[#FF0099]/20 ${
-                sidebarCollapsed ? "justify-center gap-0 px-2" : "justify-center gap-2"
+              className={`mt-3 flex w-full items-center rounded-xl border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-white/20 ${
+                sidebarCollapsed
+                  ? "justify-center gap-0 px-2"
+                  : "justify-center gap-2"
               }`}
               title="Logout"
             >
@@ -1115,7 +1135,7 @@ export default function DashboardPage() {
           </div>
         </aside>
 
-        <div className="flex-1 overflow-y-auto bg-[#0D0D0D] px-8 py-8 lg:px-12">
+        <div className="flex-1 overflow-y-auto bg-transparent px-8 py-8 lg:px-12">
           <div className="mb-6 flex items-center justify-between">
             <h1 className="text-2xl font-bold text-white">
               {activeFeed === "saved"
@@ -1124,12 +1144,12 @@ export default function DashboardPage() {
                   ? "Trending Ideas"
                   : activeFeed === "myIdeas"
                     ? "My Ideas"
-                  : "All Ideas"}
+                    : "All Ideas"}
             </h1>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 pr-1 animate-reel-hint-in">
                 <span
-                  className="relative top-px hidden text-[18px] leading-none tracking-wide text-[#00FF85]/90 sm:inline-block"
+                  className="relative top-px hidden text-[18px] leading-none tracking-wide text-[#7DFF00] drop-shadow-[0_0_8px_rgba(125,255,0,0.65)] sm:inline-block"
                   style={{
                     fontFamily:
                       "var(--font-handwritten), 'Caveat', 'Bradley Hand', cursive",
@@ -1139,7 +1159,7 @@ export default function DashboardPage() {
                 </span>
                 <span
                   aria-hidden="true"
-                  className="hidden items-center text-[#00FF85] sm:inline-flex"
+                  className="hidden items-center text-[#7DFF00] drop-shadow-[0_0_8px_rgba(125,255,0,0.65)] sm:inline-flex"
                 >
                   <ChevronRight
                     className="-mr-2 size-5 animate-reel-chevron opacity-30 [animation-delay:0ms]"
@@ -1158,23 +1178,23 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={() => setReelMode(true)}
-                className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full border border-[#00FF85]/40 bg-[#00FF85]/10 px-5 py-2 text-sm font-medium text-[#00FF85] transition-all duration-300 hover:border-[#00FF85]/70 hover:bg-[#00FF85]/15 hover:shadow-[0_0_32px_-4px_rgba(0,255,133,0.55)] animate-reel-glow"
+                className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full border border-[#7DFF00]/70 px-5 py-2 text-sm font-medium text-white/90 shadow-[0_0_16px_rgba(125,255,0,0.22)] transition-all duration-300 hover:border-[#7DFF00] hover:shadow-[0_0_22px_rgba(125,255,0,0.4)]"
               >
-                <span className="pointer-events-none absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-[#00FF85]/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-                <Play className="size-4 fill-[#00FF85]" />
+                <span className="pointer-events-none absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/15 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                <Play className="size-4 fill-white" />
                 Reel Mode
               </button>
             </div>
           </div>
           {displayedIdeas.length === 0 ? (
-            <div className="rounded-2xl border border-white/8 bg-[#111111] p-10 text-center text-white/60">
+            <div className="rounded-2xl border border-white/15 bg-white/6 p-10 text-center text-white/65 backdrop-blur-lg">
               {activeFeed === "saved"
                 ? "No saved ideas yet. Use Save on any idea card."
                 : activeFeed === "trending"
                   ? "No trending ideas yet."
                   : activeFeed === "myIdeas"
                     ? "You haven't posted any ideas yet."
-                  : "No ideas found."}
+                    : "No ideas found."}
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
@@ -1207,7 +1227,7 @@ export default function DashboardPage() {
         <button
           type="button"
           onClick={() => setShowNewIdea(true)}
-          className="fixed bottom-6 right-6 z-30 hidden items-center gap-2 rounded-full bg-[#00FF85] px-5 py-3 text-sm font-semibold text-[#0D0D0D] shadow-[0_10px_28px_rgba(0,255,133,0.35)] transition-colors hover:bg-[#00FF85]/85 lg:inline-flex"
+          className="fixed bottom-6 right-6 z-30 hidden items-center gap-2 rounded-full border border-white/25 bg-white/12 px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(0,0,0,0.45)] backdrop-blur-xl transition-colors hover:bg-white/20 lg:inline-flex"
         >
           <Plus className="size-4 stroke-[2.5]" />
           New Idea
@@ -1217,6 +1237,8 @@ export default function DashboardPage() {
         open={showNewIdea}
         onClose={() => setShowNewIdea(false)}
         onSubmit={async (newIdea) => {
+          setIsPostingIdea(true);
+          setPostIdeaProgress(12);
           try {
             const response = await fetch("/api/ideas", {
               method: "POST",
@@ -1235,11 +1257,39 @@ export default function DashboardPage() {
             }
 
             setIdeas((prev) => [payload.idea as FeedIdea, ...prev]);
+            setPostIdeaProgress(100);
           } catch {
             setIdeasError("Failed to create idea");
+            setPostIdeaProgress(100);
+          } finally {
+            setTimeout(() => {
+              setIsPostingIdea(false);
+              setPostIdeaProgress(0);
+            }, 260);
           }
         }}
       />
+
+      {isPostingIdea && (
+        <div className="pointer-events-none fixed inset-x-0 bottom-3 z-60 flex justify-center px-3 sm:px-4">
+          <div className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-white/20 bg-linear-to-b from-black/90 via-black/82 to-black/90 p-2 shadow-[0_10px_35px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.2)] backdrop-blur-xl sm:max-w-2xl">
+            <div
+              aria-hidden
+              className="absolute inset-0 bg-linear-to-r from-transparent via-white/12 to-transparent opacity-70"
+            />
+            <div className="relative z-10 mb-1 flex items-center justify-between px-2 text-[11px] font-medium text-white/85">
+              <span>Posting idea...</span>
+              <span>{postIdeaProgress}%</span>
+            </div>
+            <div className="relative z-10 h-2 overflow-hidden rounded-full border border-white/10 bg-white/8">
+              <div
+                className="h-full rounded-full bg-linear-to-r from-[#FF2A6D] via-[#35A8FF] to-[#39FFB6] shadow-[0_0_16px_rgba(53,168,255,0.55)] transition-all duration-200"
+                style={{ width: `${postIdeaProgress}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Profile / My Ideas panel */}
       {showProfile && (

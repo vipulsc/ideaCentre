@@ -12,13 +12,13 @@ import { useState } from "react";
 
 const BG_COLORS = [
   { value: "#000000", label: "Black" },
-  { value: "#2e2e2e", label: "Graphite" },
-  { value: "#2F3640", label: "Steel Blue" },
-  { value: "#353B48", label: "Slate" },
-  { value: "#2E3A24", label: "Olive Smoke" },
-  { value: "#1A1A1A", label: "Charcoal" },
-  { value: "#121212", label: "Jet" },
-  { value: "#1C1F26", label: "Gunmetal" },
+  { value: "#0A0A0A", label: "Onyx" },
+  { value: "#101010", label: "Jet" },
+  { value: "#141414", label: "Charcoal" },
+  { value: "#181818", label: "Carbon" },
+  { value: "#1D1D1D", label: "Graphite" },
+  { value: "#222222", label: "Slate Black" },
+  { value: "#282828", label: "Gunmetal" },
 ];
 
 const CATEGORIES = [
