@@ -547,14 +547,19 @@ export default function DashboardPage() {
   const myIdeas = ideas.filter((item) => item.authorEmail === userEmail);
   const savedIdeas = ideas.filter((item) => item.isBookmarked);
   const trendingIdeas = ideas.filter((item) => item.trending);
-  const displayedIdeas =
+  const displayedIdeas = (
     activeFeed === "myIdeas"
       ? myIdeas
       : activeFeed === "saved"
         ? savedIdeas
         : activeFeed === "trending"
           ? trendingIdeas
-          : ideas;
+          : ideas
+  ).slice().sort((a, b) => {
+    const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    return bTime - aTime;
+  });
   const selectedIdea = ideas.find((item) => item.id === selectedIdeaId) ?? null;
   const commentsIdea = ideas.find((item) => item.id === commentsIdeaId) ?? null;
   const analyticsIdea =
@@ -928,11 +933,21 @@ export default function DashboardPage() {
             <li>
               <button
                 type="button"
-                onClick={() => setActiveFeed("trending")}
+                onClick={() =>
+                  setActiveFeed((prev) =>
+                    prev === "trending" ? "home" : "trending",
+                  )
+                }
                 className="inline-flex flex-col items-center gap-1 text-white/70 transition-colors hover:text-[#00FF85]"
               >
-                <Flame className="size-6" />
-                <span className="text-[11px] font-medium">Trending</span>
+                {activeFeed === "trending" ? (
+                  <Home className="size-6" />
+                ) : (
+                  <Flame className="size-6" />
+                )}
+                <span className="text-[11px] font-medium">
+                  {activeFeed === "trending" ? "Home" : "Trending"}
+                </span>
               </button>
             </li>
             <li>
