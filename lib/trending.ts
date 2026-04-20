@@ -96,11 +96,11 @@ export const MIN_VELOCITY_HOURS = 0.5;
 export const FRESH_TAU = 3;
 
 /** Fraction of the feed eligible for the "Trending" badge. */
-export const TRENDING_TOP_FRACTION = 0.25;
+export const TRENDING_TOP_FRACTION = 0.4;
 
 /** Hard bounds on the trending badge count regardless of feed size. */
 export const TRENDING_MIN_COUNT = 1;
-export const TRENDING_MAX_COUNT = 5;
+export const TRENDING_MAX_COUNT = 20;
 
 // ─── Public Types ─────────────────────────────────────────────────────────
 
@@ -240,13 +240,12 @@ export function rankByHotScore<
 
   return scored.map((entry, index) => {
     const inTopSlice = index < topCount;
-    const hasEngagement = entry.engagement > 0;
     return {
       item: entry.item,
       rank: index + 1,
       percentile: Math.round(((items.length - index) / items.length) * 100),
       score: entry.score,
-      isTrending: inTopSlice && hasEngagement,
+      isTrending: inTopSlice,
     };
   });
 }
