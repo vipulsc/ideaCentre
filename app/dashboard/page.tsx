@@ -9,6 +9,9 @@ import {
   Flame,
   Grid,
   Heart,
+  Home,
+  PanelLeftClose,
+  PanelLeftOpen,
   LogOut,
   MessageCircle,
   Play,
@@ -328,13 +331,7 @@ function formatRelativeTime(iso?: string | null) {
   });
 }
 
-function PerformanceRing({
-  value,
-  color,
-}: {
-  value: number;
-  color: string;
-}) {
+function PerformanceRing({ value, color }: { value: number; color: string }) {
   const clamped = Math.max(0, Math.min(100, value));
   const data = [{ name: "score", value: clamped, fill: color }];
   return (
@@ -364,10 +361,7 @@ function PerformanceRing({
         </RadialBarChart>
       </ResponsiveContainer>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span
-          className="text-lg font-bold sm:text-xl"
-          style={{ color }}
-        >
+        <span className="text-lg font-bold sm:text-xl" style={{ color }}>
           {Math.round(clamped)}
         </span>
         <span className="text-[9px] font-medium uppercase tracking-wider text-white/40">
@@ -493,17 +487,19 @@ function StatPill({
   );
 }
 
-
 export default function DashboardPage() {
   const { data: session } = useSession();
   const userName = session?.user?.name?.trim() || "You";
   const userEmail = session?.user?.email ?? null;
   const profileImage = session?.user?.image;
   const [reelMode, setReelMode] = useState(false);
-  const [activeFeed, setActiveFeed] = useState<"trending" | "saved">("trending");
+  const [activeFeed, setActiveFeed] = useState<
+    "home" | "trending" | "saved" | "myIdeas"
+  >("home");
   const [profileMenu, setProfileMenu] = useState(false);
   const [showNewIdea, setShowNewIdea] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [reelFocusIdeaId, setReelFocusIdeaId] = useState<string | null>(null);
   const [selectedIdeaId, setSelectedIdeaId] = useState<string | null>(null);
   const [analyticsIdeaId, setAnalyticsIdeaId] = useState<string | null>(null);
@@ -536,14 +532,20 @@ export default function DashboardPage() {
   const closeMenu = useCallback(() => setProfileMenu(false), []);
   const myIdeas = ideas.filter((item) => item.authorEmail === userEmail);
   const savedIdeas = ideas.filter((item) => item.isBookmarked);
-  const displayedIdeas = activeFeed === "saved" ? savedIdeas : ideas;
+  const trendingIdeas = ideas.filter((item) => item.trending);
+  const displayedIdeas =
+    activeFeed === "myIdeas"
+      ? myIdeas
+      : activeFeed === "saved"
+      ? savedIdeas
+      : activeFeed === "trending"
+        ? trendingIdeas
+        : ideas;
   const selectedIdea = ideas.find((item) => item.id === selectedIdeaId) ?? null;
-  const commentsIdea =
-    ideas.find((item) => item.id === commentsIdeaId) ?? null;
+  const commentsIdea = ideas.find((item) => item.id === commentsIdeaId) ?? null;
   const analyticsIdea =
     ideas.find((item) => item.id === analyticsIdeaId) ?? null;
-  const insightsIdea =
-    ideas.find((item) => item.id === insightsIdeaId) ?? null;
+  const insightsIdea = ideas.find((item) => item.id === insightsIdeaId) ?? null;
   const analyticsRank = analyticsIdea
     ? [...myIdeas]
         .sort(
@@ -711,7 +713,8 @@ export default function DashboardPage() {
                 ? {
                     ...idea,
                     commentCount:
-                      payload.commentCount ?? Math.max(idea.commentCount - 1, 0),
+                      payload.commentCount ??
+                      Math.max(idea.commentCount - 1, 0),
                   }
                 : idea,
             ),
@@ -982,56 +985,101 @@ export default function DashboardPage() {
 
       {/* ─── DESKTOP: sidebar + scrollable grid feed ─── */}
       <div className={`hidden h-full ${reelMode ? "" : "lg:flex"}`}>
-        <aside className="flex w-56 shrink-0 flex-col border-r border-white/8 bg-[#111111] px-5 py-8 lg:w-64">
-          <p className="mb-10 text-lg font-bold tracking-tight text-white">
-            idea<span className="text-[#00FF85]">Centre</span>
-          </p>
-          <button
-            type="button"
-            onClick={() => setShowNewIdea(true)}
-            className="mb-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#00FF85] px-4 py-2.5 text-sm font-semibold text-[#0D0D0D] transition-colors hover:bg-[#00FF85]/85"
+        <aside
+          className={`relative flex shrink-0 flex-col border-r border-white/8 bg-[#111111] py-8 transition-all duration-300 ${
+            sidebarCollapsed ? "w-20 px-3" : "w-56 px-5 lg:w-64"
+          }`}
+        >
+          <div
+            className={`mb-10 flex items-center ${
+              sidebarCollapsed ? "justify-center" : "justify-between"
+            }`}
           >
-            <Plus className="size-4 stroke-[2.5]" />
-            New Idea
-          </button>
+            <p
+              className={`text-lg font-bold tracking-tight text-white ${
+                sidebarCollapsed ? "hidden" : ""
+              }`}
+            >
+              idea<span className="text-[#00FF85]">Centre</span>
+            </p>
+            <button
+              type="button"
+              onClick={() => setSidebarCollapsed((prev) => !prev)}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+              aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              {sidebarCollapsed ? (
+                <PanelLeftOpen className="size-4" />
+              ) : (
+                <PanelLeftClose className="size-4" />
+              )}
+            </button>
+          </div>
 
           <nav className="flex flex-col gap-1">
             <button
               type="button"
+              onClick={() => setActiveFeed("home")}
+              className={`flex items-center rounded-xl px-4 py-2.5 text-sm transition-colors ${
+                activeFeed === "home"
+                  ? "bg-white/8 font-medium text-white"
+                  : "text-white/40 hover:bg-white/6 hover:text-white/80"
+              } ${sidebarCollapsed ? "justify-center px-2" : "gap-3"}`}
+              title="Home"
+            >
+              <Home className="size-5 shrink-0" />
+              <span className={sidebarCollapsed ? "hidden" : ""}>Home</span>
+            </button>
+            <button
+              type="button"
               onClick={() => setActiveFeed("trending")}
-              className={`flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm transition-colors ${
+              className={`flex items-center rounded-xl px-4 py-2.5 text-sm transition-colors ${
                 activeFeed === "trending"
                   ? "bg-[#00FF85]/10 font-medium text-[#00FF85]"
                   : "text-white/40 hover:bg-white/6 hover:text-white/80"
-              }`}
+              } ${sidebarCollapsed ? "justify-center px-2" : "gap-3"}`}
+              title="Trending"
             >
-              <Flame className="size-5" />
-              Trending
+              <Flame className="size-5 shrink-0" />
+              <span className={sidebarCollapsed ? "hidden" : ""}>Trending</span>
             </button>
             <button
               type="button"
               onClick={() => setActiveFeed("saved")}
-              className={`flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm transition-colors ${
+              className={`flex items-center rounded-xl px-4 py-2.5 text-sm transition-colors ${
                 activeFeed === "saved"
                   ? "bg-[#1E90FF]/12 font-medium text-[#1E90FF]"
                   : "text-white/40 hover:bg-white/6 hover:text-white/80"
-              }`}
+              } ${sidebarCollapsed ? "justify-center px-2" : "gap-3"}`}
+              title="Saved"
             >
-              <Bookmark className="size-5" />
-              Saved
+              <Bookmark className="size-5 shrink-0" />
+              <span className={sidebarCollapsed ? "hidden" : ""}>Saved</span>
             </button>
             <button
               type="button"
-              onClick={() => setShowProfile(true)}
-              className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-white/40 transition-colors hover:bg-white/6 hover:text-white/80"
+              onClick={() => setActiveFeed("myIdeas")}
+              className={`flex items-center rounded-xl px-4 py-2.5 text-sm transition-colors ${
+                activeFeed === "myIdeas"
+                  ? "bg-[#1E90FF]/12 font-medium text-[#1E90FF]"
+                  : "text-white/40 hover:bg-white/6 hover:text-white/80"
+              } ${sidebarCollapsed ? "justify-center px-2" : "gap-3"}`}
+              title="My Ideas"
             >
-              <User className="size-5" />
-              My Ideas
+              <User className="size-5 shrink-0" />
+              <span className={sidebarCollapsed ? "hidden" : ""}>My Ideas</span>
             </button>
           </nav>
 
-          <div className="mt-auto">
-            <div className="flex items-center gap-2.5">
+          <div className={`mt-auto ${sidebarCollapsed ? "" : "px-4"}`}>
+            <div
+              className={`flex items-center ${
+                sidebarCollapsed
+                  ? "justify-center"
+                  : "gap-2.5 px-3 py-2.5"
+              }`}
+            >
               {profileImage ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -1045,17 +1093,24 @@ export default function DashboardPage() {
                   {userName.charAt(0).toUpperCase()}
                 </span>
               )}
-              <span className="text-sm font-medium text-white/70">
+              <span
+                className={`text-sm font-medium text-white/70 ${
+                  sidebarCollapsed ? "hidden" : ""
+                }`}
+              >
                 {userName}
               </span>
             </div>
             <button
               type="button"
               onClick={() => signOut({ callbackUrl: "/" })}
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-[#FF0099]/30 bg-[#FF0099]/10 px-4 py-2.5 text-sm font-medium text-[#FF0099] transition-colors hover:bg-[#FF0099]/20"
+              className={`mt-3 flex w-full items-center rounded-xl border border-[#FF0099]/30 bg-[#FF0099]/10 px-4 py-2.5 text-sm font-medium text-[#FF0099] transition-colors hover:bg-[#FF0099]/20 ${
+                sidebarCollapsed ? "justify-center gap-0 px-2" : "justify-center gap-2"
+              }`}
+              title="Logout"
             >
               <LogOut className="size-4" />
-              Logout
+              <span className={sidebarCollapsed ? "hidden" : ""}>Logout</span>
             </button>
           </div>
         </aside>
@@ -1063,7 +1118,13 @@ export default function DashboardPage() {
         <div className="flex-1 overflow-y-auto bg-[#0D0D0D] px-8 py-8 lg:px-12">
           <div className="mb-6 flex items-center justify-between">
             <h1 className="text-2xl font-bold text-white">
-              {activeFeed === "saved" ? "Saved Ideas" : "Discover Ideas"}
+              {activeFeed === "saved"
+                ? "Saved Ideas"
+                : activeFeed === "trending"
+                  ? "Trending Ideas"
+                  : activeFeed === "myIdeas"
+                    ? "My Ideas"
+                  : "All Ideas"}
             </h1>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 pr-1 animate-reel-hint-in">
@@ -1109,7 +1170,11 @@ export default function DashboardPage() {
             <div className="rounded-2xl border border-white/8 bg-[#111111] p-10 text-center text-white/60">
               {activeFeed === "saved"
                 ? "No saved ideas yet. Use Save on any idea card."
-                : "No ideas found."}
+                : activeFeed === "trending"
+                  ? "No trending ideas yet."
+                  : activeFeed === "myIdeas"
+                    ? "You haven't posted any ideas yet."
+                  : "No ideas found."}
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
@@ -1138,6 +1203,15 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
+
+        <button
+          type="button"
+          onClick={() => setShowNewIdea(true)}
+          className="fixed bottom-6 right-6 z-30 hidden items-center gap-2 rounded-full bg-[#00FF85] px-5 py-3 text-sm font-semibold text-[#0D0D0D] shadow-[0_10px_28px_rgba(0,255,133,0.35)] transition-colors hover:bg-[#00FF85]/85 lg:inline-flex"
+        >
+          <Plus className="size-4 stroke-[2.5]" />
+          New Idea
+        </button>
       </div>
       <NewIdeaModal
         open={showNewIdea}
@@ -1247,20 +1321,27 @@ export default function DashboardPage() {
                       onClick={async (e) => {
                         e.stopPropagation();
                         try {
-                          const response = await fetch(`/api/ideas/${item.id}`, {
-                            method: "DELETE",
-                          });
+                          const response = await fetch(
+                            `/api/ideas/${item.id}`,
+                            {
+                              method: "DELETE",
+                            },
+                          );
                           const payload = (await response.json()) as {
                             ok: boolean;
                             message?: string;
                           };
 
                           if (!response.ok || !payload.ok) {
-                            setIdeasError(payload.message ?? "Failed to delete idea");
+                            setIdeasError(
+                              payload.message ?? "Failed to delete idea",
+                            );
                             return;
                           }
 
-                          setIdeas((prev) => prev.filter((i) => i.id !== item.id));
+                          setIdeas((prev) =>
+                            prev.filter((i) => i.id !== item.id),
+                          );
                         } catch {
                           setIdeasError("Failed to delete idea");
                         }
