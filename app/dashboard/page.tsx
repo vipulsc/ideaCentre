@@ -3,6 +3,7 @@
 import {
   ArrowLeft,
   Bookmark,
+  ChevronRight,
   FileText,
   Flame,
   Grid,
@@ -456,12 +457,29 @@ export default function DashboardPage() {
           <div className="mb-6 flex items-center justify-between">
             <h1 className="text-2xl font-bold text-white">Discover Ideas</h1>
             <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 pr-1 animate-reel-hint-in">
+                <span
+                  className="relative top-px hidden text-[18px] leading-none tracking-wide text-[#00FF85]/90 sm:inline-block"
+                  style={{ fontFamily: "var(--font-handwritten), 'Caveat', 'Bradley Hand', cursive" }}
+                >
+                  feel the ideas, try
+                </span>
+                <span
+                  aria-hidden="true"
+                  className="hidden items-center text-[#00FF85] sm:inline-flex"
+                >
+                  <ChevronRight className="-mr-2 size-5 animate-reel-chevron opacity-30 [animation-delay:0ms]" strokeWidth={2.5} />
+                  <ChevronRight className="-mr-2 size-5 animate-reel-chevron opacity-60 [animation-delay:150ms]" strokeWidth={2.5} />
+                  <ChevronRight className="size-5 animate-reel-chevron [animation-delay:300ms]" strokeWidth={2.5} />
+                </span>
+              </div>
               <button
                 type="button"
                 onClick={() => setReelMode(true)}
-                className="inline-flex items-center gap-2 rounded-full border border-[#00FF85]/30 bg-[#00FF85]/10 px-4 py-2 text-sm font-medium text-[#00FF85] transition-colors hover:bg-[#00FF85]/20"
+                className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full border border-[#00FF85]/40 bg-[#00FF85]/10 px-5 py-2 text-sm font-medium text-[#00FF85] transition-all duration-300 hover:border-[#00FF85]/70 hover:bg-[#00FF85]/15 hover:shadow-[0_0_32px_-4px_rgba(0,255,133,0.55)] animate-reel-glow"
               >
-                <Play className="size-4" />
+                <span className="pointer-events-none absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-[#00FF85]/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                <Play className="size-4 fill-[#00FF85]" />
                 Reel Mode
               </button>
             </div>
