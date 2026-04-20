@@ -24,10 +24,10 @@ export async function DELETE(
     const { data: userRow, error: userError } = await supabase
       .from("users")
       .select("id")
-      .eq("email", email)
+      .filter("email", "eq", email)
       .single();
 
-    if (userError || !userRow) {
+    if (userError || !userRow || !("id" in userRow)) {
       return NextResponse.json(
         { ok: false, message: "User not found" },
         { status: 404 },
@@ -37,8 +37,8 @@ export async function DELETE(
     const { error } = await supabase
       .from("ideas")
       .delete()
-      .eq("id", id)
-      .eq("author_id", userRow.id);
+      .filter("id", "eq", id)
+      .filter("author_id", "eq", userRow.id);
 
     if (error) {
       return NextResponse.json(

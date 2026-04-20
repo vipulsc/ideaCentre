@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { computeHotScoreBreakdown, rankByHotScore } from "@/lib/trending";
+import { generateIdeaInsights } from "@/lib/ai/insights";
+import type { Json } from "@/lib/supabase/database.types";
 
 type CreateIdeaBody = {
   title?: string;
@@ -71,7 +73,7 @@ async function ensureCategoryId(category: string) {
   const { data, error } = await supabase
     .from("categories")
     .select("id")
-    .eq("slug", slug)
+    .filter("slug", "eq", slug)
     .single();
 
   if (error) {
@@ -91,7 +93,7 @@ export async function GET() {
       .select(
         "id,title,idea,description,background_color,like_count,comment_count,created_at,author_id,status,users!ideas_author_id_fkey(name,email),categories!ideas_category_id_fkey(name)",
       )
-      .eq("status", "published")
+      .filter("status", "eq", "published")
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -109,14 +111,14 @@ export async function GET() {
       const { data: viewerUser } = await supabase
         .from("users")
         .select("id")
-        .eq("email", viewerEmail)
+        .filter("email", "eq", viewerEmail)
         .maybeSingle();
 
-      if (viewerUser?.id) {
+      if (viewerUser && "id" in viewerUser) {
         const { data: likes } = await supabase
           .from("likes")
           .select("idea_id")
-          .eq("user_id", viewerUser.id)
+          .filter("user_id", "eq", viewerUser.id)
           .in("idea_id", ideaIds);
 
         (likes ?? []).forEach((like) => likedIdeaIds.add(like.idea_id));
@@ -124,7 +126,7 @@ export async function GET() {
         const { data: bookmarks } = await supabase
           .from("bookmarks")
           .select("idea_id")
-          .eq("user_id", viewerUser.id)
+          .filter("user_id", "eq", viewerUser.id)
           .in("idea_id", ideaIds);
 
         (bookmarks ?? []).forEach((bookmark) =>
@@ -133,22 +135,32 @@ export async function GET() {
       }
     }
 
-    const baseIdeas = (data ?? []).map((row) => ({
-      id: row.id,
-      title: row.title,
-      idea: row.idea,
-      description: row.description,
-      color: row.background_color ?? "#0a1a12",
-      likeCount: row.like_count,
-      commentCount: row.comment_count,
-      category: row.categories?.name ?? "Other",
-      authorName: row.users?.name ?? "Anonymous",
-      authorEmail: row.users?.email ?? null,
-      isLiked: likedIdeaIds.has(row.id),
-      isBookmarked: bookmarkedIdeaIds.has(row.id),
-      createdAt: row.created_at,
-      isOwn: false,
-    }));
+    const baseIdeas = (data ?? []).map((row) => {
+      const categoryName = Array.isArray(row.categories)
+        ? row.categories[0]?.name
+        : undefined;
+      const authorName = Array.isArray(row.users) ? row.users[0]?.name : undefined;
+      const authorEmail = Array.isArray(row.users)
+        ? row.users[0]?.email
+        : undefined;
+
+      return {
+        id: row.id,
+        title: row.title,
+        idea: row.idea,
+        description: row.description,
+        color: row.background_color ?? "#0a1a12",
+        likeCount: row.like_count,
+        commentCount: row.comment_count,
+        category: categoryName ?? "Other",
+        authorName: authorName ?? "Anonymous",
+        authorEmail: authorEmail ?? null,
+        isLiked: likedIdeaIds.has(row.id),
+        isBookmarked: bookmarkedIdeaIds.has(row.id),
+        createdAt: row.created_at,
+        isOwn: false,
+      };
+    });
 
     const ranked = rankByHotScore(baseIdeas);
 
@@ -210,6 +222,19 @@ export async function POST(request: Request) {
     });
     const categoryId = await ensureCategoryId(category);
 
+    let insights: Json | null = null;
+    try {
+      const generated = await generateIdeaInsights({
+        title,
+        idea,
+        description: body.description ?? null,
+        category,
+      });
+      insights = generated as unknown as Json;
+    } catch (err) {
+      console.error("Failed to generate AI insights", err);
+    }
+
     const supabase = getSupabaseAdminClient();
     const { data, error } = await supabase
       .from("ideas")
@@ -220,6 +245,7 @@ export async function POST(request: Request) {
         idea,
         description: body.description?.trim() || null,
         background_color: body.color?.trim() || "#0a1a12",
+        insights,
       })
       .select(
         "id,title,idea,description,background_color,like_count,comment_count,created_at,users!ideas_author_id_fkey(name,email),categories!ideas_category_id_fkey(name)",
@@ -233,6 +259,16 @@ export async function POST(request: Request) {
       );
     }
 
+    const createdCategory = Array.isArray(data.categories)
+      ? data.categories[0]?.name
+      : undefined;
+    const createdAuthorName = Array.isArray(data.users)
+      ? data.users[0]?.name
+      : undefined;
+    const createdAuthorEmail = Array.isArray(data.users)
+      ? data.users[0]?.email
+      : undefined;
+
     return NextResponse.json({
       ok: true,
       idea: {
@@ -243,9 +279,9 @@ export async function POST(request: Request) {
         color: data.background_color ?? "#0a1a12",
         likeCount: data.like_count,
         commentCount: data.comment_count,
-        category: data.categories?.name ?? category,
-        authorName: data.users?.name ?? session.user?.name ?? "You",
-        authorEmail: data.users?.email ?? email,
+        category: createdCategory ?? category,
+        authorName: createdAuthorName ?? session.user?.name ?? "You",
+        authorEmail: createdAuthorEmail ?? email,
         isLiked: false,
         isBookmarked: false,
         trending: false,

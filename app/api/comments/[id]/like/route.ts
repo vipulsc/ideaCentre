@@ -24,10 +24,10 @@ export async function POST(
     const { data: userRow, error: userError } = await supabase
       .from("users")
       .select("id")
-      .eq("email", email)
+      .filter("email", "eq", email)
       .single();
 
-    if (userError || !userRow) {
+    if (userError || !userRow || !("id" in userRow)) {
       return NextResponse.json(
         { ok: false, message: "User not found" },
         { status: 404 },
@@ -37,8 +37,8 @@ export async function POST(
     const { data: existingLike } = await supabase
       .from("comment_likes")
       .select("comment_id")
-      .eq("user_id", userRow.id)
-      .eq("comment_id", commentId)
+      .filter("user_id", "eq", userRow.id)
+      .filter("comment_id", "eq", commentId)
       .maybeSingle();
 
     let isLiked: boolean;
@@ -46,8 +46,8 @@ export async function POST(
       const { error: unlikeError } = await supabase
         .from("comment_likes")
         .delete()
-        .eq("user_id", userRow.id)
-        .eq("comment_id", commentId);
+        .filter("user_id", "eq", userRow.id)
+        .filter("comment_id", "eq", commentId);
 
       if (unlikeError) {
         return NextResponse.json(
@@ -74,7 +74,7 @@ export async function POST(
     const { count, error: countError } = await supabase
       .from("comment_likes")
       .select("*", { count: "exact", head: true })
-      .eq("comment_id", commentId);
+      .filter("comment_id", "eq", commentId);
 
     if (countError) {
       return NextResponse.json(
@@ -87,7 +87,7 @@ export async function POST(
     const { error: updateError } = await supabase
       .from("comments")
       .update({ like_count: likeCount })
-      .eq("id", commentId);
+      .filter("id", "eq", commentId);
 
     if (updateError) {
       return NextResponse.json(

@@ -28,6 +28,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import NewIdeaModal from "@/components/new-idea-modal";
+import { AiInsightsModal } from "@/components/ai-insights-modal";
 import { shareIdea } from "@/lib/share";
 
 type FeedIdea = {
@@ -88,6 +89,7 @@ function ReelCard({
   onComment,
   onShare,
   onBookmark,
+  onInsights,
 }: {
   id: string;
   title: string;
@@ -105,6 +107,7 @@ function ReelCard({
   onComment: (ideaId: string) => void;
   onShare: (ideaId: string) => void;
   onBookmark: (ideaId: string) => void;
+  onInsights: (ideaId: string) => void;
 }) {
   return (
     <div
@@ -180,7 +183,8 @@ function ReelCard({
         </button>
         <button
           type="button"
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-4 py-2 text-xs font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-[#00FF85]/40 hover:text-[#00FF85]"
+          onClick={() => onInsights(id)}
+          className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-4 py-2 text-xs font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/40 hover:text-white"
         >
           <Sparkles className="size-3.5" />
           AI
@@ -207,6 +211,7 @@ function IdeaCard({
   onComment,
   onShare,
   onBookmark,
+  onInsights,
 }: {
   id: string;
   title: string;
@@ -224,6 +229,7 @@ function IdeaCard({
   onComment: (ideaId: string) => void;
   onShare: (ideaId: string) => void;
   onBookmark: (ideaId: string) => void;
+  onInsights: (ideaId: string) => void;
 }) {
   return (
     <div
@@ -255,7 +261,8 @@ function IdeaCard({
         </button>
         <button
           type="button"
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/25 px-3 py-1.5 text-[11px] font-semibold text-white/85 transition-colors hover:border-[#00FF85]/50 hover:text-[#00FF85]"
+          onClick={() => onInsights(id)}
+          className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/25 px-3 py-1.5 text-[11px] font-semibold text-white/85 transition-colors hover:border-white/40 hover:text-white"
         >
           <Sparkles className="size-3.5" />
           <span>AI</span>
@@ -500,6 +507,7 @@ export default function DashboardPage() {
   const [reelFocusIdeaId, setReelFocusIdeaId] = useState<string | null>(null);
   const [selectedIdeaId, setSelectedIdeaId] = useState<string | null>(null);
   const [analyticsIdeaId, setAnalyticsIdeaId] = useState<string | null>(null);
+  const [insightsIdeaId, setInsightsIdeaId] = useState<string | null>(null);
   const [commentsIdeaId, setCommentsIdeaId] = useState<string | null>(null);
   const [comments, setComments] = useState<FeedComment[]>([]);
   const [isLoadingComments, setIsLoadingComments] = useState(false);
@@ -534,6 +542,8 @@ export default function DashboardPage() {
     ideas.find((item) => item.id === commentsIdeaId) ?? null;
   const analyticsIdea =
     ideas.find((item) => item.id === analyticsIdeaId) ?? null;
+  const insightsIdea =
+    ideas.find((item) => item.id === insightsIdeaId) ?? null;
   const analyticsRank = analyticsIdea
     ? [...myIdeas]
         .sort(
@@ -866,6 +876,7 @@ export default function DashboardPage() {
                   onComment={openComments}
                   onShare={handleShare}
                   onBookmark={toggleBookmark}
+                  onInsights={setInsightsIdeaId}
                 />
               </div>
             ))
@@ -1121,6 +1132,7 @@ export default function DashboardPage() {
                   onComment={openComments}
                   onShare={handleShare}
                   onBookmark={toggleBookmark}
+                  onInsights={setInsightsIdeaId}
                 />
               ))}
             </div>
@@ -1446,6 +1458,11 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+      <AiInsightsModal
+        ideaId={insightsIdeaId}
+        title={insightsIdea?.title}
+        onClose={() => setInsightsIdeaId(null)}
+      />
       {(isLoadingIdeas || ideasError || toast) && (
         <div className="pointer-events-none fixed bottom-4 right-4 z-40 rounded-lg border border-white/10 bg-[#161616]/95 px-4 py-2 text-xs text-white/85 shadow-lg">
           {toast ?? (isLoadingIdeas ? "Loading ideas..." : ideasError)}

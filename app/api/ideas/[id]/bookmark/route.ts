@@ -24,10 +24,10 @@ export async function POST(
     const { data: userRow, error: userError } = await supabase
       .from("users")
       .select("id")
-      .eq("email", email)
+      .filter("email", "eq", email)
       .single();
 
-    if (userError || !userRow) {
+    if (userError || !userRow || !("id" in userRow)) {
       return NextResponse.json(
         { ok: false, message: "User not found" },
         { status: 404 },
@@ -37,8 +37,8 @@ export async function POST(
     const { data: existing } = await supabase
       .from("bookmarks")
       .select("idea_id")
-      .eq("user_id", userRow.id)
-      .eq("idea_id", ideaId)
+      .filter("user_id", "eq", userRow.id)
+      .filter("idea_id", "eq", ideaId)
       .maybeSingle();
 
     let isBookmarked: boolean;
@@ -46,8 +46,8 @@ export async function POST(
       const { error: removeError } = await supabase
         .from("bookmarks")
         .delete()
-        .eq("user_id", userRow.id)
-        .eq("idea_id", ideaId);
+        .filter("user_id", "eq", userRow.id)
+        .filter("idea_id", "eq", ideaId);
 
       if (removeError) {
         return NextResponse.json(

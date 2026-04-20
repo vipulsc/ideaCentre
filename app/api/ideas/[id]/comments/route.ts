@@ -7,6 +7,21 @@ type CreateCommentBody = {
   body?: string;
 };
 
+type CommentQueryRow = {
+  id: string;
+  body: string;
+  created_at: string;
+  author_id: string;
+  like_count?: number;
+  users:
+    | {
+        name: string | null;
+        email: string | null;
+        image: string | null;
+      }
+    | null;
+};
+
 export async function GET(
   _request: Request,
   context: { params: Promise<{ id: string }> },
@@ -23,9 +38,10 @@ export async function GET(
       .select(
         "id,body,created_at,like_count,author_id,users!comments_author_id_fkey(name,email,image)",
       )
-      .eq("idea_id", ideaId)
+      .filter("idea_id", "eq", ideaId)
       .is("deleted_at", null)
       .order("created_at", { ascending: true });
+    let typedData = (data ?? null) as CommentQueryRow[] | null;
 
     // Backward compatibility when migration 003_comment_likes.sql
     // hasn't been applied yet.
@@ -34,10 +50,10 @@ export async function GET(
       const retry = await supabase
         .from("comments")
         .select("id,body,created_at,author_id,users!comments_author_id_fkey(name,email,image)")
-        .eq("idea_id", ideaId)
+        .filter("idea_id", "eq", ideaId)
         .is("deleted_at", null)
         .order("created_at", { ascending: true });
-      data = retry.data;
+      typedData = (retry.data ?? null) as CommentQueryRow[] | null;
       error = retry.error;
     }
 
@@ -48,28 +64,28 @@ export async function GET(
       );
     }
 
-    const commentIds = (data ?? []).map((row) => row.id);
+    const commentIds = (typedData ?? []).map((row) => row.id);
     const likedCommentIds = new Set<string>();
 
     if (viewerEmail && commentIds.length > 0) {
       const { data: viewerUser } = await supabase
         .from("users")
         .select("id")
-        .eq("email", viewerEmail)
+        .filter("email", "eq", viewerEmail)
         .maybeSingle();
 
-      if (viewerUser?.id) {
+      if (viewerUser && "id" in viewerUser) {
         const { data: likes } = await supabase
           .from("comment_likes")
           .select("comment_id")
-          .eq("user_id", viewerUser.id)
+          .filter("user_id", "eq", viewerUser.id)
           .in("comment_id", commentIds);
 
         (likes ?? []).forEach((like) => likedCommentIds.add(like.comment_id));
       }
     }
 
-    const comments = (data ?? []).map((row) => ({
+    const comments = (typedData ?? []).map((row) => ({
       id: row.id,
       body: row.body,
       createdAt: row.created_at,
@@ -126,10 +142,10 @@ export async function POST(
     const { data: userRow, error: userError } = await supabase
       .from("users")
       .select("id,name,email,image")
-      .eq("email", email)
+      .filter("email", "eq", email)
       .single();
 
-    if (userError || !userRow) {
+    if (userError || !userRow || !("id" in userRow)) {
       return NextResponse.json(
         { ok: false, message: "User not found" },
         { status: 404 },
@@ -159,7 +175,7 @@ export async function POST(
     const { count } = await supabase
       .from("comments")
       .select("*", { count: "exact", head: true })
-      .eq("idea_id", ideaId)
+      .filter("idea_id", "eq", ideaId)
       .is("deleted_at", null);
 
     const commentCount = count ?? 0;
@@ -167,7 +183,7 @@ export async function POST(
     await supabase
       .from("ideas")
       .update({ comment_count: commentCount })
-      .eq("id", ideaId);
+      .filter("id", "eq", ideaId);
 
     return NextResponse.json({
       ok: true,

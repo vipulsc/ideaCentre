@@ -24,10 +24,10 @@ export async function POST(
     const { data: userRow, error: userError } = await supabase
       .from("users")
       .select("id")
-      .eq("email", email)
+      .filter("email", "eq", email)
       .single();
 
-    if (userError || !userRow) {
+    if (userError || !userRow || !("id" in userRow)) {
       return NextResponse.json(
         { ok: false, message: "User not found" },
         { status: 404 },
@@ -37,8 +37,8 @@ export async function POST(
     const { data: existingLike } = await supabase
       .from("likes")
       .select("idea_id")
-      .eq("user_id", userRow.id)
-      .eq("idea_id", ideaId)
+      .filter("user_id", "eq", userRow.id)
+      .filter("idea_id", "eq", ideaId)
       .maybeSingle();
 
     let isLiked: boolean;
@@ -46,8 +46,8 @@ export async function POST(
       const { error: unlikeError } = await supabase
         .from("likes")
         .delete()
-        .eq("user_id", userRow.id)
-        .eq("idea_id", ideaId);
+        .filter("user_id", "eq", userRow.id)
+        .filter("idea_id", "eq", ideaId);
 
       if (unlikeError) {
         return NextResponse.json(
@@ -76,7 +76,7 @@ export async function POST(
     const { count, error: countError } = await supabase
       .from("likes")
       .select("*", { count: "exact", head: true })
-      .eq("idea_id", ideaId);
+      .filter("idea_id", "eq", ideaId);
 
     if (countError) {
       return NextResponse.json(
@@ -89,7 +89,7 @@ export async function POST(
     const { error: updateError } = await supabase
       .from("ideas")
       .update({ like_count: likeCount })
-      .eq("id", ideaId);
+      .filter("id", "eq", ideaId);
 
     if (updateError) {
       return NextResponse.json(
