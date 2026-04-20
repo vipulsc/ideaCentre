@@ -555,11 +555,13 @@ export default function DashboardPage() {
         : activeFeed === "trending"
           ? trendingIdeas
           : ideas
-  ).slice().sort((a, b) => {
-    const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-    const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-    return bTime - aTime;
-  });
+  )
+    .slice()
+    .sort((a, b) => {
+      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return bTime - aTime;
+    });
   const selectedIdea = ideas.find((item) => item.id === selectedIdeaId) ?? null;
   const commentsIdea = ideas.find((item) => item.id === commentsIdeaId) ?? null;
   const analyticsIdea =
