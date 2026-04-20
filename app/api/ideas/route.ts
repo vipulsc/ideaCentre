@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import { computeHotScoreBreakdown, rankByHotScore } from "@/lib/trending";
+import { rankByHotScore } from "@/lib/trending";
 import { generateIdeaInsights } from "@/lib/ai/insights";
 import type { Json } from "@/lib/supabase/database.types";
 
@@ -167,23 +167,13 @@ export async function GET() {
 
     const ranked = rankByHotScore(baseIdeas);
 
-    const ideas = ranked.map(({ item, rank, percentile, isTrending }) => {
-      const breakdown = computeHotScoreBreakdown(item);
+    const ideas = ranked.map(({ item, rank, percentile, isTrending, score }) => {
       return {
         ...item,
         trending: isTrending,
-        hotScore: Math.round(breakdown.hotScore * 1000) / 1000,
+        hotScore: Number.isFinite(score) ? Math.round(score * 1000) / 1000 : 0,
         trendingRank: rank,
         trendingPercentile: percentile,
-        hotBreakdown: {
-          engagement: breakdown.engagement,
-          engScore: Math.round(breakdown.engScore * 1000) / 1000,
-          velocity: Math.round(breakdown.velocity * 1000) / 1000,
-          velBoost: Math.round(breakdown.velBoost * 1000) / 1000,
-          freshness: Math.round(breakdown.freshness * 1000) / 1000,
-          decay: Math.round(breakdown.decay * 1000) / 1000,
-          ageHours: Math.round(breakdown.ageHours * 100) / 100,
-        },
       };
     });
 

@@ -52,15 +52,6 @@ type FeedIdea = {
   hotScore?: number;
   trendingRank?: number;
   trendingPercentile?: number;
-  hotBreakdown?: {
-    engagement: number;
-    engScore: number;
-    velocity: number;
-    velBoost: number;
-    freshness: number;
-    decay: number;
-    ageHours: number;
-  };
 };
 
 type FeedComment = {
@@ -115,9 +106,7 @@ function ReelCard({
   return (
     <div
       className="relative flex h-full w-full snap-start snap-always flex-col justify-center border border-white/15 bg-black px-6 pr-16 text-white sm:px-10 sm:pr-20"
-      style={{
-        background: `linear-gradient(155deg, color-mix(in srgb, ${color} 32%, var(--palette-primary)) 0%, var(--palette-primary) 55%, color-mix(in srgb, var(--palette-secondary) 62%, var(--palette-primary)) 100%)`,
-      }}
+      style={{ backgroundColor: color }}
     >
       {trending && (
         <span className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold text-white sm:right-5 sm:top-5">
@@ -181,16 +170,18 @@ function ReelCard({
         <button
           type="button"
           onClick={() => onInfo(id)}
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-medium text-white/85 backdrop-blur-sm transition-colors hover:bg-white/15"
+          className="group relative inline-flex items-center gap-1.5 overflow-hidden rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-medium text-white/90 backdrop-blur-sm transition-all duration-300 hover:bg-white/16 hover:shadow-[0_10px_20px_rgba(0,0,0,0.22)]"
         >
+          <span className="pointer-events-none absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
           <FileText className="size-3.5" />
           Info
         </button>
         <button
           type="button"
           onClick={() => onInsights(id)}
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-medium text-white/85 backdrop-blur-sm transition-colors hover:bg-white/15"
+          className="group relative inline-flex items-center gap-1.5 overflow-hidden rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-medium text-white/90 backdrop-blur-sm transition-all duration-300 hover:bg-white/16 hover:shadow-[0_10px_20px_rgba(0,0,0,0.22)]"
         >
+          <span className="pointer-events-none absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
           <Sparkles className="size-3.5" />
           AI
         </button>
@@ -207,11 +198,13 @@ function IdeaCard({
   color,
   tag,
   trending,
+  showAnalytics,
   likeCount,
   commentCount,
   isLiked,
   isBookmarked,
   onLike,
+  onAnalytics,
   onInfo,
   onComment,
   onShare,
@@ -225,11 +218,13 @@ function IdeaCard({
   color: string;
   tag: string;
   trending?: boolean;
+  showAnalytics?: boolean;
   likeCount: number;
   commentCount: number;
   isLiked: boolean;
   isBookmarked: boolean;
   onLike: (ideaId: string) => void;
+  onAnalytics?: (ideaId: string) => void;
   onInfo: (ideaId: string) => void;
   onComment: (ideaId: string) => void;
   onShare: (ideaId: string) => void;
@@ -242,19 +237,32 @@ function IdeaCard({
       style={{ backgroundColor: color }}
     >
       <div className="absolute right-3 top-3 z-20 flex items-center gap-2">
+        {showAnalytics && onAnalytics && (
+          <button
+            type="button"
+            onClick={() => onAnalytics(id)}
+            className="group relative inline-flex items-center gap-1.5 overflow-hidden rounded-full border border-white/20 bg-white/7 px-2.5 py-1.5 text-[10px] font-semibold tracking-wide text-white/90 backdrop-blur-sm transition-all duration-300 hover:border-white/30 hover:bg-white/14 hover:shadow-[0_12px_24px_rgba(0,0,0,0.26)]"
+          >
+            <span className="pointer-events-none absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+            <BarChart3 className="size-3.5 opacity-85" />
+            <span>Analytics</span>
+          </button>
+        )}
         <button
           type="button"
           onClick={() => onInfo(id)}
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-3 py-1.5 text-[11px] font-semibold text-white/85 transition-colors hover:bg-white/12"
+          className="group relative inline-flex items-center gap-1.5 overflow-hidden rounded-full border border-white/15 bg-white/8 px-3 py-1.5 text-[11px] font-semibold text-white/90 transition-all duration-300 hover:bg-white/14 hover:shadow-[0_10px_20px_rgba(0,0,0,0.22)]"
         >
+          <span className="pointer-events-none absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
           <FileText className="size-3.5" />
           <span>Info</span>
         </button>
         <button
           type="button"
           onClick={() => onInsights(id)}
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-3 py-1.5 text-[11px] font-semibold text-white/85 transition-colors hover:bg-white/12"
+          className="group relative inline-flex items-center gap-1.5 overflow-hidden rounded-full border border-white/15 bg-white/8 px-3 py-1.5 text-[11px] font-semibold text-white/90 transition-all duration-300 hover:bg-white/14 hover:shadow-[0_10px_20px_rgba(0,0,0,0.22)]"
         >
+          <span className="pointer-events-none absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
           <Sparkles className="size-3.5" />
           <span>AI</span>
         </button>
@@ -1208,11 +1216,13 @@ export default function DashboardPage() {
                   color={reel.color}
                   tag={reel.category}
                   trending={reel.trending}
+                  showAnalytics={activeFeed === "myIdeas"}
                   likeCount={reel.likeCount}
                   commentCount={reel.commentCount}
                   isLiked={reel.isLiked}
                   isBookmarked={reel.isBookmarked}
                   onLike={toggleLike}
+                  onAnalytics={setAnalyticsIdeaId}
                   onInfo={setSelectedIdeaId}
                   onComment={openComments}
                   onShare={handleShare}
@@ -1449,7 +1459,7 @@ export default function DashboardPage() {
             <button
               type="button"
               onClick={() => setSelectedIdeaId(null)}
-              className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+              className="absolute right-2 top-1 inline-flex h-8 w-8 items-center justify-center rounded-full text-white/50 transition-colors hover:bg-white/10 hover:text-white"
               aria-label="Close info"
             >
               ×
