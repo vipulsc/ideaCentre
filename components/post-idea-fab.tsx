@@ -1,9 +1,9 @@
 "use client";
 
 import { Plus } from "lucide-react";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { signIn } from "next-auth/react";
 
 const SHOW_MS = 3000;
 const HIDE_MS = 2000;
@@ -66,13 +66,14 @@ export function PostIdeaFab() {
         )}
       </AnimatePresence>
 
-      <Link
-        href="/submit"
+      <button
+        type="button"
+        onClick={() => signIn("google", { callbackUrl: "/" })}
         className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition-shadow duration-200 hover:shadow-xl hover:shadow-primary/40"
         aria-label="Post your idea"
       >
         <Plus className="size-6" strokeWidth={2.5} />
-      </Link>
+      </button>
     </div>
   );
 }

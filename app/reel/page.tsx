@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { signIn, useSession } from "next-auth/react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { shareIdea } from "@/lib/share";
 
@@ -31,6 +32,7 @@ type FeedIdea = {
 
 export default function ReelPage() {
   const { status } = useSession();
+  const searchParams = useSearchParams();
   const isAuthed = status === "authenticated";
   const [ideas, setIdeas] = useState<FeedIdea[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,8 +40,14 @@ export default function ReelPage() {
   const [selectedIdeaId, setSelectedIdeaId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showTrendingOnly = searchParams.get("feed") === "trending";
 
-  const selectedIdea = ideas.find((i) => i.id === selectedIdeaId) ?? null;
+  const visibleIdeas = showTrendingOnly
+    ? ideas.filter((idea) => idea.trending)
+    : ideas;
+
+  const selectedIdea =
+    visibleIdeas.find((i) => i.id === selectedIdeaId) ?? null;
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
@@ -142,10 +150,13 @@ export default function ReelPage() {
     <main className="h-screen overflow-hidden bg-[#0D0D0D] [&_button]:cursor-pointer">
       <div className="relative flex h-full flex-col">
         <div className="hide-scrollbar flex-1 snap-y snap-mandatory overflow-y-auto">
-          {ideas.length === 0 && !isLoading ? (
+          {visibleIdeas.length === 0 && !isLoading ? (
             <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
               <p className="text-white/60">
-                {error ?? "No ideas yet — be the first!"}
+                {error ??
+                  (showTrendingOnly
+                    ? "No trending ideas right now."
+                    : "No ideas yet — be the first!")}
               </p>
               <Link
                 href="/"
@@ -155,7 +166,7 @@ export default function ReelPage() {
               </Link>
             </div>
           ) : (
-            ideas.map((reel) => (
+            visibleIdeas.map((reel) => (
               <div key={reel.id} className="h-full w-full shrink-0">
                 <div
                   className="relative flex h-full w-full snap-start snap-always flex-col justify-center px-6 pr-16 sm:px-10 sm:pr-20"

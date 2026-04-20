@@ -109,14 +109,14 @@ export function Hero() {
                 {...useFade(0.65)}
               >
                 <Link
-                  href="#get-started"
+                  href="/reel"
                   className="inline-flex w-fit items-center justify-center rounded-full bg-primary-foreground px-8 py-3.5 text-sm font-medium text-primary shadow-lg shadow-black/10 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/15 active:translate-y-0 sm:px-9 sm:py-4 sm:text-[15px]"
                 >
                   <span className="font-bold">Start Idea Reel</span>
                   &nbsp;&mdash; It&apos;s Free
                 </Link>
                 <Link
-                  href="#trending"
+                  href="/reel?feed=trending"
                   className="group inline-flex w-fit items-center gap-2 text-sm font-medium text-primary-foreground underline underline-offset-4 transition-all duration-200 hover:underline-offset-[6px] sm:text-[15px]"
                 >
                   See Trending

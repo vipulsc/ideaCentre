@@ -54,7 +54,7 @@ function NavbarNav() {
       </Link>
       <div className="flex items-center gap-2 sm:gap-3">
         <LoginButton
-          className="text-xs font-medium text-foreground/70 transition-colors hover:text-foreground sm:text-sm"
+          className="cursor-pointer text-xs font-medium text-foreground/70 transition-colors hover:text-foreground sm:text-sm"
         />
         <Link
           href="/reel"
@@ -93,7 +93,7 @@ function NavbarScrollDock() {
           </Link>
           <div className="flex items-center gap-2 sm:gap-3">
             <LoginButton
-              className="text-xs font-medium text-foreground/70 transition-colors hover:text-foreground sm:text-sm"
+              className="cursor-pointer text-xs font-medium text-foreground/70 transition-colors hover:text-foreground sm:text-sm"
             />
             <Link
               href="/reel"
