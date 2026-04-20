@@ -270,7 +270,7 @@ export default function DashboardPage() {
   }, [profileMenu, closeMenu]);
 
   return (
-    <main className="h-screen overflow-hidden bg-[#0D0D0D]">
+    <main className="h-screen overflow-hidden bg-[#0D0D0D] [&_button]:cursor-pointer">
       {/* ─── REEL MODE (mobile always, desktop when toggled) ─── */}
       <div
         className={`relative flex h-full flex-col ${reelMode ? "" : "lg:hidden"}`}
