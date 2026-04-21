@@ -13,7 +13,7 @@ import {
 import { signIn, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { shareIdea } from "@/lib/share";
 
 type FeedIdea = {
@@ -30,7 +30,7 @@ type FeedIdea = {
   trending: boolean;
 };
 
-export default function ReelPage() {
+function ReelPageContent() {
   const { status } = useSession();
   const searchParams = useSearchParams();
   const isAuthed = status === "authenticated";
@@ -296,5 +296,21 @@ export default function ReelPage() {
         </div>
       )}
     </main>
+  );
+}
+
+export default function ReelPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="h-screen overflow-hidden bg-[#0D0D0D]">
+          <div className="flex h-full items-center justify-center text-sm text-white/70">
+            Loading reel...
+          </div>
+        </main>
+      }
+    >
+      <ReelPageContent />
+    </Suspense>
   );
 }
