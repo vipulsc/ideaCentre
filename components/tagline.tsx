@@ -27,7 +27,7 @@ export function Tagline() {
     >
       <h2
         id="tagline-heading"
-        className="font-display-serif flex w-full flex-wrap justify-center gap-y-1 px-4 text-center text-3xl leading-tight tracking-tight sm:px-6 sm:text-4xl md:text-5xl lg:text-6xl"
+        className="font-display-serif flex w-full flex-nowrap justify-center whitespace-nowrap px-4 text-center text-[clamp(1.1rem,6vw,1.875rem)] leading-tight tracking-tight sm:px-6 sm:text-4xl md:text-5xl lg:text-6xl"
         aria-live={taglines.length > 1 ? "polite" : undefined}
       >
         {letters.map((char, i) => {

@@ -194,10 +194,17 @@ export function LandingGateIntro({ children }: LandingGateIntroProps) {
             </div>
           </div>
 
-          <div className={`gi-overlay${opened ? " hidden" : ""}`} aria-hidden="true">
+          <div
+            className={`gi-overlay${opened ? " hidden" : ""}`}
+            aria-hidden="true"
+          >
             <div className="gi-split">
-              <span className={`gi-split-l${opened ? " slide" : ""}`}>idea</span>
-              <span className={`gi-split-r${opened ? " slide" : ""}`}>Centre</span>
+              <span className={`gi-split-l${opened ? " slide" : ""}`}>
+                idea
+              </span>
+              <span className={`gi-split-r${opened ? " slide" : ""}`}>
+                Centre
+              </span>
             </div>
             <div className={`gi-hint-badge${opened ? " hidden" : ""}`}>
               loading
