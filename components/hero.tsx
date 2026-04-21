@@ -158,7 +158,7 @@ export function Hero() {
               >
                 <Link
                   href="/reel"
-                  className="inline-flex w-fit items-center justify-center whitespace-nowrap rounded-full bg-primary-foreground px-5 py-3 text-xs font-medium text-primary shadow-lg shadow-black/10 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/15 active:translate-y-0 sm:px-9 sm:py-4 sm:text-[15px]"
+                  className="inline-flex w-fit items-center justify-center whitespace-nowrap rounded-full bg-primary-foreground px-5 py-3 text-xs font-medium text-foreground shadow-lg shadow-black/10 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/15 active:translate-y-0 sm:px-9 sm:py-4 sm:text-[15px]"
                 >
                   <span className="font-bold">Start Idea Reel</span>
                   &nbsp;&mdash; It&apos;s Free
@@ -336,7 +336,7 @@ export function Hero() {
                       AI / Productivity
                     </p>
 
-                    <h3
+                    <p
                       className="text-[1.2rem] font-bold leading-[1.2] text-white"
                       style={{
                         fontFamily:
@@ -344,7 +344,7 @@ export function Hero() {
                       }}
                     >
                       AI Rehearsal Coach For Startup Pitches
-                    </h3>
+                    </p>
 
                     <p className="text-[11px] leading-relaxed text-white/55">
                       Practice your pitch in 60 seconds and get instant scoring

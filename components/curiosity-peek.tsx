@@ -142,7 +142,7 @@ export function CuriosityPeek() {
             reel and swipe.{" "}
             <Link
               href="/reel"
-              className="font-semibold text-palette-primary underline decoration-palette-primary/30 underline-offset-[5px] transition-colors hover:text-palette-secondary hover:decoration-palette-secondary/40"
+              className="font-semibold text-foreground underline decoration-palette-primary/30 underline-offset-[5px] transition-colors hover:text-palette-primary hover:decoration-palette-primary/50"
             >
               Start swiping
             </Link>

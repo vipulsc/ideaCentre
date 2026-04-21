@@ -23,14 +23,16 @@ export default async function Home() {
     <LandingGateIntro>
       <div className="flex min-h-0 flex-1 flex-col">
         <Navbar />
-        <Hero />
-        <Tagline />
-        <Community />
-        <HowItWorks />
-        <AiInsights />
-        <CuriosityPeek />
-        <FinalCta />
-        <PostIdeaFab />
+        <main className="flex min-h-0 flex-1 flex-col">
+          <Hero />
+          <Tagline />
+          <Community />
+          <HowItWorks />
+          <AiInsights />
+          <CuriosityPeek />
+          <FinalCta />
+          <PostIdeaFab />
+        </main>
       </div>
     </LandingGateIntro>
   );

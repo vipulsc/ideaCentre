@@ -32,7 +32,7 @@ function IdeaCentreWordmark({
       <span className="font-display-serif font-normal tracking-tight text-foreground transition-colors duration-200 group-hover:text-palette-primary/90">
         idea
       </span>
-      <span className="font-display-serif font-semibold tracking-tight text-palette-primary transition-colors duration-200 group-hover:text-palette-secondary">
+      <span className="font-display-serif font-semibold tracking-tight text-foreground transition-colors duration-200 group-hover:text-palette-primary">
         Centre
       </span>
     </span>
