@@ -93,7 +93,11 @@ export function CuriosityPeek() {
         aria-hidden
       />
 
-      <div className="pointer-events-none absolute -z-10 size-[min(88vw,36rem)] rounded-full bg-palette-secondary/10 blur-3xl" style={{ left: "8%", top: "20%" }} aria-hidden />
+      <div
+        className="pointer-events-none absolute -z-10 size-[min(88vw,36rem)] rounded-full bg-palette-secondary/10 blur-3xl"
+        style={{ left: "8%", top: "20%" }}
+        aria-hidden
+      />
 
       {/* Fake stock metadata — sets the fiction */}
       <div className="mx-auto mb-10 flex w-full max-w-screen-2xl flex-wrap items-center justify-center gap-x-8 gap-y-2 px-4 font-mono text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground sm:mb-12 sm:justify-between sm:px-6 2xl:max-w-800">
@@ -121,7 +125,9 @@ export function CuriosityPeek() {
             id="curiosity-heading"
             className="relative font-impact text-[clamp(3.5rem,14vw,7.5rem)] leading-[0.82] tracking-tight text-foreground"
           >
-            <span className="sr-only">Sneak peek at ideas waiting in the reel.</span>
+            <span className="sr-only">
+              Sneak peek at ideas waiting in the reel.
+            </span>
             <span className="block -rotate-[1.5deg]">
               <ChromaticWord>UNSEEN</ChromaticWord>
             </span>
@@ -131,9 +137,9 @@ export function CuriosityPeek() {
           </h2>
 
           <p className="mt-8 max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base">
-            Hundreds of ideas are already loaded&nbsp;&mdash; you just can&apos;t
-            see them yet. Each one stays blurred until you open the reel
-            and swipe.{" "}
+            Hundreds of ideas are already loaded&nbsp;&mdash; you just
+            can&apos;t see them yet. Each one stays blurred until you open the
+            reel and swipe.{" "}
             <Link
               href="/reel"
               className="font-semibold text-palette-primary underline decoration-palette-primary/30 underline-offset-[5px] transition-colors hover:text-palette-secondary hover:decoration-palette-secondary/40"
@@ -147,75 +153,96 @@ export function CuriosityPeek() {
         {/* Film gate + sprockets — centered on page */}
         <div className="flex justify-center">
           <div className="relative flex max-w-md items-stretch justify-center gap-0 sm:max-w-lg">
-          <div className="hidden sm:flex">
-            <SprocketRail />
-          </div>
+            <div className="hidden sm:flex">
+              <SprocketRail />
+            </div>
 
-          <div className="relative w-full max-w-88 sm:max-w-96">
-            <div className="rounded-[1.75rem] border-[6px] border-palette-primary/22 bg-linear-to-b from-palette-quinary via-card to-muted/35 p-2 shadow-[0_28px_70px_-24px_rgba(0,0,0,0.14),inset_0_1px_0_rgba(255,255,255,0.5)] sm:rounded-[2rem]">
-              <div className="relative overflow-hidden rounded-2xl border border-palette-primary/18 bg-linear-to-b from-background to-card shadow-[inset_0_0_0_1px_rgba(255,255,255,0.35)] sm:rounded-3xl">
-                <div className="pointer-events-none absolute inset-x-8 top-2 z-10 h-px bg-linear-to-r from-transparent via-palette-primary/22 to-transparent" aria-hidden />
-                <div className="pointer-events-none absolute inset-x-8 bottom-12 z-10 h-px bg-linear-to-r from-transparent via-palette-primary/15 to-transparent" aria-hidden />
+            <div className="relative w-full max-w-88 sm:max-w-96">
+              <div className="rounded-[1.75rem] border-[6px] border-palette-primary/22 bg-linear-to-b from-palette-quinary via-card to-muted/35 p-2 shadow-[0_28px_70px_-24px_rgba(0,0,0,0.14),inset_0_1px_0_rgba(255,255,255,0.5)] sm:rounded-[2rem]">
+                <div className="relative overflow-hidden rounded-2xl border border-palette-primary/18 bg-linear-to-b from-background to-card shadow-[inset_0_0_0_1px_rgba(255,255,255,0.35)] sm:rounded-3xl">
+                  <div
+                    className="pointer-events-none absolute inset-x-8 top-2 z-10 h-px bg-linear-to-r from-transparent via-palette-primary/22 to-transparent"
+                    aria-hidden
+                  />
+                  <div
+                    className="pointer-events-none absolute inset-x-8 bottom-12 z-10 h-px bg-linear-to-r from-transparent via-palette-primary/15 to-transparent"
+                    aria-hidden
+                  />
 
-                {/* Scanlines */}
-                <div
-                  className="pointer-events-none absolute inset-0 z-10 bg-size-[100%_3px] bg-[linear-gradient(to_bottom,transparent_50%,rgba(0,0,0,0.04)_50%)] opacity-[0.2] mix-blend-multiply"
-                  aria-hidden
-                />
+                  {/* Scanlines */}
+                  <div
+                    className="pointer-events-none absolute inset-0 z-10 bg-size-[100%_3px] bg-[linear-gradient(to_bottom,transparent_50%,rgba(0,0,0,0.04)_50%)] opacity-[0.2] mix-blend-multiply"
+                    aria-hidden
+                  />
 
-                <div className="pointer-events-none absolute left-2.5 top-2.5 z-20 size-5 border-l-2 border-t-2 border-palette-primary/35" aria-hidden />
-                <div className="pointer-events-none absolute right-2.5 top-2.5 z-20 size-5 border-r-2 border-t-2 border-palette-primary/35" aria-hidden />
-                <div className="pointer-events-none absolute bottom-10 left-2.5 z-20 size-5 border-b-2 border-l-2 border-palette-primary/35" aria-hidden />
-                <div className="pointer-events-none absolute bottom-10 right-2.5 z-20 size-5 border-b-2 border-r-2 border-palette-primary/35" aria-hidden />
+                  <div
+                    className="pointer-events-none absolute left-2.5 top-2.5 z-20 size-5 border-l-2 border-t-2 border-palette-primary/35"
+                    aria-hidden
+                  />
+                  <div
+                    className="pointer-events-none absolute right-2.5 top-2.5 z-20 size-5 border-r-2 border-t-2 border-palette-primary/35"
+                    aria-hidden
+                  />
+                  <div
+                    className="pointer-events-none absolute bottom-10 left-2.5 z-20 size-5 border-b-2 border-l-2 border-palette-primary/35"
+                    aria-hidden
+                  />
+                  <div
+                    className="pointer-events-none absolute bottom-10 right-2.5 z-20 size-5 border-b-2 border-r-2 border-palette-primary/35"
+                    aria-hidden
+                  />
 
-                <div className="relative h-[min(52vh,26rem)] overflow-hidden sm:h-112">
-                  <div className="flex flex-col animate-ideacentre-film-feed will-change-transform">
-                    {strip.map((t, idx) => (
-                      <article
-                        key={`${t.hook}-${idx}`}
-                        className={cn(
-                          "flex min-h-32 shrink-0 flex-col justify-center border-b border-dashed border-palette-primary/12 px-5 py-5 sm:min-h-36 sm:px-7",
-                          idx % 2 === 0 ? "bg-card/70" : "bg-muted/30",
-                        )}
-                        aria-label={`Idea frame ${17 + (idx % teasers.length)}: ${t.hook} ${t.blurLine}`}
-                      >
-                        <div className="mb-2 flex items-center justify-between gap-3 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground">
-                          <span className="tabular-nums">
-                            Frame ·{" "}
-                            {String(17 + (idx % teasers.length)).padStart(3, "0")}
-                          </span>
-                          <span className="rounded border border-palette-primary/20 bg-palette-primary/8 px-1.5 py-0.5 text-[8px] font-bold tracking-wider text-palette-primary">
-                            {t.tag}
-                          </span>
-                        </div>
-                        <p className="text-[15px] font-semibold leading-snug text-foreground sm:text-base">
-                          {t.hook}
-                        </p>
-                        <p
-                          className="mt-1.5 select-none text-sm leading-snug text-foreground/75 blur-[4.5px] sm:blur-[5px]"
-                          aria-hidden
+                  <div className="relative h-[min(52vh,26rem)] overflow-hidden sm:h-112">
+                    <div className="flex flex-col animate-ideacentre-film-feed will-change-transform">
+                      {strip.map((t, idx) => (
+                        <article
+                          key={`${t.hook}-${idx}`}
+                          className={cn(
+                            "flex min-h-32 shrink-0 flex-col justify-center border-b border-dashed border-palette-primary/12 px-5 py-5 sm:min-h-36 sm:px-7",
+                            idx % 2 === 0 ? "bg-card/70" : "bg-muted/30",
+                          )}
+                          aria-label={`Idea frame ${17 + (idx % teasers.length)}: ${t.hook} ${t.blurLine}`}
                         >
-                          {t.blurLine}
-                        </p>
-                        <div
-                          className="mt-3 h-px w-full bg-linear-to-r from-transparent via-palette-primary/15 to-transparent"
-                          aria-hidden
-                        />
-                      </article>
-                    ))}
+                          <div className="mb-2 flex items-center justify-between gap-3 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground">
+                            <span className="tabular-nums">
+                              Frame ·{" "}
+                              {String(17 + (idx % teasers.length)).padStart(
+                                3,
+                                "0",
+                              )}
+                            </span>
+                            <span className="rounded border border-palette-primary/20 bg-palette-primary/8 px-1.5 py-0.5 text-[8px] font-bold tracking-wider text-palette-primary">
+                              {t.tag}
+                            </span>
+                          </div>
+                          <p className="text-[15px] font-semibold leading-snug text-foreground sm:text-base">
+                            {t.hook}
+                          </p>
+                          <p
+                            className="mt-1.5 select-none text-sm leading-snug text-foreground/75 blur-[4.5px] sm:blur-[5px]"
+                            aria-hidden
+                          >
+                            {t.blurLine}
+                          </p>
+                          <div
+                            className="mt-3 h-px w-full bg-linear-to-r from-transparent via-palette-primary/15 to-transparent"
+                            aria-hidden
+                          />
+                        </article>
+                      ))}
+                    </div>
                   </div>
-                </div>
 
-                <p className="border-t border-palette-primary/10 bg-muted/25 px-4 py-2.5 text-center font-mono text-[9px] uppercase tracking-[0.28em] text-muted-foreground">
-                  Swipe to reveal · only in the reel
-                </p>
+                  <p className="border-t border-palette-primary/10 bg-muted/25 px-4 py-2.5 text-center font-mono text-[9px] uppercase tracking-[0.28em] text-muted-foreground">
+                    Swipe to reveal · only in the reel
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="hidden sm:flex">
-            <SprocketRail />
-          </div>
+            <div className="hidden sm:flex">
+              <SprocketRail />
+            </div>
           </div>
         </div>
       </div>

@@ -16,10 +16,13 @@ export function PostIdeaFab() {
     let timeout: ReturnType<typeof setTimeout>;
 
     function loop() {
-      timeout = setTimeout(() => {
-        setVisible((v) => !v);
-        loop();
-      }, visible ? SHOW_MS : HIDE_MS);
+      timeout = setTimeout(
+        () => {
+          setVisible((v) => !v);
+          loop();
+        },
+        visible ? SHOW_MS : HIDE_MS,
+      );
     }
 
     loop();

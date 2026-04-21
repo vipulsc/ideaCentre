@@ -35,15 +35,13 @@ export function LandingGateIntro({ children }: LandingGateIntroProps) {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400&display=swap');
-
         .gi-root {
           position: fixed;
           inset: 0;
           z-index: 9999;
           overflow: hidden;
           cursor: pointer;
-          font-family: 'DM Sans', sans-serif;
+          font-family: var(--font-secondary), ui-sans-serif, sans-serif;
         }
 
         .gi-gate-left,
@@ -113,7 +111,7 @@ export function LandingGateIntro({ children }: LandingGateIntroProps) {
         }
 
         .gi-split {
-          font-family: 'Playfair Display', serif;
+          font-family: var(--font-serif), Georgia, "Times New Roman", serif;
           font-size: clamp(40px, 7vw, 80px);
           font-weight: 900;
           letter-spacing: -0.02em;
