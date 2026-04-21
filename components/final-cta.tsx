@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { signIn } from "next-auth/react";
 import { ArrowRight, Mail } from "lucide-react";
 import { Reveal } from "@/components/reveal";
 
@@ -64,12 +65,13 @@ export function FinalCta() {
                       Start Reel
                       <ArrowRight className="size-4" />
                     </Link>
-                    <Link
-                      href="/login"
-                      className="text-sm font-medium text-primary-foreground/80 underline underline-offset-4 transition-colors duration-200 hover:text-primary-foreground sm:text-base"
+                    <button
+                      type="button"
+                      onClick={() => signIn("google", { callbackUrl: "/" })}
+                      className="cursor-pointer text-sm font-medium text-primary-foreground/80 underline underline-offset-4 transition-colors duration-200 hover:text-primary-foreground sm:text-base"
                     >
                       Sign in to save ideas
-                    </Link>
+                    </button>
                   </div>
                 </Reveal>
               </div>
