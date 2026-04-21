@@ -3,12 +3,13 @@
 import {
   FileText,
   Heart,
+  Music2,
   MessageCircle,
   Share2,
   Sparkles,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const BG_COLORS = [
   { value: "#000000", label: "Black" },
@@ -30,6 +31,18 @@ const CATEGORIES = [
   "Sustainability",
   "Entertainment",
   "Other",
+];
+
+const MUSIC_TRACKS = [
+  { value: "/music/music1.mp3", label: "Track 1", swatch: "#FF00B8", glow: "#FF00B8" },
+  { value: "/music/music2.mp3", label: "Track 2", swatch: "#00E5FF", glow: "#00E5FF" },
+  { value: "/music/music3.mp3", label: "Track 3", swatch: "#7CFF00", glow: "#7CFF00" },
+  { value: "/music/music4.mp3", label: "Track 4", swatch: "#FFD400", glow: "#FFD400" },
+  { value: "/music/music5.mp3", label: "Track 5", swatch: "#FF3B30", glow: "#FF3B30" },
+  { value: "/music/music6.mp3", label: "Track 6", swatch: "#9D4DFF", glow: "#9D4DFF" },
+  { value: "/music/music7.mp3", label: "Track 7", swatch: "#00FF94", glow: "#00FF94" },
+  { value: "/music/music8.mp3", label: "Track 8", swatch: "#FF6A00", glow: "#FF6A00" },
+  { value: "", label: "No music", swatch: "#2A2A2A", glow: "#6B7280" },
 ];
 
 const TITLE_MAX_WORDS = 10;
@@ -54,6 +67,7 @@ type NewIdeaModalProps = {
     idea: string;
     description: string;
     color: string;
+    music: string | null;
   }) => void;
 };
 
@@ -67,6 +81,22 @@ export default function NewIdeaModal({
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [idea, setIdea] = useState("");
   const [description, setDescription] = useState("");
+  const [music, setMusic] = useState<string>("");
+  const audioPreviewRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    const audio = audioPreviewRef.current;
+    if (!audio) return;
+    if (!music) {
+      audio.pause();
+      audio.currentTime = 0;
+      return;
+    }
+    audio.currentTime = 0;
+    void audio.play().catch(() => {
+      // Ignore autoplay blocking; user can re-click.
+    });
+  }, [music]);
 
   if (!open) return null;
 
@@ -82,12 +112,14 @@ export default function NewIdeaModal({
       idea: clampWords(idea, IDEA_MAX_WORDS),
       description,
       color,
+      music: music || null,
     });
     setTitle("");
     setCategory(CATEGORIES[0]);
     setIdea("");
     setDescription("");
     setColor(BG_COLORS[0].value);
+    setMusic("");
     onClose();
   }
 
@@ -163,6 +195,50 @@ export default function NewIdeaModal({
               ))}
             </div>
           </fieldset>
+
+          <div>
+            <p className="mb-2 text-sm font-medium text-white/60">Music</p>
+            <div className="flex gap-3">
+              {MUSIC_TRACKS.map((track) => (
+                <button
+                  key={track.label}
+                  type="button"
+                  onClick={() => setMusic(track.value)}
+                  className={`relative h-9 w-9 rounded-full border-2 transition-all ${
+                    music === track.value
+                      ? "border-white scale-110"
+                      : "border-white/20 hover:scale-105 hover:border-white/40"
+                  }`}
+                  style={{
+                    backgroundColor: track.swatch,
+                    boxShadow:
+                      music === track.value
+                        ? `0 0 0 2px rgba(255,255,255,0.25), 0 0 14px ${track.glow}, 0 0 26px ${track.glow}`
+                        : `0 0 10px ${track.glow}66`,
+                  }}
+                  title={track.label}
+                  aria-label={track.label}
+                >
+                  {!track.value ? (
+                    <X className="absolute inset-0 m-auto size-3.5 text-white" />
+                  ) : (
+                    <Music2 className="absolute inset-0 m-auto size-3.5 text-black" />
+                  )}
+                </button>
+              ))}
+            </div>
+            <p className="mt-2 text-xs text-white/40">
+              {music
+                ? `Selected: ${MUSIC_TRACKS.find((track) => track.value === music)?.label ?? "Track"}`
+                : "Selected: No music"}
+            </p>
+            <audio
+              ref={audioPreviewRef}
+              src={music || undefined}
+              preload="metadata"
+              className="hidden"
+            />
+          </div>
 
           {/* Title */}
           <div>

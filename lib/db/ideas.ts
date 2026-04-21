@@ -7,6 +7,7 @@ export type NewIdeaInput = {
   idea: string;
   description?: string | null;
   backgroundColor?: string | null;
+  musicTrack?: string | null;
 };
 
 export async function createIdea(input: NewIdeaInput) {
@@ -20,6 +21,7 @@ export async function createIdea(input: NewIdeaInput) {
       idea: input.idea,
       description: input.description ?? null,
       background_color: input.backgroundColor ?? null,
+      music_track: input.musicTrack ?? null,
     })
     .select("*")
     .single();

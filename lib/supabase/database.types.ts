@@ -159,6 +159,7 @@ export type Database = {
           idea: string;
           insights: Json | null;
           like_count: number;
+          music_track: string | null;
           status: "published" | "removed";
           title: string;
           updated_at: string;
@@ -175,6 +176,7 @@ export type Database = {
           idea: string;
           insights?: Json | null;
           like_count?: number;
+          music_track?: string | null;
           status?: "published" | "removed";
           title: string;
           updated_at?: string;
@@ -191,6 +193,7 @@ export type Database = {
           idea?: string;
           insights?: Json | null;
           like_count?: number;
+          music_track?: string | null;
           status?: "published" | "removed";
           title?: string;
           updated_at?: string;

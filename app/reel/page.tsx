@@ -8,6 +8,8 @@ import {
   MessageCircle,
   Share2,
   Sparkles,
+  Volume2,
+  VolumeX,
   X,
 } from "lucide-react";
 import { signIn, useSession } from "next-auth/react";
@@ -28,6 +30,7 @@ type FeedIdea = {
   isLiked: boolean;
   authorName: string;
   trending: boolean;
+  music?: string | null;
 };
 
 function ReelPageContent() {
@@ -39,6 +42,7 @@ function ReelPageContent() {
   const [error, setError] = useState<string | null>(null);
   const [selectedIdeaId, setSelectedIdeaId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [isMuted, setIsMuted] = useState(true);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const showTrendingOnly = searchParams.get("feed") === "trending";
 
@@ -172,6 +176,30 @@ function ReelPageContent() {
                   className="relative flex h-full w-full snap-start snap-always flex-col justify-center px-6 pr-16 sm:px-10 sm:pr-20"
                   style={{ backgroundColor: reel.color }}
                 >
+                  {reel.music && (
+                    <audio
+                      src={reel.music}
+                      autoPlay
+                      loop
+                      muted={isMuted}
+                      playsInline
+                      preload="metadata"
+                      className="hidden"
+                    />
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setIsMuted((prev) => !prev)}
+                    disabled={!reel.music}
+                    className="absolute left-4 top-4 z-20 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/30 px-3 py-1.5 text-xs font-medium text-white/85 backdrop-blur-sm transition-colors hover:bg-black/45 disabled:cursor-not-allowed disabled:opacity-60 sm:left-5 sm:top-5"
+                  >
+                    {!reel.music || isMuted ? (
+                      <VolumeX className="size-3.5" />
+                    ) : (
+                      <Volume2 className="size-3.5" />
+                    )}
+                    {!reel.music ? "No music" : isMuted ? "Unmute" : "Mute"}
+                  </button>
                   {reel.trending && (
                     <span className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-[#FF0099]/15 px-3 py-1 text-xs font-semibold text-[#FF0099] backdrop-blur-sm sm:right-5 sm:top-5">
                       <Flame className="size-3.5" />

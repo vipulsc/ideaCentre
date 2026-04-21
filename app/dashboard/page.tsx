@@ -20,6 +20,8 @@ import {
   Sparkles,
   Trash2,
   User,
+  Volume2,
+  VolumeX,
   X,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
@@ -48,6 +50,7 @@ type FeedIdea = {
   authorName: string;
   authorEmail: string | null;
   trending: boolean;
+  music?: string | null;
   createdAt?: string | null;
   hotScore?: number;
   trendingRank?: number;
@@ -73,6 +76,9 @@ function ReelCard({
   author,
   color,
   tag,
+  music,
+  isMuted,
+  onToggleMute,
   trending,
   likeCount,
   commentCount,
@@ -91,6 +97,9 @@ function ReelCard({
   author: string;
   color: string;
   tag: string;
+  music?: string | null;
+  isMuted: boolean;
+  onToggleMute: () => void;
   trending?: boolean;
   likeCount: number;
   commentCount: number;
@@ -108,6 +117,30 @@ function ReelCard({
       className="relative flex h-full w-full snap-start snap-always flex-col justify-center border border-white/15 bg-black px-6 pr-16 text-white sm:px-10 sm:pr-20"
       style={{ backgroundColor: color }}
     >
+      {music && (
+        <audio
+          src={music}
+          autoPlay
+          loop
+          muted={isMuted}
+          playsInline
+          preload="metadata"
+          className="hidden"
+        />
+      )}
+      <button
+        type="button"
+        onClick={onToggleMute}
+        disabled={!music}
+        className="absolute left-4 top-4 z-20 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/30 px-3 py-1.5 text-xs font-medium text-white/85 backdrop-blur-sm transition-colors hover:bg-black/45 disabled:cursor-not-allowed disabled:opacity-60 sm:left-5 sm:top-5"
+      >
+        {!music || isMuted ? (
+          <VolumeX className="size-3.5" />
+        ) : (
+          <Volume2 className="size-3.5" />
+        )}
+        {!music ? "No music" : isMuted ? "Unmute" : "Mute"}
+      </button>
       {trending && (
         <span className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold text-white sm:right-5 sm:top-5">
           <Flame className="size-3.5" />
@@ -513,6 +546,7 @@ export default function DashboardPage() {
   const [showProfile, setShowProfile] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [reelFocusIdeaId, setReelFocusIdeaId] = useState<string | null>(null);
+  const [isReelMuted, setIsReelMuted] = useState(true);
   const [selectedIdeaId, setSelectedIdeaId] = useState<string | null>(null);
   const [analyticsIdeaId, setAnalyticsIdeaId] = useState<string | null>(null);
   const [insightsIdeaId, setInsightsIdeaId] = useState<string | null>(null);
@@ -902,6 +936,9 @@ export default function DashboardPage() {
                   author={reel.authorName}
                   color={reel.color}
                   tag={reel.category}
+                  music={reel.music}
+                  isMuted={isReelMuted}
+                  onToggleMute={() => setIsReelMuted((prev) => !prev)}
                   trending={reel.trending}
                   likeCount={reel.likeCount}
                   commentCount={reel.commentCount}

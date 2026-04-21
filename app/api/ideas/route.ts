@@ -12,7 +12,12 @@ type CreateIdeaBody = {
   description?: string;
   color?: string;
   category?: string;
+  music?: string | null;
 };
+
+function isMissingMusicTrackColumn(message?: string | null) {
+  return (message ?? "").toLowerCase().includes("ideas.music_track");
+}
 
 function firstRelation<T>(value: T | T[] | null | undefined): T | null {
   if (!value) return null;
@@ -93,13 +98,26 @@ export async function GET() {
     const session = await getServerSession(authOptions);
     const viewerEmail = session?.user?.email ?? null;
     const supabase = getSupabaseAdminClient();
-    const { data, error } = await supabase
+    const primaryQuery = await supabase
       .from("ideas")
       .select(
-        "id,title,idea,description,background_color,like_count,comment_count,created_at,author_id,status,users!ideas_author_id_fkey(name,email),categories!ideas_category_id_fkey(name)",
+        "id,title,idea,description,background_color,music_track,like_count,comment_count,created_at,author_id,status,users!ideas_author_id_fkey(name,email),categories!ideas_category_id_fkey(name)",
       )
       .filter("status", "eq", "published")
       .order("created_at", { ascending: false });
+
+    const fallbackQuery = isMissingMusicTrackColumn(primaryQuery.error?.message)
+      ? await supabase
+          .from("ideas")
+          .select(
+            "id,title,idea,description,background_color,like_count,comment_count,created_at,author_id,status,users!ideas_author_id_fkey(name,email),categories!ideas_category_id_fkey(name)",
+          )
+          .filter("status", "eq", "published")
+          .order("created_at", { ascending: false })
+      : null;
+
+    const data = fallbackQuery?.data ?? primaryQuery.data;
+    const error = fallbackQuery?.error ?? primaryQuery.error;
 
     if (error) {
       return NextResponse.json(
@@ -153,6 +171,7 @@ export async function GET() {
         idea: row.idea,
         description: row.description,
         color: row.background_color ?? "#0a1a12",
+        music: "music_track" in row ? row.music_track : null,
         likeCount: row.like_count,
         commentCount: row.comment_count,
         category: categoryName ?? "Other",
@@ -229,25 +248,50 @@ export async function POST(request: Request) {
     }
 
     const supabase = getSupabaseAdminClient();
-    const { data, error } = await supabase
+    const insertPayload = {
+      author_id: authorId,
+      category_id: categoryId,
+      title,
+      idea,
+      description: body.description?.trim() || null,
+      background_color: body.color?.trim() || "#0a1a12",
+      music_track: body.music?.trim() || null,
+      insights,
+    };
+
+    const primaryInsert = await supabase
       .from("ideas")
-      .insert({
-        author_id: authorId,
-        category_id: categoryId,
-        title,
-        idea,
-        description: body.description?.trim() || null,
-        background_color: body.color?.trim() || "#0a1a12",
-        insights,
-      })
+      .insert(insertPayload)
       .select(
-        "id,title,idea,description,background_color,like_count,comment_count,created_at,users!ideas_author_id_fkey(name,email),categories!ideas_category_id_fkey(name)",
+        "id,title,idea,description,background_color,music_track,like_count,comment_count,created_at,users!ideas_author_id_fkey(name,email),categories!ideas_category_id_fkey(name)",
       )
       .single();
+
+    const fallbackInsert = isMissingMusicTrackColumn(primaryInsert.error?.message)
+      ? await supabase
+          .from("ideas")
+          .insert({
+            ...insertPayload,
+            music_track: undefined,
+          })
+          .select(
+            "id,title,idea,description,background_color,like_count,comment_count,created_at,users!ideas_author_id_fkey(name,email),categories!ideas_category_id_fkey(name)",
+          )
+          .single()
+      : null;
+
+    const data = fallbackInsert?.data ?? primaryInsert.data;
+    const error = fallbackInsert?.error ?? primaryInsert.error;
 
     if (error) {
       return NextResponse.json(
         { ok: false, message: error.message },
+        { status: 500 },
+      );
+    }
+    if (!data) {
+      return NextResponse.json(
+        { ok: false, message: "Failed to create idea" },
         { status: 500 },
       );
     }
@@ -264,6 +308,7 @@ export async function POST(request: Request) {
         idea: data.idea,
         description: data.description,
         color: data.background_color ?? "#0a1a12",
+        music: "music_track" in data ? data.music_track : null,
         likeCount: data.like_count,
         commentCount: data.comment_count,
         category: createdCategory ?? category,
