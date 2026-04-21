@@ -48,7 +48,7 @@ type FeedIdea = {
   isLiked: boolean;
   isBookmarked: boolean;
   authorName: string;
-  authorEmail: string | null;
+  isOwn?: boolean;
   trending: boolean;
   music?: string | null;
   createdAt?: string | null;
@@ -64,7 +64,6 @@ type FeedComment = {
   likeCount: number;
   isLiked: boolean;
   authorName: string;
-  authorEmail: string | null;
   authorImage: string | null;
   isOwn: boolean;
 };
@@ -578,7 +577,7 @@ export default function DashboardPage() {
   }, []);
 
   const closeMenu = useCallback(() => setProfileMenu(false), []);
-  const myIdeas = ideas.filter((item) => item.authorEmail === userEmail);
+  const myIdeas = ideas.filter((item) => item.isOwn);
   const savedIdeas = ideas.filter((item) => item.isBookmarked);
   const trendingIdeas = ideas.filter((item) => item.trending);
   const displayedIdeas = (

@@ -97,23 +97,26 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     const viewerEmail = session?.user?.email ?? null;
+    const limit = 50;
     const supabase = getSupabaseAdminClient();
     const primaryQuery = await supabase
       .from("ideas")
       .select(
-        "id,title,idea,description,background_color,music_track,like_count,comment_count,created_at,author_id,status,users!ideas_author_id_fkey(name,email),categories!ideas_category_id_fkey(name)",
+        "id,title,idea,description,background_color,music_track,like_count,comment_count,created_at,author_id,status,users!ideas_author_id_fkey(name),categories!ideas_category_id_fkey(name)",
       )
       .filter("status", "eq", "published")
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .limit(limit);
 
     const fallbackQuery = isMissingMusicTrackColumn(primaryQuery.error?.message)
       ? await supabase
           .from("ideas")
           .select(
-            "id,title,idea,description,background_color,like_count,comment_count,created_at,author_id,status,users!ideas_author_id_fkey(name,email),categories!ideas_category_id_fkey(name)",
+            "id,title,idea,description,background_color,like_count,comment_count,created_at,author_id,status,users!ideas_author_id_fkey(name),categories!ideas_category_id_fkey(name)",
           )
           .filter("status", "eq", "published")
           .order("created_at", { ascending: false })
+          .limit(limit)
       : null;
 
     const data = fallbackQuery?.data ?? primaryQuery.data;
@@ -129,6 +132,7 @@ export async function GET() {
     const ideaIds = (data ?? []).map((row) => row.id);
     const likedIdeaIds = new Set<string>();
     const bookmarkedIdeaIds = new Set<string>();
+    let viewerUserId: string | null = null;
 
     if (viewerEmail && ideaIds.length > 0) {
       const { data: viewerUser } = await supabase
@@ -138,6 +142,7 @@ export async function GET() {
         .maybeSingle();
 
       if (viewerUser && "id" in viewerUser) {
+        viewerUserId = viewerUser.id;
         const { data: likes } = await supabase
           .from("likes")
           .select("idea_id")
@@ -163,7 +168,6 @@ export async function GET() {
       const author = firstRelation(row.users);
       const categoryName = category?.name;
       const authorName = author?.name;
-      const authorEmail = author?.email;
 
       return {
         id: row.id,
@@ -176,11 +180,10 @@ export async function GET() {
         commentCount: row.comment_count,
         category: categoryName ?? "Other",
         authorName: authorName ?? "Anonymous",
-        authorEmail: authorEmail ?? null,
+        isOwn: viewerUserId ? row.author_id === viewerUserId : false,
         isLiked: likedIdeaIds.has(row.id),
         isBookmarked: bookmarkedIdeaIds.has(row.id),
         createdAt: row.created_at,
-        isOwn: false,
       };
     });
 
@@ -263,7 +266,7 @@ export async function POST(request: Request) {
       .from("ideas")
       .insert(insertPayload)
       .select(
-        "id,title,idea,description,background_color,music_track,like_count,comment_count,created_at,users!ideas_author_id_fkey(name,email),categories!ideas_category_id_fkey(name)",
+        "id,title,idea,description,background_color,music_track,like_count,comment_count,created_at,users!ideas_author_id_fkey(name),categories!ideas_category_id_fkey(name)",
       )
       .single();
 
@@ -275,7 +278,7 @@ export async function POST(request: Request) {
             music_track: undefined,
           })
           .select(
-            "id,title,idea,description,background_color,like_count,comment_count,created_at,users!ideas_author_id_fkey(name,email),categories!ideas_category_id_fkey(name)",
+            "id,title,idea,description,background_color,like_count,comment_count,created_at,users!ideas_author_id_fkey(name),categories!ideas_category_id_fkey(name)",
           )
           .single()
       : null;
@@ -298,7 +301,6 @@ export async function POST(request: Request) {
 
     const createdCategory = firstRelation(data.categories)?.name;
     const createdAuthorName = firstRelation(data.users)?.name;
-    const createdAuthorEmail = firstRelation(data.users)?.email;
 
     return NextResponse.json({
       ok: true,
@@ -313,12 +315,11 @@ export async function POST(request: Request) {
         commentCount: data.comment_count,
         category: createdCategory ?? category,
         authorName: createdAuthorName ?? session.user?.name ?? "You",
-        authorEmail: createdAuthorEmail ?? email,
+        isOwn: true,
         isLiked: false,
         isBookmarked: false,
         trending: false,
         createdAt: data.created_at,
-        isOwn: true,
       },
     });
   } catch (error) {

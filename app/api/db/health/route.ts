@@ -7,15 +7,19 @@ export async function GET() {
     const { error } = await supabase.from("categories").select("id").limit(1);
 
     if (error) {
+      console.error("DB health check failed", error);
       return NextResponse.json(
-        { ok: false, message: error.message },
+        { ok: false, message: "Database check failed" },
         { status: 500 },
       );
     }
 
     return NextResponse.json({ ok: true });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ ok: false, message }, { status: 500 });
+    console.error("DB health route crashed", error);
+    return NextResponse.json(
+      { ok: false, message: "Database check failed" },
+      { status: 500 },
+    );
   }
 }

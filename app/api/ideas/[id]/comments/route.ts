@@ -7,6 +7,9 @@ type CreateCommentBody = {
   body?: string;
 };
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 type CommentQueryRow = {
   id: string;
   body: string;
@@ -16,7 +19,6 @@ type CommentQueryRow = {
   users:
     | {
         name: string | null;
-        email: string | null;
         image: string | null;
       }
     | null;
@@ -27,7 +29,14 @@ export async function GET(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
+    const limit = 100;
     const { id: ideaId } = await context.params;
+    if (!UUID_RE.test(ideaId)) {
+      return NextResponse.json(
+        { ok: false, message: "Invalid idea id" },
+        { status: 400 },
+      );
+    }
     const session = await getServerSession(authOptions);
     const viewerEmail = session?.user?.email ?? null;
 
@@ -36,11 +45,12 @@ export async function GET(
     let { data, error } = await supabase
       .from("comments")
       .select(
-        "id,body,created_at,like_count,author_id,users!comments_author_id_fkey(name,email,image)",
+        "id,body,created_at,like_count,author_id,users!comments_author_id_fkey(name,image)",
       )
       .filter("idea_id", "eq", ideaId)
       .is("deleted_at", null)
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: true })
+      .limit(limit);
     let typedData = (data ?? null) as CommentQueryRow[] | null;
 
     // Backward compatibility when migration 003_comment_likes.sql
@@ -49,10 +59,11 @@ export async function GET(
       includeLikeCount = false;
       const retry = await supabase
         .from("comments")
-        .select("id,body,created_at,author_id,users!comments_author_id_fkey(name,email,image)")
+        .select("id,body,created_at,author_id,users!comments_author_id_fkey(name,image)")
         .filter("idea_id", "eq", ideaId)
         .is("deleted_at", null)
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: true })
+        .limit(limit);
       typedData = (retry.data ?? null) as CommentQueryRow[] | null;
       error = retry.error;
     }
@@ -66,6 +77,7 @@ export async function GET(
 
     const commentIds = (typedData ?? []).map((row) => row.id);
     const likedCommentIds = new Set<string>();
+    let viewerUserId: string | null = null;
 
     if (viewerEmail && commentIds.length > 0) {
       const { data: viewerUser } = await supabase
@@ -75,6 +87,7 @@ export async function GET(
         .maybeSingle();
 
       if (viewerUser && "id" in viewerUser) {
+        viewerUserId = viewerUser.id;
         const { data: likes } = await supabase
           .from("comment_likes")
           .select("comment_id")
@@ -92,9 +105,8 @@ export async function GET(
       likeCount: includeLikeCount ? ((row as { like_count?: number }).like_count ?? 0) : 0,
       isLiked: likedCommentIds.has(row.id),
       authorName: row.users?.name ?? "Anonymous",
-      authorEmail: row.users?.email ?? null,
       authorImage: row.users?.image ?? null,
-      isOwn: viewerEmail ? row.users?.email === viewerEmail : false,
+      isOwn: viewerUserId ? row.author_id === viewerUserId : false,
     }));
 
     return NextResponse.json({ ok: true, comments });
@@ -120,6 +132,12 @@ export async function POST(
     }
 
     const { id: ideaId } = await context.params;
+    if (!UUID_RE.test(ideaId)) {
+      return NextResponse.json(
+        { ok: false, message: "Invalid idea id" },
+        { status: 400 },
+      );
+    }
     const body = (await request.json()) as CreateCommentBody;
     const text = body.body?.trim() ?? "";
 
@@ -195,7 +213,6 @@ export async function POST(
         likeCount: 0,
         isLiked: false,
         authorName: userRow.name ?? "You",
-        authorEmail: userRow.email,
         authorImage: userRow.image ?? null,
         isOwn: true,
       },
