@@ -4,6 +4,7 @@ import { CuriosityPeek } from "@/components/curiosity-peek";
 import { FinalCta } from "@/components/final-cta";
 import { Hero } from "@/components/hero";
 import { HowItWorks } from "@/components/how-it-works";
+import { LandingGateIntro } from "@/components/landing-gate-intro";
 import { Navbar } from "@/components/navbar";
 import { PostIdeaFab } from "@/components/post-idea-fab";
 import { Tagline } from "@/components/tagline";
@@ -19,16 +20,18 @@ export default async function Home() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <Navbar />
-      <Hero />
-      <Tagline />
-      <Community />
-      <HowItWorks />
-      <AiInsights />
-      <CuriosityPeek />
-      <FinalCta />
-      <PostIdeaFab />
-    </div>
+    <LandingGateIntro>
+      <div className="flex min-h-0 flex-1 flex-col">
+        <Navbar />
+        <Hero />
+        <Tagline />
+        <Community />
+        <HowItWorks />
+        <AiInsights />
+        <CuriosityPeek />
+        <FinalCta />
+        <PostIdeaFab />
+      </div>
+    </LandingGateIntro>
   );
 }
