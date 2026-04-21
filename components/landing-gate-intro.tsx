@@ -15,13 +15,13 @@ const handleOpen = () => {
 if (hasOpened.current) return;
 hasOpened.current = true;
 setOpened(true);
-setTimeout(() => setGone(true), 1600);
+setTimeout(() => setGone(true), 550);
 };
 
 useEffect(() => {
 const timer = window.setTimeout(() => {
 handleOpen();
-}, 120);
+}, 10);
 
 const handler = (e: KeyboardEvent) => {
   if (e.key === "Enter" || e.key === " ") handleOpen();
@@ -53,7 +53,7 @@ font-family: var(--font-secondary), ui-sans-serif, sans-serif;
       width: 50%;
       height: 100%;
       overflow: hidden;
-      transition: transform 1.4s cubic-bezier(0.77, 0, 0.18, 1);
+      transition: transform 0.5s cubic-bezier(0.77, 0, 0.18, 1);
       will-change: transform;
     }
 
@@ -129,8 +129,8 @@ font-family: var(--font-secondary), ui-sans-serif, sans-serif;
       font-weight: 900;
       letter-spacing: -0.02em;
       line-height: 1;
-      transition: transform 1.4s cubic-bezier(0.77, 0, 0.18, 1),
-                  opacity 1.1s ease;
+      transition: transform 0.5s cubic-bezier(0.77, 0, 0.18, 1),
+                  opacity 0.35s ease;
       white-space: nowrap;
     }
 

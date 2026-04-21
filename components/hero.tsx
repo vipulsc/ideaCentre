@@ -18,14 +18,12 @@ const ease = [0.22, 1, 0.36, 1] as const;
 function useFade(delay: number) {
   const reduce = useReducedMotion();
   return {
-    initial: reduce
-      ? { opacity: 0 }
-      : { opacity: 0, y: 18, filter: "blur(4px)" },
+    initial: false,
     whileInView: reduce
       ? { opacity: 1 }
       : { opacity: 1, y: 0, filter: "blur(0px)" },
     viewport: { once: true } as const,
-    transition: { duration: reduce ? 0.15 : 0.6, delay, ease },
+    transition: { duration: reduce ? 0.01 : 0.35, delay: reduce ? 0 : delay, ease },
   };
 }
 
@@ -81,10 +79,7 @@ export function Hero() {
       <div className="mx-auto w-full max-w-screen-2xl 2xl:max-w-800">
         <motion.div
           className="isolate relative overflow-hidden rounded-2xl bg-palette-primary px-4 py-8 text-primary-foreground sm:px-10 sm:py-9 md:px-12 md:py-10 lg:px-12 lg:py-11 xl:rounded-3xl xl:px-14 xl:py-12"
-          initial={reduce ? false : { opacity: 0, scale: 0.97 }}
-          whileInView={reduce ? undefined : { opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7, ease }}
+          initial={false}
         >
           <div
             aria-hidden
