@@ -23,7 +23,11 @@ function useFade(delay: number) {
       ? { opacity: 1 }
       : { opacity: 1, y: 0, filter: "blur(0px)" },
     viewport: { once: true } as const,
-    transition: { duration: reduce ? 0.01 : 0.35, delay: reduce ? 0 : delay, ease },
+    transition: {
+      duration: reduce ? 0.01 : 0.35,
+      delay: reduce ? 0 : delay,
+      ease,
+    },
   };
 }
 
@@ -78,14 +82,14 @@ export function Hero() {
     >
       <div className="mx-auto w-full max-w-screen-2xl 2xl:max-w-800">
         <motion.div
-          className="isolate relative overflow-hidden rounded-2xl bg-palette-primary px-4 py-8 text-primary-foreground sm:px-10 sm:py-9 md:px-12 md:py-10 lg:px-12 lg:py-11 xl:rounded-3xl xl:px-14 xl:py-12"
+          className="isolate relative flex min-h-144 flex-col overflow-hidden rounded-2xl bg-palette-primary px-4 py-9 text-primary-foreground sm:min-h-152 sm:px-10 sm:py-10 md:min-h-160 md:px-12 md:py-11 lg:min-h-168 lg:px-12 lg:py-11 xl:min-h-176 xl:rounded-3xl xl:px-14 xl:py-12 2xl:min-h-192 2xl:py-14"
           initial={false}
         >
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 rounded-2xl bg-[url('/texture2.png')] bg-repeat xl:rounded-3xl"
           />
-          <div className="relative z-10 grid items-center gap-8 lg:grid-cols-[3fr_2fr] lg:gap-10 xl:gap-12">
+          <div className="relative z-10 grid flex-1 items-center gap-8 lg:grid-cols-[3fr_2fr] lg:gap-10 xl:gap-12">
             <div
               aria-hidden
               className="pointer-events-none absolute inset-y-8 left-1/2 hidden w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-primary-foreground/30 to-transparent lg:block"
