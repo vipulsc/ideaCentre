@@ -37,10 +37,10 @@ export default function PrivacyPage() {
             <p className="mt-2">
               For privacy questions, contact{" "}
               <a
-                href="mailto:hello@ideacentre.app"
+                href="mailto:hello@ideacentre.xyz?bcc=vipulsinghs.04s@gmail.com"
                 className="underline underline-offset-4 hover:text-foreground"
               >
-                hello@ideacentre.app
+                hello@ideacentre.xyz
               </a>
               .
             </p>

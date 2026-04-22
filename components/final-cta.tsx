@@ -25,7 +25,11 @@ const footerColumns = [
 ] as const;
 
 const socials = [
-  { icon: Mail, href: "mailto:hello@ideacentre.app", label: "Email" },
+  {
+    icon: Mail,
+    href: "mailto:hello@ideacentre.xyz?bcc=vipulsinghs.04s@gmail.com",
+    label: "Email",
+  },
 ];
 
 export function FinalCta() {
