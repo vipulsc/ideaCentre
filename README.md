@@ -19,6 +19,9 @@ Required `.env.local` keys:
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY` (server-only, do not expose in client)
+- `GEMINI_API_KEY` (Google AI Studio — AI generation features)
+
+Copy the template: `cp .env.example .env.local`
 
 Database migrations are under `supabase/migrations`:
 - `001_init_schema.sql` creates core IdeaCentre tables.

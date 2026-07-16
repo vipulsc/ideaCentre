@@ -43,12 +43,13 @@ export async function DELETE(
       );
     }
 
-    const { data: deletedIdea, error } = await supabase
+    const { data: removedIdea, error } = await supabase
       .from("ideas")
-      .delete()
+      .update({ status: "removed", updated_at: new Date().toISOString() })
       .select("id")
       .filter("id", "eq", id)
       .filter("author_id", "eq", userRow.id)
+      .filter("status", "eq", "published")
       .maybeSingle();
 
     if (error) {
@@ -57,7 +58,7 @@ export async function DELETE(
         { status: 500 },
       );
     }
-    if (!deletedIdea) {
+    if (!removedIdea) {
       return NextResponse.json(
         { ok: false, message: "Idea not found" },
         { status: 404 },

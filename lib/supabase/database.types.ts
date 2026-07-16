@@ -280,7 +280,46 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      consume_rate_limit: {
+        Args: {
+          p_key: string;
+          p_limit: number;
+          p_window_seconds: number;
+        };
+        Returns: {
+          allowed: boolean;
+          remaining: number;
+        }[];
+      };
+      toggle_idea_like: {
+        Args: {
+          p_user_id: string;
+          p_idea_id: string;
+        };
+        Returns: {
+          is_liked: boolean;
+          like_count: number;
+        }[];
+      };
+      toggle_idea_bookmark: {
+        Args: {
+          p_user_id: string;
+          p_idea_id: string;
+        };
+        Returns: {
+          is_bookmarked: boolean;
+        }[];
+      };
+      toggle_comment_like: {
+        Args: {
+          p_user_id: string;
+          p_comment_id: string;
+        };
+        Returns: {
+          is_liked: boolean;
+          like_count: number;
+        }[];
+      };
     };
     Enums: {
       idea_status: "published" | "removed";

@@ -36,6 +36,19 @@ export default function LoginButton({ className }: LoginButtonProps) {
     };
   }, [showConfirm, close]);
 
+  if (status === "loading") {
+    return (
+      <span
+        className={`inline-flex h-7 min-w-14 items-center justify-center rounded-full bg-black/5 px-3 text-xs text-foreground/40 ${
+          className ?? ""
+        }`}
+        aria-hidden
+      >
+        …
+      </span>
+    );
+  }
+
   if (status === "authenticated") {
     const userName = session.user?.name?.trim() || "User";
     const image = session.user?.image;
@@ -112,7 +125,7 @@ export default function LoginButton({ className }: LoginButtonProps) {
   return (
     <button
       type="button"
-      onClick={() => signIn("google", { callbackUrl: "/" })}
+      onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
       className={className}
     >
       Login

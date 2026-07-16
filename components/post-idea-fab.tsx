@@ -71,7 +71,7 @@ export function PostIdeaFab() {
 
       <button
         type="button"
-        onClick={() => signIn("google", { callbackUrl: "/" })}
+        onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
         className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition-shadow duration-200 hover:shadow-xl hover:shadow-primary/40"
         aria-label="Post your idea"
       >

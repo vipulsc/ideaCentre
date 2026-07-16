@@ -25,7 +25,7 @@ import {
   X,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   PolarAngleAxis,
   RadialBar,
@@ -34,6 +34,8 @@ import {
 } from "recharts";
 import NewIdeaModal from "@/components/new-idea-modal";
 import { AiInsightsModal } from "@/components/ai-insights-modal";
+import { ReelAudio } from "@/components/reel-audio";
+import { useActiveReelId } from "@/hooks/use-active-reel-id";
 import { shareIdea } from "@/lib/share";
 
 type FeedIdea = {
@@ -76,8 +78,10 @@ function ReelCard({
   color,
   tag,
   music,
+  isActive,
   isMuted,
   onToggleMute,
+  onAutoplayBlocked,
   trending,
   likeCount,
   commentCount,
@@ -97,8 +101,10 @@ function ReelCard({
   color: string;
   tag: string;
   music?: string | null;
+  isActive: boolean;
   isMuted: boolean;
   onToggleMute: () => void;
+  onAutoplayBlocked?: () => void;
   trending?: boolean;
   likeCount: number;
   commentCount: number;
@@ -116,17 +122,12 @@ function ReelCard({
       className="relative flex h-full w-full snap-start snap-always flex-col justify-center border border-white/15 bg-black px-6 pr-16 text-white sm:px-10 sm:pr-20"
       style={{ backgroundColor: color }}
     >
-      {music && (
-        <audio
-          src={music}
-          autoPlay
-          loop
-          muted={isMuted}
-          playsInline
-          preload="metadata"
-          className="hidden"
-        />
-      )}
+      <ReelAudio
+        src={music}
+        active={isActive}
+        muted={isMuted}
+        onAutoplayBlocked={onAutoplayBlocked}
+      />
       <button
         type="button"
         onClick={onToggleMute}
@@ -545,7 +546,7 @@ export default function DashboardPage() {
   const [showProfile, setShowProfile] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [reelFocusIdeaId, setReelFocusIdeaId] = useState<string | null>(null);
-  const [isReelMuted, setIsReelMuted] = useState(true);
+  const [isReelMuted, setIsReelMuted] = useState(false);
   const [selectedIdeaId, setSelectedIdeaId] = useState<string | null>(null);
   const [analyticsIdeaId, setAnalyticsIdeaId] = useState<string | null>(null);
   const [insightsIdeaId, setInsightsIdeaId] = useState<string | null>(null);
@@ -559,10 +560,15 @@ export default function DashboardPage() {
   const [ideas, setIdeas] = useState<FeedIdea[]>([]);
   const [isLoadingIdeas, setIsLoadingIdeas] = useState(true);
   const [ideasError, setIdeasError] = useState<string | null>(null);
+  const [hasMoreIdeas, setHasMoreIdeas] = useState(false);
+  const [isLoadingMoreIdeas, setIsLoadingMoreIdeas] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const reelScrollRef = useRef<HTMLDivElement>(null);
+  const feedOffsetRef = useRef(0);
+  const likeInFlightRef = useRef(new Set<string>());
+  const bookmarkInFlightRef = useRef(new Set<string>());
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
@@ -577,17 +583,21 @@ export default function DashboardPage() {
   }, []);
 
   const closeMenu = useCallback(() => setProfileMenu(false), []);
+  const feedScope =
+    activeFeed === "saved"
+      ? "saved"
+      : activeFeed === "myIdeas"
+        ? "mine"
+        : "feed";
   const myIdeas = ideas.filter((item) => item.isOwn);
   const savedIdeas = ideas.filter((item) => item.isBookmarked);
   const trendingIdeas = ideas.filter((item) => item.trending);
   const displayedIdeas = (
-    activeFeed === "myIdeas"
-      ? myIdeas
-      : activeFeed === "saved"
-        ? savedIdeas
-        : activeFeed === "trending"
-          ? trendingIdeas
-          : ideas
+    feedScope === "feed"
+      ? activeFeed === "trending"
+        ? trendingIdeas
+        : ideas
+      : ideas
   )
     .slice()
     .sort((a, b) => {
@@ -612,34 +622,80 @@ export default function DashboardPage() {
     ...myIdeas.map((i) => i.hotScore ?? 0),
     0,
   );
+  const reelItemIds = useMemo(
+    () => displayedIdeas.map((idea) => idea.id),
+    [displayedIdeas],
+  );
+  const activeReelId = useActiveReelId(
+    reelScrollRef,
+    reelItemIds,
+    true,
+  );
+  const handleReelAutoplayBlocked = useCallback(() => {
+    setIsReelMuted(true);
+    showToast("Tap Unmute to play music");
+  }, [showToast]);
 
-  const loadIdeas = useCallback(async () => {
-    try {
-      setIsLoadingIdeas(true);
-      setIdeasError(null);
-      const response = await fetch("/api/ideas");
-      const payload = (await response.json()) as {
-        ok: boolean;
-        ideas?: FeedIdea[];
-        message?: string;
-      };
+  const loadIdeas = useCallback(
+    async (mode: "replace" | "append" = "replace") => {
+      try {
+        if (mode === "replace") {
+          setIsLoadingIdeas(true);
+          feedOffsetRef.current = 0;
+        } else {
+          if (!hasMoreIdeas || isLoadingMoreIdeas) return;
+          setIsLoadingMoreIdeas(true);
+        }
+        setIdeasError(null);
 
-      if (!response.ok || !payload.ok || !payload.ideas) {
-        setIdeasError(payload.message ?? "Failed to load ideas");
-        return;
+        const params = new URLSearchParams({
+          scope: feedScope,
+          limit: "30",
+          offset: String(mode === "append" ? feedOffsetRef.current : 0),
+        });
+
+        const response = await fetch(`/api/ideas?${params.toString()}`);
+        const payload = (await response.json()) as {
+          ok: boolean;
+          ideas?: FeedIdea[];
+          nextOffset?: number | null;
+          hasMore?: boolean;
+          message?: string;
+        };
+
+        if (!response.ok || !payload.ok || !payload.ideas) {
+          setIdeasError(payload.message ?? "Failed to load ideas");
+          return;
+        }
+
+        feedOffsetRef.current =
+          typeof payload.nextOffset === "number"
+            ? payload.nextOffset
+            : feedOffsetRef.current + payload.ideas.length;
+        setHasMoreIdeas(Boolean(payload.hasMore));
+
+        setIdeas((prev) => {
+          if (mode === "replace") return payload.ideas as FeedIdea[];
+          const seen = new Set(prev.map((idea) => idea.id));
+          const merged = [...prev];
+          for (const idea of payload.ideas as FeedIdea[]) {
+            if (!seen.has(idea.id)) merged.push(idea);
+          }
+          return merged;
+        });
+      } catch {
+        setIdeasError("Failed to load ideas");
+      } finally {
+        setIsLoadingIdeas(false);
+        setIsLoadingMoreIdeas(false);
       }
-
-      setIdeas(payload.ideas);
-    } catch {
-      setIdeasError("Failed to load ideas");
-    } finally {
-      setIsLoadingIdeas(false);
-    }
-  }, []);
+    },
+    [feedScope, hasMoreIdeas, isLoadingMoreIdeas],
+  );
 
   useEffect(() => {
-    void loadIdeas();
-  }, [loadIdeas]);
+    void loadIdeas("replace");
+  }, [feedScope]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const openComments = useCallback(async (ideaId: string) => {
     setCommentsIdeaId(ideaId);
@@ -801,6 +857,8 @@ export default function DashboardPage() {
   );
 
   const toggleLike = useCallback(async (ideaId: string) => {
+    if (likeInFlightRef.current.has(ideaId)) return;
+    likeInFlightRef.current.add(ideaId);
     try {
       const response = await fetch(`/api/ideas/${ideaId}/like`, {
         method: "POST",
@@ -830,10 +888,14 @@ export default function DashboardPage() {
       );
     } catch {
       setIdeasError("Failed to update like");
+    } finally {
+      likeInFlightRef.current.delete(ideaId);
     }
   }, []);
 
   const toggleBookmark = useCallback(async (ideaId: string) => {
+    if (bookmarkInFlightRef.current.has(ideaId)) return;
+    bookmarkInFlightRef.current.add(ideaId);
     try {
       const response = await fetch(`/api/ideas/${ideaId}/bookmark`, {
         method: "POST",
@@ -858,6 +920,8 @@ export default function DashboardPage() {
       );
     } catch {
       setIdeasError("Failed to update bookmark");
+    } finally {
+      bookmarkInFlightRef.current.delete(ideaId);
     }
   }, []);
 
@@ -936,8 +1000,10 @@ export default function DashboardPage() {
                   color={reel.color}
                   tag={reel.category}
                   music={reel.music}
+                  isActive={activeReelId === reel.id}
                   isMuted={isReelMuted}
                   onToggleMute={() => setIsReelMuted((prev) => !prev)}
+                  onAutoplayBlocked={handleReelAutoplayBlocked}
                   trending={reel.trending}
                   likeCount={reel.likeCount}
                   commentCount={reel.commentCount}
@@ -952,6 +1018,18 @@ export default function DashboardPage() {
                 />
               </div>
             ))
+          )}
+          {hasMoreIdeas && (
+            <div className="flex shrink-0 items-center justify-center py-6">
+              <button
+                type="button"
+                onClick={() => void loadIdeas("append")}
+                disabled={isLoadingMoreIdeas}
+                className="rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm text-white/80 backdrop-blur-sm transition-colors hover:bg-white/15 disabled:opacity-50"
+              >
+                {isLoadingMoreIdeas ? "Loading…" : "Load more"}
+              </button>
+            </div>
           )}
         </div>
 
@@ -1285,6 +1363,18 @@ export default function DashboardPage() {
               ))}
             </div>
           )}
+          {hasMoreIdeas && (
+            <div className="mt-6 flex justify-center">
+              <button
+                type="button"
+                onClick={() => void loadIdeas("append")}
+                disabled={isLoadingMoreIdeas}
+                className="rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm text-white/80 transition-colors hover:bg-white/15 disabled:opacity-50"
+              >
+                {isLoadingMoreIdeas ? "Loading…" : "Load more"}
+              </button>
+            </div>
+          )}
         </div>
 
         <button
@@ -1315,15 +1405,16 @@ export default function DashboardPage() {
             };
 
             if (!response.ok || !payload.ok || !payload.idea) {
-              setIdeasError(payload.message ?? "Failed to create idea");
-              return;
+              const message = payload.message ?? "Failed to create idea";
+              setIdeasError(message);
+              throw new Error(message);
             }
 
             setIdeas((prev) => [payload.idea as FeedIdea, ...prev]);
             setPostIdeaProgress(100);
-          } catch {
-            setIdeasError("Failed to create idea");
+          } catch (err) {
             setPostIdeaProgress(100);
+            throw err;
           } finally {
             setTimeout(() => {
               setIsPostingIdea(false);

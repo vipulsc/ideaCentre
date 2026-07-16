@@ -71,7 +71,7 @@ export function FinalCta() {
                     </Link>
                     <button
                       type="button"
-                      onClick={() => signIn("google", { callbackUrl: "/" })}
+                      onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
                       className="cursor-pointer text-sm font-medium text-primary-foreground/80 underline underline-offset-4 transition-colors duration-200 hover:text-primary-foreground sm:text-base"
                     >
                       Sign in to save ideas

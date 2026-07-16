@@ -68,7 +68,7 @@ type NewIdeaModalProps = {
     description: string;
     color: string;
     music: string | null;
-  }) => void;
+  }) => void | Promise<void>;
 };
 
 export default function NewIdeaModal({
@@ -82,6 +82,8 @@ export default function NewIdeaModal({
   const [idea, setIdea] = useState("");
   const [description, setDescription] = useState("");
   const [music, setMusic] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const audioPreviewRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -98,29 +100,43 @@ export default function NewIdeaModal({
     });
   }, [music]);
 
+  useEffect(() => {
+    if (open) setSubmitError(null);
+  }, [open]);
+
   if (!open) return null;
 
   const titleWords = countWords(title);
   const ideaWords = countWords(idea);
-  const canSubmit = title.trim() !== "" && idea.trim() !== "";
+  const canSubmit = title.trim() !== "" && idea.trim() !== "" && !isSubmitting;
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!canSubmit) return;
-    onSubmit({
-      title: clampWords(title, TITLE_MAX_WORDS),
-      category,
-      idea: clampWords(idea, IDEA_MAX_WORDS),
-      description,
-      color,
-      music: music || null,
-    });
-    setTitle("");
-    setCategory(CATEGORIES[0]);
-    setIdea("");
-    setDescription("");
-    setColor(BG_COLORS[0].value);
-    setMusic("");
-    onClose();
+    setIsSubmitting(true);
+    setSubmitError(null);
+    try {
+      await onSubmit({
+        title: clampWords(title, TITLE_MAX_WORDS),
+        category,
+        idea: clampWords(idea, IDEA_MAX_WORDS),
+        description,
+        color,
+        music: music || null,
+      });
+      setTitle("");
+      setCategory(CATEGORIES[0]);
+      setIdea("");
+      setDescription("");
+      setColor(BG_COLORS[0].value);
+      setMusic("");
+      onClose();
+    } catch (err) {
+      setSubmitError(
+        err instanceof Error ? err.message : "Failed to post idea",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -337,22 +353,28 @@ export default function NewIdeaModal({
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 rounded-xl border border-white/10 px-4 py-2.5 text-sm font-medium text-white/60 transition-colors hover:bg-white/6 hover:text-white"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={!canSubmit}
-              className="flex-1 rounded-xl bg-[#00FF85] px-4 py-2.5 text-sm font-semibold text-[#0D0D0D] transition-colors hover:bg-[#00FF85]/85 disabled:opacity-40 disabled:hover:bg-[#00FF85]"
-            >
-              Post Idea
-            </button>
+          <div className="flex flex-col gap-2 pt-2">
+            {submitError && (
+              <p className="text-xs text-[#FF0099]">{submitError}</p>
+            )}
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={isSubmitting}
+                className="flex-1 rounded-xl border border-white/10 px-4 py-2.5 text-sm font-medium text-white/60 transition-colors hover:bg-white/6 hover:text-white disabled:opacity-40"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleSubmit()}
+                disabled={!canSubmit}
+                className="flex-1 rounded-xl bg-[#00FF85] px-4 py-2.5 text-sm font-semibold text-[#0D0D0D] transition-colors hover:bg-[#00FF85]/85 disabled:opacity-40 disabled:hover:bg-[#00FF85]"
+              >
+                {isSubmitting ? "Posting…" : "Post Idea"}
+              </button>
+            </div>
           </div>
         </div>
       </div>

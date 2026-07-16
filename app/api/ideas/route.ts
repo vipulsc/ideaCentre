@@ -3,8 +3,12 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { rankByHotScore } from "@/lib/trending";
-import { generateIdeaInsights } from "@/lib/ai/insights";
-import type { Json } from "@/lib/supabase/database.types";
+import {
+  FEED_MAX_PAGE_SIZE,
+  FEED_PAGE_SIZE,
+  normalizeIdeaFields,
+} from "@/lib/idea-limits";
+import { consumeRateLimit } from "@/lib/rate-limit";
 
 type CreateIdeaBody = {
   title?: string;
@@ -14,6 +18,8 @@ type CreateIdeaBody = {
   category?: string;
   music?: string | null;
 };
+
+type FeedScope = "feed" | "saved" | "mine";
 
 function isMissingMusicTrackColumn(message?: string | null) {
   return (message ?? "").toLowerCase().includes("ideas.music_track");
@@ -30,6 +36,23 @@ function slugifyCategory(input: string) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+function parseScope(value: string | null): FeedScope {
+  if (value === "saved" || value === "mine") return value;
+  return "feed";
+}
+
+function parseLimit(value: string | null) {
+  const n = Number(value ?? FEED_PAGE_SIZE);
+  if (!Number.isFinite(n)) return FEED_PAGE_SIZE;
+  return Math.min(Math.max(Math.trunc(n), 1), FEED_MAX_PAGE_SIZE);
+}
+
+function parseOffset(value: string | null) {
+  const n = Number(value ?? 0);
+  if (!Number.isFinite(n) || n < 0) return 0;
+  return Math.min(Math.trunc(n), 10_000);
 }
 
 async function ensureUser(params: {
@@ -66,15 +89,13 @@ async function ensureCategoryId(category: string) {
     return null;
   }
 
-  const { error: upsertError } = await supabase
-    .from("categories")
-    .upsert(
-      {
-        slug,
-        name: category.trim(),
-      },
-      { onConflict: "slug" },
-    );
+  const { error: upsertError } = await supabase.from("categories").upsert(
+    {
+      slug,
+      name: category.trim(),
+    },
+    { onConflict: "slug" },
+  );
 
   if (upsertError) {
     throw new Error(`Failed to upsert category: ${upsertError.message}`);
@@ -93,33 +114,120 @@ async function ensureCategoryId(category: string) {
   return data.id;
 }
 
-export async function GET() {
+const IDEA_SELECT_WITH_MUSIC =
+  "id,title,idea,description,background_color,music_track,like_count,comment_count,created_at,author_id,status,users!ideas_author_id_fkey(name),categories!ideas_category_id_fkey(name)";
+const IDEA_SELECT_NO_MUSIC =
+  "id,title,idea,description,background_color,like_count,comment_count,created_at,author_id,status,users!ideas_author_id_fkey(name),categories!ideas_category_id_fkey(name)";
+
+type IdeaListRow = {
+  id: string;
+  title: string;
+  idea: string;
+  description: string | null;
+  background_color: string | null;
+  music_track?: string | null;
+  like_count: number;
+  comment_count: number;
+  created_at: string;
+  author_id: string;
+  status: string;
+  users: { name: string | null } | { name: string | null }[] | null;
+  categories: { name: string | null } | { name: string | null }[] | null;
+};
+
+export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     const viewerEmail = session?.user?.email ?? null;
-    const limit = 50;
-    const supabase = getSupabaseAdminClient();
-    const primaryQuery = await supabase
-      .from("ideas")
-      .select(
-        "id,title,idea,description,background_color,music_track,like_count,comment_count,created_at,author_id,status,users!ideas_author_id_fkey(name),categories!ideas_category_id_fkey(name)",
-      )
-      .filter("status", "eq", "published")
-      .order("created_at", { ascending: false })
-      .limit(limit);
+    const url = new URL(request.url);
+    const scope = parseScope(url.searchParams.get("scope"));
+    const limit = parseLimit(url.searchParams.get("limit"));
+    const offset = parseOffset(url.searchParams.get("offset"));
 
+    if ((scope === "saved" || scope === "mine") && !viewerEmail) {
+      return NextResponse.json(
+        { ok: false, message: "Unauthorized" },
+        { status: 401 },
+      );
+    }
+
+    const supabase = getSupabaseAdminClient();
+    let viewerUserId: string | null = null;
+
+    if (viewerEmail) {
+      const { data: viewerUser } = await supabase
+        .from("users")
+        .select("id")
+        .filter("email", "eq", viewerEmail)
+        .maybeSingle();
+      if (viewerUser && "id" in viewerUser) {
+        viewerUserId = viewerUser.id;
+      }
+    }
+
+    if ((scope === "saved" || scope === "mine") && !viewerUserId) {
+      return NextResponse.json(
+        { ok: false, message: "User not found" },
+        { status: 404 },
+      );
+    }
+
+    let ideaIdsFilter: string[] | null = null;
+    if (scope === "saved" && viewerUserId) {
+      const { data: bookmarks, error: bookmarksError } = await supabase
+        .from("bookmarks")
+        .select("idea_id")
+        .filter("user_id", "eq", viewerUserId)
+        .order("created_at", { ascending: false })
+        .limit(500);
+
+      if (bookmarksError) {
+        return NextResponse.json(
+          { ok: false, message: bookmarksError.message },
+          { status: 500 },
+        );
+      }
+
+      ideaIdsFilter = (bookmarks ?? []).map((b) => b.idea_id);
+      if (ideaIdsFilter.length === 0) {
+        return NextResponse.json({
+          ok: true,
+          ideas: [],
+          nextOffset: null,
+          hasMore: false,
+        });
+      }
+    }
+
+    const fetchLimit = limit + 1;
+
+    async function runQuery(select: string) {
+      let query = supabase
+        .from("ideas")
+        .select(select)
+        .filter("status", "eq", "published")
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false })
+        .range(offset, offset + fetchLimit - 1);
+
+      if (scope === "mine" && viewerUserId) {
+        query = query.filter("author_id", "eq", viewerUserId);
+      }
+      if (ideaIdsFilter) {
+        query = query.in("id", ideaIdsFilter);
+      }
+
+      return query;
+    }
+
+    const primaryQuery = await runQuery(IDEA_SELECT_WITH_MUSIC);
     const fallbackQuery = isMissingMusicTrackColumn(primaryQuery.error?.message)
-      ? await supabase
-          .from("ideas")
-          .select(
-            "id,title,idea,description,background_color,like_count,comment_count,created_at,author_id,status,users!ideas_author_id_fkey(name),categories!ideas_category_id_fkey(name)",
-          )
-          .filter("status", "eq", "published")
-          .order("created_at", { ascending: false })
-          .limit(limit)
+      ? await runQuery(IDEA_SELECT_NO_MUSIC)
       : null;
 
-    const data = fallbackQuery?.data ?? primaryQuery.data;
+    const data = (fallbackQuery?.data ?? primaryQuery.data) as
+      | IdeaListRow[]
+      | null;
     const error = fallbackQuery?.error ?? primaryQuery.error;
 
     if (error) {
@@ -129,45 +237,37 @@ export async function GET() {
       );
     }
 
-    const ideaIds = (data ?? []).map((row) => row.id);
+    const rows = data ?? [];
+    const hasMore = rows.length > limit;
+    const pageRows = hasMore ? rows.slice(0, limit) : rows;
+
+    const ideaIds = pageRows.map((row) => row.id);
     const likedIdeaIds = new Set<string>();
     const bookmarkedIdeaIds = new Set<string>();
-    let viewerUserId: string | null = null;
 
-    if (viewerEmail && ideaIds.length > 0) {
-      const { data: viewerUser } = await supabase
-        .from("users")
-        .select("id")
-        .filter("email", "eq", viewerEmail)
-        .maybeSingle();
+    if (viewerUserId && ideaIds.length > 0) {
+      const { data: likes } = await supabase
+        .from("likes")
+        .select("idea_id")
+        .filter("user_id", "eq", viewerUserId)
+        .in("idea_id", ideaIds);
 
-      if (viewerUser && "id" in viewerUser) {
-        viewerUserId = viewerUser.id;
-        const { data: likes } = await supabase
-          .from("likes")
-          .select("idea_id")
-          .filter("user_id", "eq", viewerUser.id)
-          .in("idea_id", ideaIds);
+      (likes ?? []).forEach((like) => likedIdeaIds.add(like.idea_id));
 
-        (likes ?? []).forEach((like) => likedIdeaIds.add(like.idea_id));
+      const { data: bookmarks } = await supabase
+        .from("bookmarks")
+        .select("idea_id")
+        .filter("user_id", "eq", viewerUserId)
+        .in("idea_id", ideaIds);
 
-        const { data: bookmarks } = await supabase
-          .from("bookmarks")
-          .select("idea_id")
-          .filter("user_id", "eq", viewerUser.id)
-          .in("idea_id", ideaIds);
-
-        (bookmarks ?? []).forEach((bookmark) =>
-          bookmarkedIdeaIds.add(bookmark.idea_id),
-        );
-      }
+      (bookmarks ?? []).forEach((bookmark) =>
+        bookmarkedIdeaIds.add(bookmark.idea_id),
+      );
     }
 
-    const baseIdeas = (data ?? []).map((row) => {
+    const baseIdeas = pageRows.map((row) => {
       const category = firstRelation(row.categories);
       const author = firstRelation(row.users);
-      const categoryName = category?.name;
-      const authorName = author?.name;
 
       return {
         id: row.id,
@@ -178,8 +278,8 @@ export async function GET() {
         music: "music_track" in row ? row.music_track : null,
         likeCount: row.like_count,
         commentCount: row.comment_count,
-        category: categoryName ?? "Other",
-        authorName: authorName ?? "Anonymous",
+        category: category?.name ?? "Other",
+        authorName: author?.name ?? "Anonymous",
         isOwn: viewerUserId ? row.author_id === viewerUserId : false,
         isLiked: likedIdeaIds.has(row.id),
         isBookmarked: bookmarkedIdeaIds.has(row.id),
@@ -199,7 +299,20 @@ export async function GET() {
       };
     });
 
-    return NextResponse.json({ ok: true, ideas });
+    // Preserve chronological cursor order for pagination (rank is page-local).
+    const ideasById = new Map(ideas.map((idea) => [idea.id, idea]));
+    const orderedIdeas = pageRows
+      .map((row) => ideasById.get(row.id))
+      .filter((idea): idea is NonNullable<typeof idea> => Boolean(idea));
+
+    const nextOffset = hasMore ? offset + limit : null;
+
+    return NextResponse.json({
+      ok: true,
+      ideas: orderedIdeas,
+      nextOffset,
+      hasMore,
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ ok: false, message }, { status: 500 });
@@ -218,10 +331,20 @@ export async function POST(request: Request) {
       );
     }
 
+    const rate = await consumeRateLimit({
+      key: `idea-create:${email}`,
+      limit: 10,
+      windowMs: 60_000,
+    });
+    if (!rate.allowed) {
+      return NextResponse.json(
+        { ok: false, message: "Too many ideas created. Please try again shortly." },
+        { status: 429 },
+      );
+    }
+
     const body = (await request.json()) as CreateIdeaBody;
-    const title = body.title?.trim() ?? "";
-    const idea = body.idea?.trim() ?? "";
-    const category = body.category?.trim() ?? "Other";
+    const { title, idea, description, category } = normalizeIdeaFields(body);
 
     if (!title || !idea) {
       return NextResponse.json(
@@ -237,29 +360,16 @@ export async function POST(request: Request) {
     });
     const categoryId = await ensureCategoryId(category);
 
-    let insights: Json | null = null;
-    try {
-      const generated = await generateIdeaInsights({
-        title,
-        idea,
-        description: body.description ?? null,
-        category,
-      });
-      insights = generated as unknown as Json;
-    } catch (err) {
-      console.error("Failed to generate AI insights", err);
-    }
-
     const supabase = getSupabaseAdminClient();
     const insertPayload = {
       author_id: authorId,
       category_id: categoryId,
       title,
       idea,
-      description: body.description?.trim() || null,
+      description,
       background_color: body.color?.trim() || "#0a1a12",
       music_track: body.music?.trim() || null,
-      insights,
+      insights: null,
     };
 
     const primaryInsert = await supabase

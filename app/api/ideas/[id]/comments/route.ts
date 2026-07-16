@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
+import { IDEA_LIMITS } from "@/lib/idea-limits";
 
 type CreateCommentBody = {
   body?: string;
@@ -148,9 +149,12 @@ export async function POST(
       );
     }
 
-    if (text.length > 500) {
+    if (text.length > IDEA_LIMITS.commentMaxChars) {
       return NextResponse.json(
-        { ok: false, message: "Comment too long (max 500 chars)" },
+        {
+          ok: false,
+          message: `Comment too long (max ${IDEA_LIMITS.commentMaxChars} chars)`,
+        },
         { status: 400 },
       );
     }

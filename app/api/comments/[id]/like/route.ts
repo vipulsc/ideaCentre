@@ -6,6 +6,56 @@ import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+async function toggleCommentLikeFallback(userId: string, commentId: string) {
+  const supabase = getSupabaseAdminClient();
+
+  const { data: existingLike } = await supabase
+    .from("comment_likes")
+    .select("comment_id")
+    .filter("user_id", "eq", userId)
+    .filter("comment_id", "eq", commentId)
+    .maybeSingle();
+
+  if (existingLike) {
+    const { error: unlikeError } = await supabase
+      .from("comment_likes")
+      .delete()
+      .filter("user_id", "eq", userId)
+      .filter("comment_id", "eq", commentId);
+    if (unlikeError) throw new Error(unlikeError.message);
+  } else {
+    const { error: likeError } = await supabase.from("comment_likes").insert({
+      user_id: userId,
+      comment_id: commentId,
+    });
+    if (likeError && likeError.code !== "23505") {
+      throw new Error(likeError.message);
+    }
+  }
+
+  const { data: again } = await supabase
+    .from("comment_likes")
+    .select("comment_id")
+    .filter("user_id", "eq", userId)
+    .filter("comment_id", "eq", commentId)
+    .maybeSingle();
+
+  const { count, error: countError } = await supabase
+    .from("comment_likes")
+    .select("*", { count: "exact", head: true })
+    .filter("comment_id", "eq", commentId);
+
+  if (countError) throw new Error(countError.message);
+
+  const likeCount = count ?? 0;
+  await supabase
+    .from("comments")
+    .update({ like_count: likeCount })
+    .filter("id", "eq", commentId);
+
+  return { isLiked: Boolean(again), likeCount };
+}
+
 export async function POST(
   _request: Request,
   context: { params: Promise<{ id: string }> },
@@ -43,69 +93,32 @@ export async function POST(
       );
     }
 
-    const { data: existingLike } = await supabase
-      .from("comment_likes")
-      .select("comment_id")
-      .filter("user_id", "eq", userRow.id)
-      .filter("comment_id", "eq", commentId)
-      .maybeSingle();
+    const { data: rpcData, error: rpcError } = await supabase.rpc(
+      "toggle_comment_like",
+      {
+        p_user_id: userRow.id,
+        p_comment_id: commentId,
+      },
+    );
 
-    let isLiked: boolean;
-    if (existingLike) {
-      const { error: unlikeError } = await supabase
-        .from("comment_likes")
-        .delete()
-        .filter("user_id", "eq", userRow.id)
-        .filter("comment_id", "eq", commentId);
-
-      if (unlikeError) {
-        return NextResponse.json(
-          { ok: false, message: unlikeError.message },
-          { status: 500 },
-        );
+    if (!rpcError) {
+      const row = Array.isArray(rpcData) ? rpcData[0] : rpcData;
+      if (
+        row &&
+        typeof row === "object" &&
+        "is_liked" in row &&
+        "like_count" in row
+      ) {
+        return NextResponse.json({
+          ok: true,
+          isLiked: Boolean((row as { is_liked: boolean }).is_liked),
+          likeCount: Number((row as { like_count: number }).like_count) || 0,
+        });
       }
-      isLiked = false;
-    } else {
-      const { error: likeError } = await supabase.from("comment_likes").insert({
-        user_id: userRow.id,
-        comment_id: commentId,
-      });
-
-      if (likeError) {
-        return NextResponse.json(
-          { ok: false, message: likeError.message },
-          { status: 500 },
-        );
-      }
-      isLiked = true;
     }
 
-    const { count, error: countError } = await supabase
-      .from("comment_likes")
-      .select("*", { count: "exact", head: true })
-      .filter("comment_id", "eq", commentId);
-
-    if (countError) {
-      return NextResponse.json(
-        { ok: false, message: countError.message },
-        { status: 500 },
-      );
-    }
-
-    const likeCount = count ?? 0;
-    const { error: updateError } = await supabase
-      .from("comments")
-      .update({ like_count: likeCount })
-      .filter("id", "eq", commentId);
-
-    if (updateError) {
-      return NextResponse.json(
-        { ok: false, message: updateError.message },
-        { status: 500 },
-      );
-    }
-
-    return NextResponse.json({ ok: true, isLiked, likeCount });
+    const fallback = await toggleCommentLikeFallback(userRow.id, commentId);
+    return NextResponse.json({ ok: true, ...fallback });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ ok: false, message }, { status: 500 });

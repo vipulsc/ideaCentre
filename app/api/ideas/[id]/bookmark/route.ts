@@ -6,6 +6,36 @@ import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+async function toggleBookmarkFallback(userId: string, ideaId: string) {
+  const supabase = getSupabaseAdminClient();
+
+  const { data: existing } = await supabase
+    .from("bookmarks")
+    .select("idea_id")
+    .filter("user_id", "eq", userId)
+    .filter("idea_id", "eq", ideaId)
+    .maybeSingle();
+
+  if (existing) {
+    const { error: removeError } = await supabase
+      .from("bookmarks")
+      .delete()
+      .filter("user_id", "eq", userId)
+      .filter("idea_id", "eq", ideaId);
+    if (removeError) throw new Error(removeError.message);
+    return false;
+  }
+
+  const { error: addError } = await supabase.from("bookmarks").insert({
+    user_id: userId,
+    idea_id: ideaId,
+  });
+  if (addError && addError.code !== "23505") {
+    throw new Error(addError.message);
+  }
+  return true;
+}
+
 export async function POST(
   _request: Request,
   context: { params: Promise<{ id: string }> },
@@ -43,47 +73,30 @@ export async function POST(
       );
     }
 
-    const { data: existing } = await supabase
-      .from("bookmarks")
-      .select("idea_id")
-      .filter("user_id", "eq", userRow.id)
-      .filter("idea_id", "eq", ideaId)
-      .maybeSingle();
+    const { data: rpcData, error: rpcError } = await supabase.rpc(
+      "toggle_idea_bookmark",
+      {
+        p_user_id: userRow.id,
+        p_idea_id: ideaId,
+      },
+    );
 
-    let isBookmarked: boolean;
-    if (existing) {
-      const { error: removeError } = await supabase
-        .from("bookmarks")
-        .delete()
-        .filter("user_id", "eq", userRow.id)
-        .filter("idea_id", "eq", ideaId);
-
-      if (removeError) {
-        return NextResponse.json(
-          { ok: false, message: removeError.message },
-          { status: 500 },
-        );
+    if (!rpcError) {
+      const row = Array.isArray(rpcData) ? rpcData[0] : rpcData;
+      if (row && typeof row === "object" && "is_bookmarked" in row) {
+        return NextResponse.json({
+          ok: true,
+          isBookmarked: Boolean(
+            (row as { is_bookmarked: boolean }).is_bookmarked,
+          ),
+        });
       }
-      isBookmarked = false;
-    } else {
-      const { error: addError } = await supabase.from("bookmarks").insert({
-        user_id: userRow.id,
-        idea_id: ideaId,
-      });
-
-      if (addError) {
-        return NextResponse.json(
-          { ok: false, message: addError.message },
-          { status: 500 },
-        );
-      }
-      isBookmarked = true;
     }
 
+    const isBookmarked = await toggleBookmarkFallback(userRow.id, ideaId);
     return NextResponse.json({ ok: true, isBookmarked });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ ok: false, message }, { status: 500 });
   }
 }
-

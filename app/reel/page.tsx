@@ -15,7 +15,10 @@ import {
 import { signIn, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AiInsightsModal } from "@/components/ai-insights-modal";
+import { ReelAudio } from "@/components/reel-audio";
+import { useActiveReelId } from "@/hooks/use-active-reel-id";
 import { shareIdea } from "@/lib/share";
 
 type FeedIdea = {
@@ -33,25 +36,45 @@ type FeedIdea = {
   music?: string | null;
 };
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 function ReelPageContent() {
   const { status } = useSession();
   const searchParams = useSearchParams();
   const isAuthed = status === "authenticated";
   const [ideas, setIdeas] = useState<FeedIdea[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedIdeaId, setSelectedIdeaId] = useState<string | null>(null);
+  const [insightsIdeaId, setInsightsIdeaId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cursorRef = useRef(0);
+  const likeInFlightRef = useRef(new Set<string>());
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const deepLinkHandled = useRef(false);
+
   const showTrendingOnly = searchParams.get("feed") === "trending";
+  const deepLinkIdeaId = searchParams.get("idea");
 
   const visibleIdeas = showTrendingOnly
     ? ideas.filter((idea) => idea.trending)
     : ideas;
 
+  const reelItemIds = useMemo(
+    () => visibleIdeas.map((idea) => idea.id),
+    [visibleIdeas],
+  );
+  const activeReelId = useActiveReelId(scrollRef, reelItemIds, true);
+
   const selectedIdea =
     visibleIdeas.find((i) => i.id === selectedIdeaId) ?? null;
+  const insightsIdea =
+    ideas.find((i) => i.id === insightsIdeaId) ?? null;
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
@@ -59,37 +82,109 @@ function ReelPageContent() {
     toastTimerRef.current = setTimeout(() => setToast(null), 2200);
   }, []);
 
+  const handleAutoplayBlocked = useCallback(() => {
+    setIsMuted(true);
+    showToast("Tap Unmute to play music");
+  }, [showToast]);
+
   useEffect(() => {
     return () => {
       if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     };
   }, []);
 
-  const loadIdeas = useCallback(async () => {
+  const loadIdeas = useCallback(async (mode: "replace" | "append" = "replace") => {
     try {
-      setIsLoading(true);
+      if (mode === "replace") {
+        setIsLoading(true);
+        cursorRef.current = 0;
+      } else {
+        if (!hasMore || isLoadingMore) return;
+        setIsLoadingMore(true);
+      }
       setError(null);
-      const response = await fetch("/api/ideas");
+
+      const params = new URLSearchParams({
+        scope: "feed",
+        limit: "30",
+        offset: String(mode === "append" ? cursorRef.current : 0),
+      });
+
+      const response = await fetch(`/api/ideas?${params.toString()}`);
       const payload = (await response.json()) as {
         ok: boolean;
         ideas?: FeedIdea[];
+        nextOffset?: number | null;
+        hasMore?: boolean;
         message?: string;
       };
       if (!response.ok || !payload.ok || !payload.ideas) {
         setError(payload.message ?? "Failed to load ideas");
         return;
       }
-      setIdeas(payload.ideas);
+
+      cursorRef.current =
+        typeof payload.nextOffset === "number"
+          ? payload.nextOffset
+          : cursorRef.current + payload.ideas.length;
+      setHasMore(Boolean(payload.hasMore));
+
+      setIdeas((prev) => {
+        if (mode === "replace") return payload.ideas as FeedIdea[];
+        const seen = new Set(prev.map((idea) => idea.id));
+        const merged = [...prev];
+        for (const idea of payload.ideas as FeedIdea[]) {
+          if (!seen.has(idea.id)) merged.push(idea);
+        }
+        return merged;
+      });
     } catch {
       setError("Failed to load ideas");
     } finally {
       setIsLoading(false);
+      setIsLoadingMore(false);
     }
-  }, []);
+  }, [hasMore, isLoadingMore]);
 
   useEffect(() => {
-    void loadIdeas();
-  }, [loadIdeas]);
+    void loadIdeas("replace");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Deep-link: scroll to ?idea=<uuid> once loaded (fetch more pages if needed)
+  useEffect(() => {
+    if (!deepLinkIdeaId || !UUID_RE.test(deepLinkIdeaId) || deepLinkHandled.current) {
+      return;
+    }
+    if (isLoading) return;
+
+    const found = ideas.some((idea) => idea.id === deepLinkIdeaId);
+    if (found) {
+      deepLinkHandled.current = true;
+      requestAnimationFrame(() => {
+        const el = scrollRef.current?.querySelector<HTMLElement>(
+          `[data-reel-idea-id="${deepLinkIdeaId}"]`,
+        );
+        el?.scrollIntoView({ block: "start", behavior: "smooth" });
+      });
+      return;
+    }
+
+    if (hasMore && !isLoadingMore) {
+      void loadIdeas("append");
+    } else if (!hasMore) {
+      deepLinkHandled.current = true;
+      showToast("Shared idea not found in feed");
+    }
+  }, [
+    deepLinkIdeaId,
+    ideas,
+    isLoading,
+    hasMore,
+    isLoadingMore,
+    loadIdeas,
+    showToast,
+  ]);
 
   const requireAuth = useCallback(() => {
     void signIn("google", { callbackUrl: "/dashboard" });
@@ -101,6 +196,8 @@ function ReelPageContent() {
         requireAuth();
         return;
       }
+      if (likeInFlightRef.current.has(ideaId)) return;
+      likeInFlightRef.current.add(ideaId);
       try {
         const response = await fetch(`/api/ideas/${ideaId}/like`, {
           method: "POST",
@@ -128,7 +225,20 @@ function ReelPageContent() {
         );
       } catch {
         setError("Failed to update like");
+      } finally {
+        likeInFlightRef.current.delete(ideaId);
       }
+    },
+    [isAuthed, requireAuth],
+  );
+
+  const openInsights = useCallback(
+    (ideaId: string) => {
+      if (!isAuthed) {
+        requireAuth();
+        return;
+      }
+      setInsightsIdeaId(ideaId);
     },
     [isAuthed, requireAuth],
   );
@@ -153,7 +263,10 @@ function ReelPageContent() {
   return (
     <main className="h-screen overflow-hidden bg-[#0D0D0D] [&_button]:cursor-pointer">
       <div className="relative flex h-full flex-col">
-        <div className="hide-scrollbar flex-1 snap-y snap-mandatory overflow-y-auto">
+        <div
+          ref={scrollRef}
+          className="hide-scrollbar flex-1 snap-y snap-mandatory overflow-y-auto"
+        >
           {visibleIdeas.length === 0 && !isLoading ? (
             <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
               <p className="text-white/60">
@@ -170,123 +283,143 @@ function ReelPageContent() {
               </Link>
             </div>
           ) : (
-            visibleIdeas.map((reel) => (
-              <div key={reel.id} className="h-full w-full shrink-0">
+            <>
+              {visibleIdeas.map((reel) => (
                 <div
-                  className="relative flex h-full w-full snap-start snap-always flex-col justify-center px-6 pr-16 sm:px-10 sm:pr-20"
-                  style={{ backgroundColor: reel.color }}
+                  key={reel.id}
+                  data-reel-idea-id={reel.id}
+                  className="h-full w-full shrink-0"
                 >
-                  {reel.music && (
-                    <audio
-                      src={reel.music}
-                      autoPlay
-                      loop
-                      muted={isMuted}
-                      playsInline
-                      preload="metadata"
-                      className="hidden"
-                    />
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setIsMuted((prev) => !prev)}
-                    disabled={!reel.music}
-                    className="absolute left-4 top-4 z-20 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/30 px-3 py-1.5 text-xs font-medium text-white/85 backdrop-blur-sm transition-colors hover:bg-black/45 disabled:cursor-not-allowed disabled:opacity-60 sm:left-5 sm:top-5"
+                  <div
+                    className="relative flex h-full w-full snap-start snap-always flex-col justify-center px-6 pr-16 sm:px-10 sm:pr-20"
+                    style={{ backgroundColor: reel.color }}
                   >
-                    {!reel.music || isMuted ? (
-                      <VolumeX className="size-3.5" />
-                    ) : (
-                      <Volume2 className="size-3.5" />
-                    )}
-                    {!reel.music ? "No music" : isMuted ? "Unmute" : "Mute"}
-                  </button>
-                  {reel.trending && (
-                    <span className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-[#FF0099]/15 px-3 py-1 text-xs font-semibold text-[#FF0099] backdrop-blur-sm sm:right-5 sm:top-5">
-                      <Flame className="size-3.5" />
-                      Trending
-                    </span>
-                  )}
-                  <div className="flex w-full max-w-2xl flex-col gap-6">
-                    <span className="w-fit rounded-full bg-[#00FF85]/15 px-4 py-1 text-xs font-medium text-[#00FF85] sm:text-sm">
-                      {reel.category}
-                    </span>
-                    <h2 className="text-3xl font-bold leading-tight text-white sm:text-4xl md:text-5xl">
-                      {reel.title}
-                    </h2>
-                    <p className="text-base leading-relaxed text-white/70 sm:text-lg md:text-xl">
-                      {reel.idea}
-                    </p>
-                    <p className="text-sm text-white/35">by {reel.authorName}</p>
-                  </div>
-
-                  <div className="absolute bottom-28 right-5 flex flex-col items-center gap-6 sm:right-6 sm:gap-7">
-                    <button
-                      type="button"
-                      onClick={() => toggleLike(reel.id)}
-                      className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#FF0099]"
-                    >
-                      <Heart
-                        className={`size-7 sm:size-8 ${reel.isLiked ? "fill-[#FF0099] text-[#FF0099]" : "text-white"}`}
+                    {reel.music && (
+                      <ReelAudio
+                        src={reel.music}
+                        active={activeReelId === reel.id}
+                        muted={isMuted}
+                        onAutoplayBlocked={handleAutoplayBlocked}
                       />
-                      <span className="text-xs text-white/60">
-                        {reel.likeCount}
-                      </span>
-                    </button>
+                    )}
                     <button
                       type="button"
-                      onClick={
-                        isAuthed
-                          ? () => {
-                              window.location.href = "/dashboard";
-                            }
-                          : requireAuth
-                      }
-                      className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#1E90FF]"
-                      title={
-                        isAuthed
-                          ? "Open dashboard to comment"
-                          : "Login to comment"
-                      }
+                      onClick={() => setIsMuted((prev) => !prev)}
+                      disabled={!reel.music}
+                      className="absolute left-4 top-4 z-20 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/30 px-3 py-1.5 text-xs font-medium text-white/85 backdrop-blur-sm transition-colors hover:bg-black/45 disabled:cursor-not-allowed disabled:opacity-60 sm:left-5 sm:top-5"
                     >
-                      <MessageCircle className="size-7 text-white sm:size-8" />
-                      <span className="text-xs text-white/60">
-                        {reel.commentCount}
+                      {!reel.music || isMuted ? (
+                        <VolumeX className="size-3.5" />
+                      ) : (
+                        <Volume2 className="size-3.5" />
+                      )}
+                      {!reel.music ? "No music" : isMuted ? "Unmute" : "Mute"}
+                    </button>
+                    {reel.trending && (
+                      <span className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-[#FF0099]/15 px-3 py-1 text-xs font-semibold text-[#FF0099] backdrop-blur-sm sm:right-5 sm:top-5">
+                        <Flame className="size-3.5" />
+                        Trending
                       </span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleShare(reel)}
-                      className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#00FF85]"
-                    >
-                      <Share2 className="size-7 text-white sm:size-8" />
-                      <span className="text-xs text-white/60">Share</span>
-                    </button>
-                  </div>
+                    )}
+                    <div className="flex w-full max-w-2xl flex-col gap-6">
+                      <span className="w-fit rounded-full bg-[#00FF85]/15 px-4 py-1 text-xs font-medium text-[#00FF85] sm:text-sm">
+                        {reel.category}
+                      </span>
+                      <h2 className="text-3xl font-bold leading-tight text-white sm:text-4xl md:text-5xl">
+                        {reel.title}
+                      </h2>
+                      <p className="text-base leading-relaxed text-white/70 sm:text-lg md:text-xl">
+                        {reel.idea}
+                      </p>
+                      <p className="text-sm text-white/35">by {reel.authorName}</p>
+                    </div>
 
-                  <div className="absolute bottom-20 left-6 flex gap-3 sm:left-10">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedIdeaId(reel.id)}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-4 py-2 text-xs font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-[#1E90FF]/40 hover:text-[#1E90FF]"
-                    >
-                      <FileText className="size-3.5" />
-                      Info
-                    </button>
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-4 py-2 text-xs font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-[#00FF85]/40 hover:text-[#00FF85]"
-                    >
-                      <Sparkles className="size-3.5" />
-                      AI
-                    </button>
+                    <div className="absolute bottom-28 right-5 flex flex-col items-center gap-6 sm:right-6 sm:gap-7">
+                      <button
+                        type="button"
+                        onClick={() => toggleLike(reel.id)}
+                        className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#FF0099]"
+                      >
+                        <Heart
+                          className={`size-7 sm:size-8 ${
+                            reel.isLiked
+                              ? "fill-[#FF0099] text-[#FF0099]"
+                              : "text-white"
+                          }`}
+                        />
+                        <span className="text-xs text-white/60">
+                          {reel.likeCount}
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={
+                          isAuthed
+                            ? () => {
+                                window.location.href = "/dashboard";
+                              }
+                            : requireAuth
+                        }
+                        className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#1E90FF]"
+                        title={
+                          isAuthed
+                            ? "Open dashboard to comment"
+                            : "Login to comment"
+                        }
+                      >
+                        <MessageCircle className="size-7 text-white sm:size-8" />
+                        <span className="text-xs text-white/60">
+                          {reel.commentCount}
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleShare(reel)}
+                        className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#00FF85]"
+                      >
+                        <Share2 className="size-7 text-white sm:size-8" />
+                        <span className="text-xs text-white/60">Share</span>
+                      </button>
+                    </div>
+
+                    <div className="absolute bottom-20 left-6 flex gap-3 sm:left-10">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedIdeaId(reel.id)}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-4 py-2 text-xs font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-[#1E90FF]/40 hover:text-[#1E90FF]"
+                      >
+                        <FileText className="size-3.5" />
+                        Info
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openInsights(reel.id)}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-4 py-2 text-xs font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-[#00FF85]/40 hover:text-[#00FF85]"
+                      >
+                        <Sparkles className="size-3.5" />
+                        AI
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              ))}
+              {hasMore && (
+                <div className="flex h-32 shrink-0 items-center justify-center">
+                  <button
+                    type="button"
+                    onClick={() => void loadIdeas("append")}
+                    disabled={isLoadingMore}
+                    className="rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm text-white/80 transition-colors hover:bg-white/15 disabled:opacity-50"
+                  >
+                    {isLoadingMore ? "Loading…" : "Load more"}
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
 
-        {!isAuthed && (
+        {!isAuthed && status !== "loading" && (
           <button
             type="button"
             onClick={requireAuth}
@@ -317,6 +450,12 @@ function ReelPageContent() {
           </div>
         </div>
       )}
+
+      <AiInsightsModal
+        ideaId={insightsIdeaId}
+        title={insightsIdea?.title}
+        onClose={() => setInsightsIdeaId(null)}
+      />
 
       {(isLoading || error || toast) && (
         <div className="pointer-events-none fixed bottom-4 right-4 z-40 rounded-lg border border-white/10 bg-[#161616]/95 px-4 py-2 text-xs text-white/85 shadow-lg">

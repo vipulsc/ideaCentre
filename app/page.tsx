@@ -7,16 +7,17 @@ import { HowItWorks } from "@/components/how-it-works";
 import { LandingGateIntro } from "@/components/landing-gate-intro";
 import { Navbar } from "@/components/navbar";
 import { PostIdeaFab } from "@/components/post-idea-fab";
+import { ReplaceRedirect } from "@/components/replace-redirect";
 import { Tagline } from "@/components/tagline";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth/next";
-import { redirect } from "next/navigation";
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
 
   if (session) {
-    redirect("/dashboard");
+    // replace (not push) so Back does not bounce landing ↔ dashboard
+    return <ReplaceRedirect href="/dashboard" />;
   }
 
   return (
