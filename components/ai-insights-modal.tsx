@@ -32,20 +32,52 @@ export function AiInsightsModal({ ideaId, title, onClose }: Props) {
     setError(null);
     setInsights(null);
 
+    type InsightsResponse = {
+      ok: boolean;
+      insights?: IdeaInsights;
+      generating?: boolean;
+      message?: string;
+    };
+
+    const sleep = (ms: number) =>
+      new Promise<void>((resolve) => setTimeout(resolve, ms));
+
     (async () => {
       try {
-        const res = await fetch(`/api/ideas/${ideaId}/insights`);
-        const payload = (await res.json()) as {
-          ok: boolean;
-          insights?: IdeaInsights;
-          message?: string;
-        };
+        // Kick off generation (or get a cache hit).
+        const startRes = await fetch(`/api/ideas/${ideaId}/insights`, {
+          method: "POST",
+        });
+        const startPayload = (await startRes.json()) as InsightsResponse;
         if (cancelled) return;
-        if (!res.ok || !payload.ok || !payload.insights) {
-          setError(payload.message ?? "Couldn't generate insights");
+
+        if (startRes.ok && startPayload.ok && startPayload.insights) {
+          setInsights(startPayload.insights);
           return;
         }
-        setInsights(payload.insights);
+
+        const generating = startRes.status === 202 || startPayload.generating;
+        if (!generating) {
+          setError(startPayload.message ?? "Couldn't generate insights");
+          return;
+        }
+
+        // Poll the cache-only endpoint until insights are ready.
+        for (let attempt = 0; attempt < 15 && !cancelled; attempt += 1) {
+          await sleep(1500);
+          if (cancelled) return;
+          const pollRes = await fetch(`/api/ideas/${ideaId}/insights`);
+          const pollPayload = (await pollRes.json()) as InsightsResponse;
+          if (cancelled) return;
+          if (pollRes.ok && pollPayload.ok && pollPayload.insights) {
+            setInsights(pollPayload.insights);
+            return;
+          }
+        }
+
+        if (!cancelled) {
+          setError("Insights are taking longer than expected. Please try again.");
+        }
       } catch {
         if (!cancelled) setError("Couldn't generate insights");
       } finally {

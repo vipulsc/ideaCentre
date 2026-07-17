@@ -19,12 +19,27 @@ setTimeout(() => setGone(true), 550);
 };
 
 useEffect(() => {
+const prefersReduced = window.matchMedia(
+  "(prefers-reduced-motion: reduce)",
+).matches;
+if (prefersReduced) {
+  hasOpened.current = true;
+  const reducedTimer = window.setTimeout(() => {
+    setOpened(true);
+    setGone(true);
+  }, 0);
+  return () => window.clearTimeout(reducedTimer);
+}
+
 const timer = window.setTimeout(() => {
 handleOpen();
 }, 10);
 
 const handler = (e: KeyboardEvent) => {
-  if (e.key === "Enter" || e.key === " ") handleOpen();
+  if (e.key === "Enter" || e.key === " ") {
+    e.preventDefault();
+    handleOpen();
+  }
 };
 
 window.addEventListener("keydown", handler);
@@ -175,7 +190,9 @@ font-family: var(--font-secondary), ui-sans-serif, sans-serif;
     }
   `}</style>
 
-  {children}
+  <div style={{ display: "contents" }} inert={!gone ? true : undefined} aria-hidden={!gone ? true : undefined}>
+    {children}
+  </div>
 
   {!gone && (
     <div
@@ -183,6 +200,7 @@ font-family: var(--font-secondary), ui-sans-serif, sans-serif;
       onClick={handleOpen}
       role="button"
       tabIndex={0}
+      aria-label="Open ideaCentre"
     >
       {/* LEFT GATE */}
       <div className={`gi-gate-left ${opened ? "open" : ""}`}>
@@ -222,7 +240,7 @@ font-family: var(--font-secondary), ui-sans-serif, sans-serif;
 
       {/* HINT */}
       <div className={`gi-hint ${opened ? "hidden" : ""}`}>
-        loading
+        click to enter
       </div>
     </div>
   )}

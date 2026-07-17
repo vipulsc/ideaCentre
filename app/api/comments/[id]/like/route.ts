@@ -2,6 +2,15 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
+import { consumeRateLimit } from "@/lib/rate-limit";
+import {
+  getUserIdByEmail,
+  invalidOriginResponse,
+  isSameOrigin,
+  serverErrorResponse,
+  tooManyRequestsResponse,
+  unauthorizedResponse,
+} from "@/lib/api/guards";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -57,18 +66,19 @@ async function toggleCommentLikeFallback(userId: string, commentId: string) {
 }
 
 export async function POST(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
   try {
+    if (!isSameOrigin(request)) {
+      return invalidOriginResponse();
+    }
+
     const session = await getServerSession(authOptions);
     const email = session?.user?.email;
 
     if (!email) {
-      return NextResponse.json(
-        { ok: false, message: "Unauthorized" },
-        { status: 401 },
-      );
+      return unauthorizedResponse();
     }
 
     const { id: commentId } = await context.params;
@@ -78,15 +88,20 @@ export async function POST(
         { status: 400 },
       );
     }
+
+    const rate = await consumeRateLimit({
+      key: `comment-like:${email}`,
+      limit: 60,
+      windowMs: 60_000,
+    });
+    if (!rate.allowed) {
+      return tooManyRequestsResponse();
+    }
+
     const supabase = getSupabaseAdminClient();
 
-    const { data: userRow, error: userError } = await supabase
-      .from("users")
-      .select("id")
-      .filter("email", "eq", email)
-      .single();
-
-    if (userError || !userRow || !("id" in userRow)) {
+    const userId = await getUserIdByEmail(supabase, email);
+    if (!userId) {
       return NextResponse.json(
         { ok: false, message: "User not found" },
         { status: 404 },
@@ -96,7 +111,7 @@ export async function POST(
     const { data: rpcData, error: rpcError } = await supabase.rpc(
       "toggle_comment_like",
       {
-        p_user_id: userRow.id,
+        p_user_id: userId,
         p_comment_id: commentId,
       },
     );
@@ -117,10 +132,9 @@ export async function POST(
       }
     }
 
-    const fallback = await toggleCommentLikeFallback(userRow.id, commentId);
+    const fallback = await toggleCommentLikeFallback(userId, commentId);
     return NextResponse.json({ ok: true, ...fallback });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ ok: false, message }, { status: 500 });
+    return serverErrorResponse("Comment like failed", error);
   }
 }

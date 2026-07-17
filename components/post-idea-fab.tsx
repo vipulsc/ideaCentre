@@ -15,19 +15,22 @@ export function PostIdeaFab() {
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout>;
 
-    function loop() {
+    function schedule(currentlyVisible: boolean) {
       timeout = setTimeout(
         () => {
-          setVisible((v) => !v);
-          loop();
+          setVisible((v) => {
+            const next = !v;
+            schedule(next);
+            return next;
+          });
         },
-        visible ? SHOW_MS : HIDE_MS,
+        currentlyVisible ? SHOW_MS : HIDE_MS,
       );
     }
 
-    loop();
+    schedule(true);
     return () => clearTimeout(timeout);
-  });
+  }, []);
 
   return (
     <div className="fixed bottom-6 right-6 z-50 sm:bottom-8 sm:right-8">

@@ -801,7 +801,6 @@ export default function DashboardPage() {
         ? "mine"
         : "feed";
   const myIdeas = ideas.filter((item) => item.isOwn);
-  const savedIdeas = ideas.filter((item) => item.isBookmarked);
   const trendingIdeas = ideas.filter((item) => item.trending);
   const displayedIdeas = (
     feedScope === "feed"
@@ -1231,12 +1230,16 @@ export default function DashboardPage() {
           {displayedIdeas.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center gap-3 px-8 text-center">
               <div className="dash-glass flex h-16 w-16 items-center justify-center rounded-full">
-                <Sparkles className="size-6 text-white/40" />
+                <Sparkles
+                  className={`size-6 text-white/40 ${isLoadingIdeas ? "animate-pulse" : ""}`}
+                />
               </div>
               <p className="text-sm text-white/55">
-                {activeFeed === "saved"
-                  ? "No saved ideas yet. Tap Save on any card."
-                  : "No ideas found."}
+                {isLoadingIdeas
+                  ? "Loading ideas…"
+                  : activeFeed === "saved"
+                    ? "No saved ideas yet. Tap Save on any card."
+                    : "No ideas found."}
               </p>
             </div>
           ) : (
@@ -1587,13 +1590,15 @@ export default function DashboardPage() {
           </div>
           {displayedIdeas.length === 0 ? (
             <div className="dash-glass rounded-[22px] p-12 text-center text-[#faf0dc]/55">
-              {activeFeed === "saved"
-                ? "No saved ideas yet. Use Save on any idea card."
-                : activeFeed === "trending"
-                  ? "No hot ideas yet."
-                  : activeFeed === "myIdeas"
-                    ? "You haven't posted any ideas yet."
-                    : "No ideas found."}
+              {isLoadingIdeas
+                ? "Loading ideas…"
+                : activeFeed === "saved"
+                  ? "No saved ideas yet. Use Save on any idea card."
+                  : activeFeed === "trending"
+                    ? "No hot ideas yet."
+                    : activeFeed === "myIdeas"
+                      ? "You haven't posted any ideas yet."
+                      : "No ideas found."}
             </div>
           ) : (
             <div className="mx-auto grid max-w-6xl grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -1796,6 +1801,10 @@ export default function DashboardPage() {
                       type="button"
                       onClick={async (e) => {
                         e.stopPropagation();
+                        const confirmed = window.confirm(
+                          `Delete “${item.title}”? This cannot be undone.`,
+                        );
+                        if (!confirmed) return;
                         try {
                           const response = await fetch(
                             `/api/ideas/${item.id}`,
@@ -1822,8 +1831,9 @@ export default function DashboardPage() {
                           setIdeasError("Failed to delete idea");
                         }
                       }}
-                      className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-black/30 text-white/50 opacity-0 backdrop-blur-sm transition-all group-hover:opacity-100 hover:bg-[#FF0099]/20 hover:text-[#FF0099]"
+                      className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-black/30 text-white/50 backdrop-blur-sm transition-all hover:bg-[#FF0099]/20 hover:text-[#FF0099] focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100"
                       title="Delete idea"
+                      aria-label={`Delete idea: ${item.title}`}
                     >
                       <Trash2 className="size-4" />
                     </button>

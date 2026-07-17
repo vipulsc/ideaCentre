@@ -4,11 +4,21 @@ import { authOptions } from "@/lib/auth";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { rankByHotScore } from "@/lib/trending";
 import {
+  DEFAULT_IDEA_COLOR,
   FEED_MAX_PAGE_SIZE,
   FEED_PAGE_SIZE,
+  normalizeColor,
   normalizeIdeaFields,
+  normalizeMusic,
 } from "@/lib/idea-limits";
 import { consumeRateLimit } from "@/lib/rate-limit";
+import {
+  invalidOriginResponse,
+  isSameOrigin,
+  readJsonBody,
+  serverErrorResponse,
+  unauthorizedResponse,
+} from "@/lib/api/guards";
 
 type CreateIdeaBody = {
   title?: string;
@@ -68,6 +78,7 @@ async function ensureUser(params: {
         email: params.email,
         name: params.name ?? null,
         image: params.image ?? null,
+        updated_at: new Date().toISOString(),
       },
       { onConflict: "email" },
     )
@@ -234,10 +245,7 @@ export async function GET(request: Request) {
     const error = fallbackQuery?.error ?? primaryQuery.error;
 
     if (error) {
-      return NextResponse.json(
-        { ok: false, message: error.message },
-        { status: 500 },
-      );
+      return serverErrorResponse("Idea feed query failed", error);
     }
 
     const rows = data ?? [];
@@ -277,7 +285,7 @@ export async function GET(request: Request) {
         title: row.title,
         idea: row.idea,
         description: row.description,
-        color: row.background_color ?? "#0a1a12",
+        color: row.background_color ?? DEFAULT_IDEA_COLOR,
         music: "music_track" in row ? row.music_track : null,
         likeCount: row.like_count,
         commentCount: row.comment_count,
@@ -318,21 +326,21 @@ export async function GET(request: Request) {
       hasMore,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ ok: false, message }, { status: 500 });
+    return serverErrorResponse("Idea feed failed", error);
   }
 }
 
 export async function POST(request: Request) {
   try {
+    if (!isSameOrigin(request)) {
+      return invalidOriginResponse();
+    }
+
     const session = await getServerSession(authOptions);
     const email = session?.user?.email;
 
     if (!email) {
-      return NextResponse.json(
-        { ok: false, message: "Unauthorized" },
-        { status: 401 },
-      );
+      return unauthorizedResponse();
     }
 
     const rate = await consumeRateLimit({
@@ -347,7 +355,13 @@ export async function POST(request: Request) {
       );
     }
 
-    const body = (await request.json()) as CreateIdeaBody;
+    const body = await readJsonBody<CreateIdeaBody>(request);
+    if (!body || typeof body !== "object") {
+      return NextResponse.json(
+        { ok: false, message: "Invalid request body" },
+        { status: 400 },
+      );
+    }
     const { title, idea, description, category } = normalizeIdeaFields(body);
 
     if (!title || !idea) {
@@ -371,8 +385,8 @@ export async function POST(request: Request) {
       title,
       idea,
       description,
-      background_color: body.color?.trim() || "#0a1a12",
-      music_track: body.music?.trim() || null,
+      background_color: normalizeColor(body.color),
+      music_track: normalizeMusic(body.music),
       insights: null,
     };
 
@@ -401,10 +415,7 @@ export async function POST(request: Request) {
     const error = fallbackInsert?.error ?? primaryInsert.error;
 
     if (error) {
-      return NextResponse.json(
-        { ok: false, message: error.message },
-        { status: 500 },
-      );
+      return serverErrorResponse("Idea create failed", error);
     }
     if (!data) {
       return NextResponse.json(
@@ -426,7 +437,7 @@ export async function POST(request: Request) {
         title: data.title,
         idea: data.idea,
         description: data.description,
-        color: data.background_color ?? "#0a1a12",
+        color: data.background_color ?? DEFAULT_IDEA_COLOR,
         music: "music_track" in data ? data.music_track : null,
         likeCount: data.like_count,
         commentCount: data.comment_count,
@@ -441,7 +452,6 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ ok: false, message }, { status: 500 });
+    return serverErrorResponse("Idea create failed", error);
   }
 }

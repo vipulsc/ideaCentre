@@ -2,6 +2,17 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
+import { consumeRateLimit } from "@/lib/rate-limit";
+import {
+  getUserIdByEmail,
+  ideaNotFoundResponse,
+  invalidOriginResponse,
+  isIdeaPublished,
+  isSameOrigin,
+  serverErrorResponse,
+  tooManyRequestsResponse,
+  unauthorizedResponse,
+} from "@/lib/api/guards";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -61,18 +72,19 @@ async function toggleLikeFallback(
 }
 
 export async function POST(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
   try {
+    if (!isSameOrigin(request)) {
+      return invalidOriginResponse();
+    }
+
     const session = await getServerSession(authOptions);
     const email = session?.user?.email;
 
     if (!email) {
-      return NextResponse.json(
-        { ok: false, message: "Unauthorized" },
-        { status: 401 },
-      );
+      return unauthorizedResponse();
     }
 
     const { id: ideaId } = await context.params;
@@ -82,15 +94,24 @@ export async function POST(
         { status: 400 },
       );
     }
+
+    const rate = await consumeRateLimit({
+      key: `like:${email}`,
+      limit: 60,
+      windowMs: 60_000,
+    });
+    if (!rate.allowed) {
+      return tooManyRequestsResponse();
+    }
+
     const supabase = getSupabaseAdminClient();
 
-    const { data: userRow, error: userError } = await supabase
-      .from("users")
-      .select("id")
-      .filter("email", "eq", email)
-      .single();
+    if (!(await isIdeaPublished(supabase, ideaId))) {
+      return ideaNotFoundResponse();
+    }
 
-    if (userError || !userRow || !("id" in userRow)) {
+    const userId = await getUserIdByEmail(supabase, email);
+    if (!userId) {
       return NextResponse.json(
         { ok: false, message: "User not found" },
         { status: 404 },
@@ -100,7 +121,7 @@ export async function POST(
     const { data: rpcData, error: rpcError } = await supabase.rpc(
       "toggle_idea_like",
       {
-        p_user_id: userRow.id,
+        p_user_id: userId,
         p_idea_id: ideaId,
       },
     );
@@ -121,10 +142,9 @@ export async function POST(
       }
     }
 
-    const fallback = await toggleLikeFallback(userRow.id, ideaId);
+    const fallback = await toggleLikeFallback(userId, ideaId);
     return NextResponse.json({ ok: true, ...fallback });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ ok: false, message }, { status: 500 });
+    return serverErrorResponse("Idea like failed", error);
   }
 }

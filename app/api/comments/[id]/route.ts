@@ -2,23 +2,31 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
+import {
+  getUserIdByEmail,
+  invalidOriginResponse,
+  isSameOrigin,
+  serverErrorResponse,
+  unauthorizedResponse,
+} from "@/lib/api/guards";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
   try {
+    if (!isSameOrigin(request)) {
+      return invalidOriginResponse();
+    }
+
     const session = await getServerSession(authOptions);
     const email = session?.user?.email;
 
     if (!email) {
-      return NextResponse.json(
-        { ok: false, message: "Unauthorized" },
-        { status: 401 },
-      );
+      return unauthorizedResponse();
     }
 
     const { id: commentId } = await context.params;
@@ -30,33 +38,33 @@ export async function DELETE(
     }
     const supabase = getSupabaseAdminClient();
 
-    const { data: userRow, error: userError } = await supabase
-      .from("users")
-      .select("id")
-      .filter("email", "eq", email)
-      .single();
-
-    if (userError || !userRow || !("id" in userRow)) {
+    const userId = await getUserIdByEmail(supabase, email);
+    if (!userId) {
       return NextResponse.json(
         { ok: false, message: "User not found" },
         { status: 404 },
       );
     }
 
+    // Only match comments that are not already soft-deleted (idempotency).
     const { data: existing, error: lookupError } = await supabase
       .from("comments")
       .select("id,idea_id,author_id")
       .filter("id", "eq", commentId)
-      .single();
+      .is("deleted_at", null)
+      .maybeSingle();
 
-    if (lookupError || !existing) {
+    if (lookupError) {
+      return serverErrorResponse("Comment lookup failed", lookupError);
+    }
+    if (!existing) {
       return NextResponse.json(
         { ok: false, message: "Comment not found" },
         { status: 404 },
       );
     }
 
-    if (existing.author_id !== userRow.id) {
+    if (existing.author_id !== userId) {
       return NextResponse.json(
         { ok: false, message: "Not allowed" },
         { status: 403 },
@@ -69,31 +77,22 @@ export async function DELETE(
       .filter("id", "eq", commentId);
 
     if (updateError) {
-      return NextResponse.json(
-        { ok: false, message: updateError.message },
-        { status: 500 },
-      );
+      return serverErrorResponse("Comment delete failed", updateError);
     }
 
+    // ideas.comment_count is maintained by a DB trigger (migration 008).
     const { count } = await supabase
       .from("comments")
       .select("*", { count: "exact", head: true })
       .filter("idea_id", "eq", existing.idea_id)
       .is("deleted_at", null);
 
-    const commentCount = count ?? 0;
-    await supabase
-      .from("ideas")
-      .update({ comment_count: commentCount })
-      .filter("id", "eq", existing.idea_id);
-
     return NextResponse.json({
       ok: true,
-      commentCount,
+      commentCount: count ?? 0,
       ideaId: existing.idea_id,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ ok: false, message }, { status: 500 });
+    return serverErrorResponse("Comment delete failed", error);
   }
 }

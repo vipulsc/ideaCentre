@@ -39,6 +39,37 @@ export function clampWords(text: string, max: number) {
   return words.slice(0, max).join(" ");
 }
 
+export const DEFAULT_IDEA_COLOR = "#0a1a12";
+
+export const ALLOWED_MUSIC_TRACKS = [
+  "/music/music1.mp3",
+  "/music/music2.mp3",
+  "/music/music3.mp3",
+  "/music/music4.mp3",
+  "/music/music5.mp3",
+  "/music/music6.mp3",
+  "/music/music7.mp3",
+  "/music/music8.mp3",
+] as const;
+
+const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/;
+
+/** Returns a safe hex color, falling back to the default when invalid. */
+export function normalizeColor(input: unknown): string {
+  if (typeof input !== "string") return DEFAULT_IDEA_COLOR;
+  const trimmed = input.trim();
+  return HEX_COLOR_RE.test(trimmed) ? trimmed : DEFAULT_IDEA_COLOR;
+}
+
+/** Returns an allowlisted music track path, or null for anything else. */
+export function normalizeMusic(input: unknown): string | null {
+  if (typeof input !== "string") return null;
+  const trimmed = input.trim();
+  return (ALLOWED_MUSIC_TRACKS as readonly string[]).includes(trimmed)
+    ? trimmed
+    : null;
+}
+
 export function normalizeIdeaFields(input: {
   title?: string;
   idea?: string;

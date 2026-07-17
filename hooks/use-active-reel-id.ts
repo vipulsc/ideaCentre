@@ -13,21 +13,17 @@ export function useActiveReelId(
   const idsKey = itemIds.join("|");
   const stableIds = useMemo(() => itemIds, [idsKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const [activeId, setActiveId] = useState<string | null>(stableIds[0] ?? null);
+  // The id last reported by the IntersectionObserver (set inside a callback,
+  // never synchronously in an effect body).
+  const [observedId, setObservedId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!enabled) {
-      setActiveId(null);
-      return;
-    }
-    if (stableIds.length === 0) {
-      setActiveId(null);
-      return;
-    }
-    setActiveId((prev) =>
-      prev && stableIds.includes(prev) ? prev : (stableIds[0] ?? null),
-    );
-  }, [stableIds, enabled]);
+  // Derive the active id so enabled/empty/stale transitions don't require a
+  // synchronous setState inside an effect.
+  const activeId = useMemo(() => {
+    if (!enabled || stableIds.length === 0) return null;
+    if (observedId && stableIds.includes(observedId)) return observedId;
+    return stableIds[0] ?? null;
+  }, [enabled, stableIds, observedId]);
 
   useEffect(() => {
     const root = scrollRef.current;
@@ -48,7 +44,7 @@ export function useActiveReelId(
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
         const id = (top?.target as HTMLElement | undefined)?.dataset
           ?.reelIdeaId;
-        if (id) setActiveId(id);
+        if (id) setObservedId(id);
       },
       { root, threshold: [0.55, 0.75, 0.9] },
     );

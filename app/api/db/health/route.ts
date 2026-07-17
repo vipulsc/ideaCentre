@@ -1,11 +1,7 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
-function isAuthorizedHealthRequest(request: Request, hasSession: boolean) {
-  if (hasSession) return true;
-
+function isAuthorizedHealthRequest(request: Request) {
   const token = process.env.HEALTH_CHECK_TOKEN?.trim();
   if (!token) return false;
 
@@ -18,10 +14,8 @@ function isAuthorizedHealthRequest(request: Request, hasSession: boolean) {
 
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    const hasSession = Boolean(session?.user?.email);
-
-    if (!isAuthorizedHealthRequest(request, hasSession)) {
+    // Operational endpoint: requires a dedicated token, not just any session.
+    if (!isAuthorizedHealthRequest(request)) {
       return NextResponse.json(
         { ok: false, message: "Unauthorized" },
         { status: 401 },

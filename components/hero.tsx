@@ -144,21 +144,23 @@ export function Hero() {
               </motion.ul>
 
               <motion.div
-                className="mt-1 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-6"
+                className="mt-1 flex flex-nowrap items-center gap-3 sm:gap-6"
                 {...useFade(0.5)}
               >
                 <Link
                   href="/reel"
-                  className="inline-flex w-fit items-center gap-2 whitespace-nowrap rounded-full bg-primary-foreground px-6 py-3.5 text-sm font-bold text-foreground shadow-lg shadow-black/10 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/15 active:translate-y-0 sm:px-8 sm:text-[15px]"
+                  className="inline-flex w-fit items-center gap-2 whitespace-nowrap rounded-full bg-primary-foreground px-4 py-3 text-[13px] font-bold text-foreground shadow-lg shadow-black/10 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/15 active:translate-y-0 sm:px-8 sm:py-3.5 sm:text-[15px]"
                 >
-                  <Play className="size-4 fill-foreground" aria-hidden />
-                  Start the reel &mdash; it&apos;s free
+                  <Play className="size-4 shrink-0 fill-foreground" aria-hidden />
+                  Start the reel
+                  <span className="hidden sm:inline">&nbsp;&mdash; it&apos;s free</span>
                 </Link>
                 <Link
                   href="/reel?feed=trending"
-                  className="group inline-flex w-fit items-center gap-1.5 whitespace-nowrap text-sm font-medium text-primary-foreground underline underline-offset-4 transition-all duration-200 hover:underline-offset-[6px] sm:gap-2 sm:text-[15px]"
+                  className="group inline-flex w-fit items-center gap-1.5 whitespace-nowrap text-[13px] font-medium text-primary-foreground underline underline-offset-4 transition-all duration-200 hover:underline-offset-[6px] sm:gap-2 sm:text-[15px]"
                 >
-                  See what&apos;s trending
+                  <span className="hidden sm:inline">See what&apos;s trending</span>
+                  <span className="sm:hidden">Trending</span>
                   <ArrowUpRight
                     className="size-4 shrink-0 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
                     aria-hidden

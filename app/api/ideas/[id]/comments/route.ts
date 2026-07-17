@@ -3,10 +3,26 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { IDEA_LIMITS } from "@/lib/idea-limits";
+import { consumeRateLimit } from "@/lib/rate-limit";
+import {
+  ideaNotFoundResponse,
+  invalidOriginResponse,
+  isIdeaPublished,
+  isSameOrigin,
+  readJsonBody,
+  serverErrorResponse,
+  tooManyRequestsResponse,
+  unauthorizedResponse,
+} from "@/lib/api/guards";
 
 type CreateCommentBody = {
   body?: string;
 };
+
+function firstRelation<T>(value: T | T[] | null | undefined): T | null {
+  if (!value) return null;
+  return Array.isArray(value) ? (value[0] ?? null) : value;
+}
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -22,6 +38,10 @@ type CommentQueryRow = {
         name: string | null;
         image: string | null;
       }
+    | {
+        name: string | null;
+        image: string | null;
+      }[]
     | null;
 };
 
@@ -43,7 +63,7 @@ export async function GET(
 
     const supabase = getSupabaseAdminClient();
     let includeLikeCount = true;
-    let { data, error } = await supabase
+    const initial = await supabase
       .from("comments")
       .select(
         "id,body,created_at,like_count,author_id,users!comments_author_id_fkey(name,image)",
@@ -52,7 +72,8 @@ export async function GET(
       .is("deleted_at", null)
       .order("created_at", { ascending: true })
       .limit(limit);
-    let typedData = (data ?? null) as CommentQueryRow[] | null;
+    let typedData = (initial.data ?? null) as CommentQueryRow[] | null;
+    let error = initial.error;
 
     // Backward compatibility when migration 003_comment_likes.sql
     // hasn't been applied yet.
@@ -70,10 +91,7 @@ export async function GET(
     }
 
     if (error) {
-      return NextResponse.json(
-        { ok: false, message: error.message },
-        { status: 500 },
-      );
+      return serverErrorResponse("Comments query failed", error);
     }
 
     const commentIds = (typedData ?? []).map((row) => row.id);
@@ -99,21 +117,25 @@ export async function GET(
       }
     }
 
-    const comments = (typedData ?? []).map((row) => ({
-      id: row.id,
-      body: row.body,
-      createdAt: row.created_at,
-      likeCount: includeLikeCount ? ((row as { like_count?: number }).like_count ?? 0) : 0,
-      isLiked: likedCommentIds.has(row.id),
-      authorName: row.users?.name ?? "Anonymous",
-      authorImage: row.users?.image ?? null,
-      isOwn: viewerUserId ? row.author_id === viewerUserId : false,
-    }));
+    const comments = (typedData ?? []).map((row) => {
+      const author = firstRelation(row.users);
+      return {
+        id: row.id,
+        body: row.body,
+        createdAt: row.created_at,
+        likeCount: includeLikeCount
+          ? ((row as { like_count?: number }).like_count ?? 0)
+          : 0,
+        isLiked: likedCommentIds.has(row.id),
+        authorName: author?.name ?? "Anonymous",
+        authorImage: author?.image ?? null,
+        isOwn: viewerUserId ? row.author_id === viewerUserId : false,
+      };
+    });
 
     return NextResponse.json({ ok: true, comments });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ ok: false, message }, { status: 500 });
+    return serverErrorResponse("Comments read failed", error);
   }
 }
 
@@ -122,14 +144,15 @@ export async function POST(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
+    if (!isSameOrigin(request)) {
+      return invalidOriginResponse();
+    }
+
     const session = await getServerSession(authOptions);
     const email = session?.user?.email;
 
     if (!email) {
-      return NextResponse.json(
-        { ok: false, message: "Unauthorized" },
-        { status: 401 },
-      );
+      return unauthorizedResponse();
     }
 
     const { id: ideaId } = await context.params;
@@ -139,8 +162,18 @@ export async function POST(
         { status: 400 },
       );
     }
-    const body = (await request.json()) as CreateCommentBody;
-    const text = body.body?.trim() ?? "";
+
+    const rate = await consumeRateLimit({
+      key: `comment:${email}`,
+      limit: 20,
+      windowMs: 60_000,
+    });
+    if (!rate.allowed) {
+      return tooManyRequestsResponse();
+    }
+
+    const body = await readJsonBody<CreateCommentBody>(request);
+    const text = typeof body?.body === "string" ? body.body.trim() : "";
 
     if (!text) {
       return NextResponse.json(
@@ -160,6 +193,10 @@ export async function POST(
     }
 
     const supabase = getSupabaseAdminClient();
+
+    if (!(await isIdeaPublished(supabase, ideaId))) {
+      return ideaNotFoundResponse();
+    }
 
     const { data: userRow, error: userError } = await supabase
       .from("users")
@@ -185,15 +222,11 @@ export async function POST(
       .single();
 
     if (insertError || !inserted) {
-      return NextResponse.json(
-        {
-          ok: false,
-          message: insertError?.message ?? "Failed to post comment",
-        },
-        { status: 500 },
-      );
+      return serverErrorResponse("Comment insert failed", insertError);
     }
 
+    // ideas.comment_count is maintained by a DB trigger (migration 008).
+    // We re-read the current count for an accurate response value.
     const { count } = await supabase
       .from("comments")
       .select("*", { count: "exact", head: true })
@@ -201,11 +234,6 @@ export async function POST(
       .is("deleted_at", null);
 
     const commentCount = count ?? 0;
-
-    await supabase
-      .from("ideas")
-      .update({ comment_count: commentCount })
-      .filter("id", "eq", ideaId);
 
     return NextResponse.json({
       ok: true,
@@ -222,7 +250,6 @@ export async function POST(
       },
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ ok: false, message }, { status: 500 });
+    return serverErrorResponse("Comment create failed", error);
   }
 }

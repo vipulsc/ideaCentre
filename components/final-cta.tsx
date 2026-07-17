@@ -27,7 +27,7 @@ const footerColumns = [
 const socials = [
   {
     icon: Mail,
-    href: "mailto:hello@ideacentre.xyz?bcc=vipulsinghs.04s@gmail.com",
+    href: "mailto:hello@ideacentre.xyz",
     label: "Email",
   },
 ];
