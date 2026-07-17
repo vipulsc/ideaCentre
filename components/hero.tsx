@@ -144,7 +144,7 @@ export function Hero() {
               </motion.ul>
 
               <motion.div
-                className="mt-1 flex items-center gap-4 sm:gap-6"
+                className="mt-1 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-6"
                 {...useFade(0.5)}
               >
                 <Link
