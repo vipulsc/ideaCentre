@@ -1,35 +1,67 @@
-## Google Auth Setup
+<div align="center">
 
-Google login is configured with NextAuth.
+# ideaCentre
 
-Use `.env.local` for credentials:
-- `GOOGLE_CLIENT_ID`
-- `GOOGLE_CLIENT_SECRET`
-- `NEXTAUTH_SECRET`
-- `NEXTAUTH_URL`
+### Your next idea is one swipe away.
 
-## Supabase Setup
+Discover startup ideas in seconds. Save the ones that spark something, vote
+for the best, and turn inspiration into action.
 
-Supabase is wired with typed clients for browser/server/admin use:
-- `lib/supabase/client.ts`
-- `lib/supabase/server.ts`
-- `lib/supabase/admin.ts`
+</div>
 
-Required `.env.local` keys:
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY` (server-only, do not expose in client)
-- `GEMINI_API_KEY` (Google AI Studio — AI generation features)
+![ideaCentre product experience](./public/ideacentre-launch.png)
 
-Copy the template: `cp .env.example .env.local`
+## Ideas deserve more than a forgotten notes app
 
-Database migrations are under `supabase/migrations`:
-- `001_init_schema.sql` creates core IdeaCentre tables.
-- `002_enable_rls_for_new_public_tables.sql` adds an event trigger to auto-enable RLS on every new `public` table.
+ideaCentre is a community-powered home for discovering, sharing, and shaping
+ideas. Its reel-style experience makes exploration effortless while every idea
+still has room for meaningful feedback and collaboration.
 
-Run these SQL files in Supabase SQL editor (in order) or with Supabase CLI migration workflow.
+Whether you are looking for your next project, validating a problem, or sharing
+a thought with the world, ideaCentre helps move it forward.
 
-Quick connectivity check:
-- Start app with `npm run dev`
-- Hit `GET /api/db/health`
-- Expect `{ "ok": true }` after migrations are applied and `SUPABASE_SERVICE_ROLE_KEY` is set.
+## What you can do
+
+- **Discover effortlessly** — swipe through a focused feed of ideas across
+  community, SaaS, education, and more.
+- **Shape your feed** — like, save, and revisit the ideas worth remembering.
+- **Join the conversation** — vote and share feedback with other curious
+  builders.
+- **Share your own ideas** — publish a rough thought and give it a place to
+  grow.
+- **Explore what is trending** — see which ideas are resonating with the
+  community.
+- **Build with AI** — use AI-assisted tools to develop early thoughts into
+  clearer concepts.
+
+## How it works
+
+1. **Swipe** through ideas that match your curiosity.
+2. **React** by voting, saving, or joining the discussion.
+3. **Share** an idea of your own.
+4. **Build** on the ideas that keep pulling you back.
+
+## The product
+
+ideaCentre combines two complementary experiences:
+
+- A fast, immersive **Idea Reel** for discovery.
+- A structured **dashboard** for browsing, saving, and managing ideas.
+
+Together, they make idea discovery feel lightweight without treating the ideas
+themselves as disposable.
+
+## Built for curious people
+
+For founders searching for a problem, developers choosing a side project,
+students finding collaborators, and anyone who has ever thought:
+
+> “Someone should build this.”
+
+---
+
+<div align="center">
+
+**Discover. Share. Build.**
+
+</div>
