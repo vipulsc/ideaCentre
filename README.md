@@ -11,7 +11,7 @@ for the best, and turn inspiration into action.
 
 </div>
 
-![ideaCentre launch banner](./public/ideacentre-launch-banner.png)
+![ideaCentre launch banner](./public/ideacentre-launch.png)
 
 ## Ideas deserve more than a forgotten notes app
 
