@@ -7,9 +7,11 @@
 Discover startup ideas in seconds. Save the ones that spark something, vote
 for the best, and turn inspiration into action.
 
+**[ideacentre.xyz](https://ideacentre.xyz)** · Now Live
+
 </div>
 
-![ideaCentre product experience](./public/ideacentre-launch.png)
+![ideaCentre launch banner](./public/ideacentre-launch-banner.png)
 
 ## Ideas deserve more than a forgotten notes app
 
@@ -63,5 +65,7 @@ students finding collaborators, and anyone who has ever thought:
 <div align="center">
 
 **Discover. Share. Build.**
+
+[ideacentre.xyz](https://ideacentre.xyz)
 
 </div>
