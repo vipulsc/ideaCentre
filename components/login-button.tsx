@@ -3,7 +3,7 @@
 import { LogOut, X } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { signInWithGoogle } from "@/lib/auth-client";
+import { prefetchGoogleSignIn, signInWithGoogle } from "@/lib/auth-client";
 
 type LoginButtonProps = {
   className?: string;
@@ -126,7 +126,9 @@ export default function LoginButton({ className }: LoginButtonProps) {
   return (
     <button
       type="button"
-      onClick={() => signInWithGoogle("/dashboard")}
+      onClick={() => void signInWithGoogle("/dashboard")}
+      onPointerEnter={prefetchGoogleSignIn}
+      onFocus={prefetchGoogleSignIn}
       className={className}
     >
       Login

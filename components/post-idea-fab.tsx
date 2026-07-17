@@ -3,7 +3,7 @@
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { signInWithGoogle } from "@/lib/auth-client";
+import { prefetchGoogleSignIn, signInWithGoogle } from "@/lib/auth-client";
 
 const SHOW_MS = 3000;
 const HIDE_MS = 2000;
@@ -74,7 +74,9 @@ export function PostIdeaFab() {
 
       <button
         type="button"
-        onClick={() => signInWithGoogle("/dashboard")}
+        onClick={() => void signInWithGoogle("/dashboard")}
+        onPointerEnter={prefetchGoogleSignIn}
+        onFocus={prefetchGoogleSignIn}
         className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition-shadow duration-200 hover:shadow-xl hover:shadow-primary/40"
         aria-label="Post your idea"
       >

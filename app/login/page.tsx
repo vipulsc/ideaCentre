@@ -1,22 +1,20 @@
-"use client";
-
 import Link from "next/link";
-import { Suspense, useEffect, useRef } from "react";
-import { useSearchParams } from "next/navigation";
-import { safeInternalPath, signInWithGoogle } from "@/lib/auth-client";
+import { LoginGoogleRedirect } from "@/components/login-google-redirect";
+import { safeInternalPath } from "@/lib/auth-path";
 
-function LoginContent() {
-  const searchParams = useSearchParams();
-  const started = useRef(false);
-  const error = searchParams.get("error");
+type LoginPageProps = {
+  searchParams: Promise<{ callbackUrl?: string | string[]; error?: string | string[] }>;
+};
+
+function firstParam(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const params = await searchParams;
+  const error = firstParam(params.error);
   const callbackUrl =
-    safeInternalPath(searchParams.get("callbackUrl")) ?? "/dashboard";
-
-  useEffect(() => {
-    if (error || started.current) return;
-    started.current = true;
-    void signInWithGoogle(callbackUrl);
-  }, [callbackUrl, error]);
+    safeInternalPath(firstParam(params.callbackUrl)) ?? "/dashboard";
 
   if (error) {
     return (
@@ -24,16 +22,12 @@ function LoginContent() {
         <p className="text-sm text-foreground/70">
           Sign-in didn&apos;t complete. Please try again.
         </p>
-        <button
-          type="button"
-          onClick={() => {
-            started.current = true;
-            void signInWithGoogle(callbackUrl);
-          }}
+        <Link
+          href={`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`}
           className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground"
         >
           Try Google again
-        </button>
+        </Link>
         <Link
           href="/"
           className="text-sm text-foreground/50 underline underline-offset-4"
@@ -45,22 +39,8 @@ function LoginContent() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-canvas text-sm text-foreground/60">
-      Taking you to Google sign-in…
+    <main className="flex min-h-screen items-center justify-center bg-canvas px-6 text-center">
+      <LoginGoogleRedirect callbackUrl={callbackUrl} />
     </main>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense
-      fallback={
-        <main className="flex min-h-screen items-center justify-center bg-canvas text-sm text-foreground/60">
-          Taking you to Google sign-in…
-        </main>
-      }
-    >
-      <LoginContent />
-    </Suspense>
   );
 }

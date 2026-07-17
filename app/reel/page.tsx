@@ -19,7 +19,7 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "rea
 import { AiInsightsModal } from "@/components/ai-insights-modal";
 import { ReelAudio } from "@/components/reel-audio";
 import { useActiveReelId } from "@/hooks/use-active-reel-id";
-import { currentInternalPath, signInWithGoogle } from "@/lib/auth-client";
+import { currentInternalPath, prefetchGoogleSignIn, signInWithGoogle } from "@/lib/auth-client";
 import { shareIdea } from "@/lib/share";
 
 type FeedIdea = {
@@ -108,6 +108,10 @@ function ReelPageContent() {
       if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (status === "unauthenticated") prefetchGoogleSignIn();
+  }, [status]);
 
   const loadIdeas = useCallback(async (mode: "replace" | "append" = "replace") => {
     try {
@@ -495,6 +499,8 @@ function ReelPageContent() {
           <button
             type="button"
             onClick={requireAuth}
+            onPointerEnter={prefetchGoogleSignIn}
+            onFocus={prefetchGoogleSignIn}
             className="absolute right-4 top-4 z-20 inline-flex items-center gap-2 rounded-full border border-[#3BF09A] bg-transparent px-4 py-2 text-sm font-bold text-[#3BF09A] backdrop-blur-sm transition-colors duration-200 hover:bg-[#3BF09A]/10"
           >
             <LogIn className="size-4" />
