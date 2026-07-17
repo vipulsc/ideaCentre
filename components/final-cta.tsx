@@ -2,9 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
 import { ArrowRight, Mail } from "lucide-react";
 import { Reveal } from "@/components/reveal";
+import { signInWithGoogle } from "@/lib/auth-client";
 
 const footerColumns = [
   {
@@ -71,7 +71,7 @@ export function FinalCta() {
                     </Link>
                     <button
                       type="button"
-                      onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+                      onClick={() => signInWithGoogle("/dashboard")}
                       className="cursor-pointer text-sm font-medium text-primary-foreground/80 underline underline-offset-4 transition-colors duration-200 hover:text-primary-foreground sm:text-base"
                     >
                       Sign in to save ideas

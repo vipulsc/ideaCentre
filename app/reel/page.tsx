@@ -12,13 +12,14 @@ import {
   VolumeX,
   X,
 } from "lucide-react";
-import { signIn, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AiInsightsModal } from "@/components/ai-insights-modal";
 import { ReelAudio } from "@/components/reel-audio";
 import { useActiveReelId } from "@/hooks/use-active-reel-id";
+import { currentInternalPath, signInWithGoogle } from "@/lib/auth-client";
 import { shareIdea } from "@/lib/share";
 
 type FeedIdea = {
@@ -202,7 +203,7 @@ function ReelPageContent() {
   ]);
 
   const requireAuth = useCallback(() => {
-    void signIn("google", { callbackUrl: "/dashboard" });
+    void signInWithGoogle(currentInternalPath("/reel"));
   }, []);
 
   const toggleLike = useCallback(

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { safeInternalPath } from "@/lib/auth-client";
 
 type ReplaceRedirectProps = {
   href: string;
@@ -15,7 +16,16 @@ export function ReplaceRedirect({ href }: ReplaceRedirectProps) {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace(href);
+    const params = new URLSearchParams(window.location.search);
+    const target = safeInternalPath(params.get("next")) ?? href;
+
+    router.replace(target);
+
+    const fallback = window.setTimeout(() => {
+      window.location.replace(target);
+    }, 700);
+
+    return () => window.clearTimeout(fallback);
   }, [href, router]);
 
   return (

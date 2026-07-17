@@ -1,8 +1,9 @@
 "use client";
 
 import { LogOut, X } from "lucide-react";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { signInWithGoogle } from "@/lib/auth-client";
 
 type LoginButtonProps = {
   className?: string;
@@ -125,7 +126,7 @@ export default function LoginButton({ className }: LoginButtonProps) {
   return (
     <button
       type="button"
-      onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+      onClick={() => signInWithGoogle("/dashboard")}
       className={className}
     >
       Login
