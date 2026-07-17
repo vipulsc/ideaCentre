@@ -11,14 +11,7 @@ export function PrefetchGoogleSignIn() {
   useEffect(() => {
     if (status !== "unauthenticated") return;
 
-    const run = () => prefetchGoogleSignIn();
-
-    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-      const id = window.requestIdleCallback(run, { timeout: 1500 });
-      return () => window.cancelIdleCallback(id);
-    }
-
-    const timer = window.setTimeout(run, 200);
+    const timer = window.setTimeout(() => prefetchGoogleSignIn(), 200);
     return () => window.clearTimeout(timer);
   }, [status]);
 
