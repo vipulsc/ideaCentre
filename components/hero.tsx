@@ -3,9 +3,9 @@
 import Link from "next/link";
 import {
   ArrowUpRight,
+  Check,
   Flame,
   Heart,
-  Lightbulb,
   MessageCircle,
   Play,
   Sparkles,
@@ -95,78 +95,70 @@ export function Hero() {
               className="pointer-events-none absolute inset-y-8 left-1/2 hidden w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-primary-foreground/30 to-transparent lg:block"
             />
             {/* Left column */}
-            <div className="flex min-w-0 flex-col gap-5 text-primary-foreground sm:gap-6 lg:max-w-none lg:gap-7 lg:border-r lg:border-primary-foreground/20 lg:pr-8 xl:pr-10">
-              <motion.div
-                className="flex items-center gap-3"
-                {...useFade(0.15)}
-              >
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary-foreground/15">
-                  <Lightbulb className="size-6 text-primary-foreground" />
-                </span>
-                <div>
-                  <p className="text-sm font-bold leading-tight text-primary-foreground sm:text-base">
-                    1,000+ Ideas
-                  </p>
-                  <p className="text-sm text-primary-foreground/80">
-                    See What&apos;s{" "}
-                    <span className="font-bold underline underline-offset-2">
-                      Trending Now
-                    </span>
-                  </p>
-                </div>
-              </motion.div>
-
+            <div className="flex min-w-0 flex-col gap-6 text-primary-foreground sm:gap-7 lg:max-w-none lg:border-r lg:border-primary-foreground/20 lg:pr-8 xl:pr-10">
               <motion.h1
                 id="hero-heading"
-                className="font-display-serif text-[5rem] leading-[0.9] tracking-tight sm:text-[7rem] md:text-[8rem] lg:text-[9rem] xl:text-[10rem]"
-                {...useFade(0.3)}
+                className="font-display-serif text-[3rem] leading-[0.98] tracking-tight sm:text-[4.25rem] md:text-[5rem] lg:text-[5.25rem] xl:text-[6rem]"
+                {...useFade(0.15)}
               >
-                Idea
-                <sup className="relative -top-[0.35em] text-[0.4em]">+</sup>
+                Startup ideas,
+                <br />
+                served like{" "}
+                <span className="relative inline-block">
+                  reels.
+                  <span
+                    aria-hidden
+                    className="absolute -bottom-1 left-0 h-[0.16em] w-full rounded-full bg-[#5FA97C]"
+                  />
+                </span>
               </motion.h1>
 
-              <motion.hr
-                className="border-primary-foreground/25"
-                initial={reduce ? false : { scaleX: 0 }}
-                whileInView={reduce ? undefined : { scaleX: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.45, ease }}
-                style={{ transformOrigin: "left" }}
-              />
-
               <motion.p
-                className="max-w-lg text-base leading-relaxed text-primary-foreground/90 sm:text-lg md:text-xl"
-                {...useFade(0.5)}
+                className="max-w-xl text-base leading-relaxed text-primary-foreground/85 sm:text-lg"
+                {...useFade(0.3)}
               >
-                Discover Startup Ideas In Seconds. Swipe Through Ideas Like
-                Reels&nbsp;&mdash; Save, Vote, And Start Building.
+                Swipe a bottomless feed of startup ideas, save the ones you
+                love, upvote the best to the top &mdash; and let AI turn any
+                idea into a build-ready plan.
               </motion.p>
 
-              <motion.hr
-                className="border-primary-foreground/25"
-                initial={reduce ? false : { scaleX: 0 }}
-                whileInView={reduce ? undefined : { scaleX: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.6, ease }}
-                style={{ transformOrigin: "left" }}
-              />
+              <motion.ul
+                className="flex flex-wrap items-center gap-2.5"
+                {...useFade(0.4)}
+              >
+                {["AI", "SaaS", "Productivity", "Consumer", "Dev tools"].map(
+                  (feature) => (
+                    <li
+                      key={feature}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-primary-foreground/25 px-3.5 py-1.5 text-sm font-medium text-primary-foreground/90"
+                    >
+                      <Check
+                        className="size-3.5 text-[#5FA97C]"
+                        strokeWidth={3}
+                        aria-hidden
+                      />
+                      {feature}
+                    </li>
+                  ),
+                )}
+              </motion.ul>
 
               <motion.div
-                className="flex items-center gap-2 sm:gap-6"
-                {...useFade(0.65)}
+                className="mt-1 flex items-center gap-4 sm:gap-6"
+                {...useFade(0.5)}
               >
                 <Link
                   href="/reel"
-                  className="inline-flex w-fit items-center justify-center whitespace-nowrap rounded-full bg-primary-foreground px-5 py-3 text-xs font-medium text-foreground shadow-lg shadow-black/10 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/15 active:translate-y-0 sm:px-9 sm:py-4 sm:text-[15px]"
+                  className="inline-flex w-fit items-center gap-2 whitespace-nowrap rounded-full bg-primary-foreground px-6 py-3.5 text-sm font-bold text-foreground shadow-lg shadow-black/10 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/15 active:translate-y-0 sm:px-8 sm:text-[15px]"
                 >
-                  <span className="font-bold">Start Idea Reel</span>
-                  &nbsp;&mdash; It&apos;s Free
+                  <Play className="size-4 fill-foreground" aria-hidden />
+                  Start the reel &mdash; it&apos;s free
                 </Link>
                 <Link
                   href="/reel?feed=trending"
-                  className="group inline-flex w-fit items-center gap-1.5 whitespace-nowrap text-xs font-medium text-primary-foreground underline underline-offset-4 transition-all duration-200 hover:underline-offset-[6px] sm:gap-2 sm:text-[15px]"
+                  className="group inline-flex w-fit items-center gap-1.5 whitespace-nowrap text-sm font-medium text-primary-foreground underline underline-offset-4 transition-all duration-200 hover:underline-offset-[6px] sm:gap-2 sm:text-[15px]"
                 >
-                  See Trending
+                  See what&apos;s trending
                   <ArrowUpRight
                     className="size-4 shrink-0 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
                     aria-hidden

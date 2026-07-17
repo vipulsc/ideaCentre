@@ -40,6 +40,21 @@ type FeedIdea = {
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+const CATEGORY_ACCENTS: Record<string, string> = {
+  "AI / Health": "#5eead4",
+  Community: "#f0abfc",
+  SaaS: "#93c5fd",
+  Education: "#fcd34d",
+  Finance: "#86efac",
+  Sustainability: "#a3e635",
+  Entertainment: "#fda4af",
+  Other: "#d4d4d8",
+};
+
+function categoryAccent(category: string) {
+  return CATEGORY_ACCENTS[category] ?? "#c7c7cc";
+}
+
 function ReelPageContent() {
   const { status } = useSession();
   const searchParams = useSearchParams();
@@ -292,9 +307,28 @@ function ReelPageContent() {
                   className="h-full w-full shrink-0"
                 >
                   <div
-                    className="relative flex h-full w-full snap-start snap-always flex-col justify-center px-6 pr-16 sm:px-10 sm:pr-20"
-                    style={{ backgroundColor: reel.color }}
+                    className="relative flex h-full w-full snap-start snap-always flex-col justify-end overflow-hidden text-white"
+                    style={{
+                      background: `linear-gradient(180deg, ${reel.color}ee 0%, ${reel.color} 45%, #000000 100%)`,
+                    }}
                   >
+                    <div
+                      aria-hidden
+                      className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.14),transparent_55%)]"
+                    />
+                    <div
+                      aria-hidden
+                      className="pointer-events-none absolute -left-24 top-1/3 h-72 w-72 rounded-full blur-[120px]"
+                      style={{
+                        backgroundColor: categoryAccent(reel.category),
+                        opacity: 0.22,
+                      }}
+                    />
+                    <div
+                      aria-hidden
+                      className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-t from-black/90 via-black/40 to-transparent"
+                    />
+
                     {reel.music && (
                       <ReelAudio
                         src={reel.music}
@@ -303,11 +337,12 @@ function ReelPageContent() {
                         onAutoplayBlocked={handleAutoplayBlocked}
                       />
                     )}
+
                     <button
                       type="button"
                       onClick={() => setIsMuted((prev) => !prev)}
                       disabled={!reel.music}
-                      className="absolute left-4 top-4 z-20 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/30 px-3 py-1.5 text-xs font-medium text-white/85 backdrop-blur-sm transition-colors hover:bg-black/45 disabled:cursor-not-allowed disabled:opacity-60 sm:left-5 sm:top-5"
+                      className="dash-icon-btn absolute left-4 top-4 z-20 h-9 gap-1.5 px-3 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50 sm:left-5 sm:top-5"
                     >
                       {!reel.music || isMuted ? (
                         <VolumeX className="size-3.5" />
@@ -316,56 +351,88 @@ function ReelPageContent() {
                       )}
                       {!reel.music ? "No music" : isMuted ? "Unmute" : "Mute"}
                     </button>
+
                     {reel.trending && (
-                      <span className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-[#F472B6]/15 px-3 py-1 text-xs font-semibold text-[#F472B6] backdrop-blur-sm sm:right-5 sm:top-5">
-                        <Flame className="size-3.5" />
+                      <span className="absolute left-4 top-[4.25rem] z-20 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold text-white backdrop-blur-xl sm:left-5 sm:top-[4.75rem]">
+                        <Flame className="size-3.5 text-[#f472b6]" />
                         Hot
                       </span>
                     )}
-                    <div className="flex w-full max-w-2xl flex-col gap-5">
-                      <span className="dash-mono-tag w-fit text-[#3BF09A]">
-                        {reel.category}
-                      </span>
-                      <h2 className="dash-serif text-4xl font-normal leading-[1.08] tracking-tight text-white sm:text-5xl md:text-6xl">
-                        {reel.title}
-                      </h2>
-                      <p className="text-base leading-relaxed text-white/70 sm:text-lg md:text-xl">
-                        {reel.idea}
-                      </p>
-                      <div className="mt-1 flex items-center gap-2.5">
+
+                    <div className="relative z-10 flex w-full max-w-2xl flex-col gap-4 px-6 pb-32 pr-20 sm:px-10 sm:pr-24">
+                      <div className="flex items-center gap-2.5">
                         {reel.authorImage ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={reel.authorImage}
                             alt={reel.authorName}
                             referrerPolicy="no-referrer"
-                            className="h-8 w-8 shrink-0 rounded-full object-cover ring-2 ring-white/25"
+                            className="h-9 w-9 shrink-0 rounded-full object-cover ring-2 ring-white/25"
                           />
                         ) : (
-                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/15 text-xs font-bold text-white">
+                          <span
+                            className="flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold text-[#241812]"
+                            style={{
+                              backgroundColor: categoryAccent(reel.category),
+                            }}
+                          >
                             {reel.authorName.charAt(0).toUpperCase()}
                           </span>
                         )}
-                        <span className="text-sm font-medium text-white/85">
-                          {reel.authorName}
-                        </span>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold tracking-tight">
+                            {reel.authorName}
+                          </p>
+                          <p
+                            className="dash-mono-tag"
+                            style={{ color: categoryAccent(reel.category) }}
+                          >
+                            {reel.category}
+                          </p>
+                        </div>
+                      </div>
+                      <h2 className="dash-serif text-4xl font-normal leading-[1.08] tracking-tight text-white sm:text-5xl md:text-[3.25rem]">
+                        {reel.title}
+                      </h2>
+                      <p className="max-w-xl text-base leading-relaxed text-white/75 sm:text-lg">
+                        {reel.idea}
+                      </p>
+                      <div className="flex gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedIdeaId(reel.id)}
+                          className="dash-icon-btn h-8 gap-1.5 px-3.5 text-[11px] font-medium"
+                        >
+                          <FileText className="size-3.5" />
+                          Info
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => openInsights(reel.id)}
+                          className="dash-icon-btn h-8 gap-1.5 px-3.5 text-[11px] font-medium"
+                        >
+                          <Sparkles className="size-3.5" />
+                          AI
+                        </button>
                       </div>
                     </div>
 
-                    <div className="absolute bottom-28 right-5 flex flex-col items-center gap-6 sm:right-6 sm:gap-7">
+                    <div className="absolute bottom-28 right-4 z-10 flex flex-col items-center gap-5 sm:right-6 sm:bottom-32 sm:gap-6">
                       <button
                         type="button"
                         onClick={() => toggleLike(reel.id)}
-                        className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#F472B6]"
+                        className="flex flex-col items-center gap-1 transition-transform active:scale-90"
                       >
-                        <Heart
-                          className={`size-7 sm:size-8 ${
-                            reel.isLiked
-                              ? "fill-[#F472B6] text-[#F472B6]"
-                              : "text-white"
-                          }`}
-                        />
-                        <span className="text-xs text-white/60">
+                        <span className="dash-icon-btn h-11 w-11">
+                          <Heart
+                            className={`size-6 ${
+                              reel.isLiked
+                                ? "fill-[#f472b6] text-[#f472b6]"
+                                : "text-white"
+                            }`}
+                          />
+                        </span>
+                        <span className="text-[11px] font-medium tabular-nums text-white/80">
                           {reel.likeCount}
                         </span>
                       </button>
@@ -378,44 +445,31 @@ function ReelPageContent() {
                               }
                             : requireAuth
                         }
-                        className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#60A5FA]"
+                        className="flex flex-col items-center gap-1 transition-transform active:scale-90"
                         title={
                           isAuthed
                             ? "Open dashboard to comment"
                             : "Login to comment"
                         }
                       >
-                        <MessageCircle className="size-7 text-white sm:size-8" />
-                        <span className="text-xs text-white/60">
+                        <span className="dash-icon-btn h-11 w-11">
+                          <MessageCircle className="size-6 text-white" />
+                        </span>
+                        <span className="text-[11px] font-medium tabular-nums text-white/80">
                           {reel.commentCount}
                         </span>
                       </button>
                       <button
                         type="button"
                         onClick={() => handleShare(reel)}
-                        className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#3BF09A]"
+                        className="flex flex-col items-center gap-1 transition-transform active:scale-90"
                       >
-                        <Share2 className="size-7 text-white sm:size-8" />
-                        <span className="text-xs text-white/60">Share</span>
-                      </button>
-                    </div>
-
-                    <div className="absolute bottom-20 left-6 flex gap-3 sm:left-10">
-                      <button
-                        type="button"
-                        onClick={() => setSelectedIdeaId(reel.id)}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-4 py-2 text-xs font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-[#60A5FA]/40 hover:text-[#60A5FA]"
-                      >
-                        <FileText className="size-3.5" />
-                        Info
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => openInsights(reel.id)}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-4 py-2 text-xs font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-[#3BF09A]/40 hover:text-[#3BF09A]"
-                      >
-                        <Sparkles className="size-3.5" />
-                        AI
+                        <span className="dash-icon-btn h-11 w-11">
+                          <Share2 className="size-5.5 text-white" />
+                        </span>
+                        <span className="text-[11px] font-medium text-white/80">
+                          Share
+                        </span>
                       </button>
                     </div>
                   </div>
@@ -441,7 +495,7 @@ function ReelPageContent() {
           <button
             type="button"
             onClick={requireAuth}
-            className="dash-pill-primary absolute right-4 top-4 z-20 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold"
+            className="absolute right-4 top-4 z-20 inline-flex items-center gap-2 rounded-full border border-[#3BF09A] bg-transparent px-4 py-2 text-sm font-bold text-[#3BF09A] backdrop-blur-sm transition-colors duration-200 hover:bg-[#3BF09A]/10"
           >
             <LogIn className="size-4" />
             Login to interact
