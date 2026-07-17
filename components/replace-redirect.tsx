@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { safeInternalPath } from "@/lib/auth-client";
+import { safeInternalPath } from "@/lib/auth-path";
 
 type ReplaceRedirectProps = {
   href: string;

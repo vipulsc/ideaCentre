@@ -1,22 +1,11 @@
 "use client";
 
 import { signIn } from "next-auth/react";
+import { safeInternalPath } from "@/lib/auth-path";
 
 const DEFAULT_CALLBACK_URL = "/dashboard";
 
-export function safeInternalPath(value: string | null | undefined) {
-  if (!value?.startsWith("/") || value.startsWith("//")) {
-    return null;
-  }
-
-  try {
-    const parsed = new URL(value, window.location.origin);
-    if (parsed.origin !== window.location.origin) return null;
-    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
-  } catch {
-    return null;
-  }
-}
+export { safeInternalPath };
 
 export function currentInternalPath(fallback = DEFAULT_CALLBACK_URL) {
   if (typeof window === "undefined") return fallback;
@@ -29,5 +18,6 @@ export function currentInternalPath(fallback = DEFAULT_CALLBACK_URL) {
 }
 
 export function signInWithGoogle(callbackUrl = DEFAULT_CALLBACK_URL) {
-  return signIn("google", { callbackUrl });
+  const safe = safeInternalPath(callbackUrl) ?? DEFAULT_CALLBACK_URL;
+  return signIn("google", { callbackUrl: safe });
 }

@@ -12,7 +12,7 @@ export default async function DashboardLayout({
   const session = await getServerSession(authOptions);
 
   if (!session) {
-    redirect("/?next=/dashboard");
+    redirect("/login?callbackUrl=%2Fdashboard");
   }
 
   return (

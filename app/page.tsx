@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import { AiInsights } from "@/components/ai-insights";
+import { AuthRedirect } from "@/components/auth-redirect";
 import { Community } from "@/components/community";
 import { CuriosityPeek } from "@/components/curiosity-peek";
 import { FinalCta } from "@/components/final-cta";
@@ -7,34 +9,48 @@ import { HowItWorks } from "@/components/how-it-works";
 import { LandingGateIntro } from "@/components/landing-gate-intro";
 import { Navbar } from "@/components/navbar";
 import { PostIdeaFab } from "@/components/post-idea-fab";
-import { ReplaceRedirect } from "@/components/replace-redirect";
 import { Tagline } from "@/components/tagline";
 import { authOptions } from "@/lib/auth";
+import { safeInternalPath } from "@/lib/auth-path";
 import { getServerSession } from "next-auth/next";
+import { redirect } from "next/navigation";
 
-export default async function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string | string[] }>;
+}) {
   const session = await getServerSession(authOptions);
+  const params = await searchParams;
+  const nextRaw = Array.isArray(params.next) ? params.next[0] : params.next;
+  const next = safeInternalPath(nextRaw) ?? "/dashboard";
 
   if (session) {
-    // replace (not push) so Back does not bounce landing ↔ dashboard
-    return <ReplaceRedirect href="/dashboard" />;
+    redirect(next);
   }
 
   return (
-    <LandingGateIntro>
-      <div className="flex min-h-0 flex-1 flex-col">
-        <Navbar />
-        <main className="flex min-h-0 flex-1 flex-col">
-          <Hero />
-          <Tagline />
-          <Community />
-          <HowItWorks />
-          <AiInsights />
-          <CuriosityPeek />
-          <FinalCta />
-          <PostIdeaFab />
-        </main>
-      </div>
-    </LandingGateIntro>
+    <>
+      <Suspense fallback={null}>
+        <AuthRedirect fallbackHref={next} />
+      </Suspense>
+      <LandingGateIntro>
+        <div className="flex min-h-0 flex-1 flex-col">
+          <Navbar />
+          <main className="flex min-h-0 flex-1 flex-col">
+            <Hero />
+            <Tagline />
+            <Community />
+            <HowItWorks />
+            <AiInsights />
+            <CuriosityPeek />
+            <FinalCta />
+            <PostIdeaFab />
+          </main>
+        </div>
+      </LandingGateIntro>
+    </>
   );
 }

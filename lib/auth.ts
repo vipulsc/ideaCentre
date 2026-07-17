@@ -14,6 +14,24 @@ export function assertAuthConfigured() {
   }
 }
 
+function productionCookieDomain(): string | undefined {
+  const raw = process.env.NEXTAUTH_URL?.trim();
+  if (!raw) return undefined;
+  try {
+    const hostname = new URL(raw).hostname;
+    if (hostname === "ideacentre.xyz" || hostname.endsWith(".ideacentre.xyz")) {
+      return ".ideacentre.xyz";
+    }
+  } catch {
+    return undefined;
+  }
+  return undefined;
+}
+
+const cookieDomain = productionCookieDomain();
+const useSecureCookies =
+  process.env.NEXTAUTH_URL?.trim().startsWith("https://") ?? false;
+
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
@@ -25,8 +43,28 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   pages: {
-    error: "/",
+    error: "/login",
+    signIn: "/login",
   },
+  // Share the session cookie across www + apex so OAuth redirects don't drop auth.
+  ...(cookieDomain
+    ? {
+        cookies: {
+          sessionToken: {
+            name: useSecureCookies
+              ? "__Secure-next-auth.session-token"
+              : "next-auth.session-token",
+            options: {
+              httpOnly: true,
+              sameSite: "lax" as const,
+              path: "/",
+              secure: useSecureCookies,
+              domain: cookieDomain,
+            },
+          },
+        },
+      }
+    : {}),
   callbacks: {
     async signIn({ user }) {
       assertAuthConfigured();
