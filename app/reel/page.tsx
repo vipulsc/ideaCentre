@@ -77,9 +77,8 @@ function ReelPageContent() {
   const showTrendingOnly = searchParams.get("feed") === "trending";
   const deepLinkIdeaId = searchParams.get("idea");
 
-  const visibleIdeas = showTrendingOnly
-    ? ideas.filter((idea) => idea.trending)
-    : ideas;
+  // Server returns the Hot feed ranked globally; no client-side filter.
+  const visibleIdeas = ideas;
 
   const reelItemIds = useMemo(
     () => visibleIdeas.map((idea) => idea.id),
@@ -121,7 +120,7 @@ function ReelPageContent() {
       setError(null);
 
       const params = new URLSearchParams({
-        scope: "feed",
+        scope: showTrendingOnly ? "trending" : "feed",
         limit: "30",
         offset: String(mode === "append" ? cursorRef.current : 0),
       });
@@ -160,12 +159,12 @@ function ReelPageContent() {
       setIsLoading(false);
       setIsLoadingMore(false);
     }
-  }, [hasMore, isLoadingMore]);
+  }, [hasMore, isLoadingMore, showTrendingOnly]);
 
   useEffect(() => {
     void loadIdeas("replace");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [showTrendingOnly]);
 
   // Deep-link: scroll to ?idea=<uuid> once loaded (fetch more pages if needed)
   useEffect(() => {
@@ -504,17 +503,20 @@ function ReelPageContent() {
       </div>
 
       {selectedIdea && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm">
-          <div className="relative w-full max-w-xl rounded-2xl border border-white/10 bg-[#161616] p-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-md">
+          <div className="relative w-full max-w-xl rounded-[24px] border border-[#faf0dc]/16 bg-[#1c130d]/85 p-6 shadow-[0_16px_48px_rgba(12,8,5,0.5)] backdrop-blur-2xl">
             <button
               type="button"
               onClick={() => setSelectedIdeaId(null)}
-              className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+              className="dash-icon-btn absolute right-3 top-3 h-8 w-8"
               aria-label="Close info"
             >
-              <X className="size-5" />
+              <X className="size-4" />
             </button>
-            <p className="text-sm leading-relaxed text-white/80">
+            <p className="pr-8 text-[11px] font-medium uppercase tracking-[0.16em] text-white/40">
+              Details
+            </p>
+            <p className="mt-3 text-sm leading-relaxed text-white/80">
               {selectedIdea.description?.trim()
                 ? selectedIdea.description
                 : "No description was provided for this idea yet."}

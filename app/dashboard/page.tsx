@@ -578,7 +578,7 @@ function PerformanceRing({ value, color }: { value: number; color: string }) {
             axisLine={false}
           />
           <RadialBar
-            background={{ fill: "rgba(255,255,255,0.06)" }}
+            background={{ fill: "rgba(250,240,220,0.08)" }}
             dataKey="value"
             cornerRadius={8}
             fill={color}
@@ -587,10 +587,10 @@ function PerformanceRing({ value, color }: { value: number; color: string }) {
         </RadialBarChart>
       </ResponsiveContainer>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-lg font-bold sm:text-xl" style={{ color }}>
+        <span className="dash-serif text-2xl leading-none sm:text-[26px]" style={{ color }}>
           {Math.round(clamped)}
         </span>
-        <span className="text-[9px] font-medium uppercase tracking-wider text-white/40">
+        <span className="dash-mono-tag mt-0.5 text-[8px] text-[#faf0dc]/45">
           score
         </span>
       </div>
@@ -615,42 +615,41 @@ function IdeaAnalyticsCard({
     maxHotScore > 0 ? Math.round((hotScore / maxHotScore) * 100) : 0;
 
   const isTop = rank === 1 && engagement > 0;
-  const ringColor = isTop ? "#3BF09A" : rank === 2 ? "#FBBF24" : "#60A5FA";
+  const ringColor = isTop ? "#3bf09a" : rank === 2 ? "#fbbf24" : "#60a5fa";
 
   return (
     <article
-      className={`group relative overflow-hidden rounded-2xl border p-5 transition-all ${
+      className={`group relative overflow-hidden rounded-[20px] border p-5 ${
         isTop
-          ? "border-[#3BF09A]/30 bg-linear-to-br from-[#3BF09A]/[0.07] via-[#0D0D0D] to-[#0D0D0D]"
-          : "border-white/8 bg-[#0D0D0D] hover:border-white/15"
+          ? "border-[#3bf09a]/30 bg-linear-to-br from-[#3bf09a]/[0.08] via-[#faf0dc]/[0.03] to-transparent"
+          : "border-[#faf0dc]/12 bg-[#faf0dc]/[0.035]"
       }`}
     >
-      {isTop && (
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-[#3BF09A]/10 blur-3xl"
-        />
-      )}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-14 -top-14 h-40 w-40 rounded-full blur-3xl"
+        style={{ backgroundColor: ringColor, opacity: isTop ? 0.14 : 0.08 }}
+      />
 
       <header className="relative mb-5 flex items-start justify-between gap-3">
-        <div className="flex min-w-0 flex-col gap-1.5">
-          <div className="flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-wider">
-            <span className="rounded-full bg-white/6 px-2.5 py-0.5 text-white/70">
+        <div className="flex min-w-0 flex-col gap-2">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="dash-mono-tag text-[#faf0dc]/55">
               {idea.category}
             </span>
             <span
-              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 ${
+              className={`dash-chip border px-2 py-0.5 text-[10px] ${
                 isTop
-                  ? "bg-[#3BF09A]/15 text-[#3BF09A]"
-                  : "bg-white/6 text-white/50"
+                  ? "border-[#3bf09a]/25 bg-[#3bf09a]/12 text-[#3bf09a]"
+                  : "border-[#faf0dc]/12 bg-[#faf0dc]/6 text-[#faf0dc]/55"
               }`}
             >
               #{rank}
-              <span className="text-white/30">/ {totalIdeas}</span>
+              <span className="text-[#faf0dc]/35">/ {totalIdeas}</span>
             </span>
             {idea.trending && (
               <span
-                className="inline-flex items-center gap-1 rounded-full bg-[#f472b6]/15 px-2 py-0.5 text-[#f472b6]"
+                className="dash-chip border border-[#f472b6]/25 bg-[#f472b6]/12 px-2 py-0.5 text-[10px] text-[#f472b6]"
                 title="Hot — high engagement adjusted for recency"
               >
                 <Flame className="size-3" />
@@ -658,29 +657,39 @@ function IdeaAnalyticsCard({
               </span>
             )}
           </div>
-          <h4 className="line-clamp-2 text-base font-bold leading-snug text-white">
+          <h4 className="dash-serif line-clamp-2 text-xl font-normal leading-snug text-[#faf0dc]">
             {idea.title}
           </h4>
-          <p className="text-[11px] text-white/40">
+          <p className="text-[11px] text-[#faf0dc]/45">
             Posted {formatRelativeTime(idea.createdAt)}
           </p>
         </div>
         <PerformanceRing value={score} color={ringColor} />
       </header>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-2.5">
         <StatPill
-          icon={<Heart className="size-3.5 fill-[#FF0099] text-[#FF0099]" />}
+          icon={<Heart className="size-3.5 fill-[#f472b6] text-[#f472b6]" />}
           label="Likes"
           value={idea.likeCount}
-          color="#FF0099"
+          color="#f472b6"
         />
         <StatPill
-          icon={<MessageCircle className="size-3.5 text-[#60A5FA]" />}
+          icon={<MessageCircle className="size-3.5 text-[#60a5fa]" />}
           label="Comments"
           value={idea.commentCount}
-          color="#60A5FA"
+          color="#60a5fa"
         />
+      </div>
+
+      <div className="mt-2.5 flex items-center justify-between rounded-xl border border-[#faf0dc]/10 bg-[#faf0dc]/[0.03] px-3.5 py-2.5">
+        <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-[#faf0dc]/50">
+          <Sparkles className="size-3.5 text-[#3bf09a]" />
+          Total engagement
+        </div>
+        <span className="dash-serif text-lg leading-none text-[#faf0dc]">
+          {engagement}
+        </span>
       </div>
     </article>
   );
@@ -699,14 +708,14 @@ function StatPill({
 }) {
   return (
     <div
-      className="rounded-xl border border-white/6 bg-white/3 px-3 py-2.5"
-      style={{ boxShadow: `inset 0 0 0 1px ${color}10` }}
+      className="rounded-xl border border-[#faf0dc]/10 bg-[#faf0dc]/[0.04] px-3.5 py-2.5"
+      style={{ boxShadow: `inset 0 0 0 1px ${color}1a` }}
     >
-      <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-white/50">
+      <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-[#faf0dc]/50">
         {icon}
         {label}
       </div>
-      <p className="mt-0.5 text-xl font-bold tabular-nums" style={{ color }}>
+      <p className="dash-serif mt-1 text-2xl leading-none tabular-nums" style={{ color }}>
         {value}
       </p>
     </div>
@@ -799,22 +808,21 @@ export default function DashboardPage() {
       ? "saved"
       : activeFeed === "myIdeas"
         ? "mine"
-        : "feed";
+        : activeFeed === "trending"
+          ? "trending"
+          : "feed";
   const myIdeas = ideas.filter((item) => item.isOwn);
-  const trendingIdeas = ideas.filter((item) => item.trending);
-  const displayedIdeas = (
-    feedScope === "feed"
-      ? activeFeed === "trending"
-        ? trendingIdeas
-        : ideas
-      : ideas
-  )
-    .slice()
-    .sort((a, b) => {
-      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return bTime - aTime;
-    });
+  // Server already returns the correct list for each scope.
+  // Hot is ordered by hotScore; other feeds stay chronological.
+  const displayedIdeas = ideas.slice().sort((a, b) => {
+    if (activeFeed === "trending") {
+      const scoreDiff = (b.hotScore ?? 0) - (a.hotScore ?? 0);
+      if (scoreDiff !== 0) return scoreDiff;
+    }
+    const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    return bTime - aTime;
+  });
   const selectedIdea = ideas.find((item) => item.id === selectedIdeaId) ?? null;
   const commentsIdea = ideas.find((item) => item.id === commentsIdeaId) ?? null;
   const analyticsIdea =
@@ -1847,24 +1855,22 @@ export default function DashboardPage() {
       {analyticsIdea && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-md">
           <div className="dash-glass-strong relative w-full max-w-lg rounded-[24px] p-5 sm:p-6">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-[#3BF09A]/25 to-[#60A5FA]/15 ring-1 ring-[#3BF09A]/30">
-                  <BarChart3 className="size-4 text-[#3BF09A]" />
+            <div className="mb-5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-[#3bf09a]/25 to-[#60a5fa]/12 ring-1 ring-[#3bf09a]/30">
+                  <BarChart3 className="size-4.5 text-[#3bf09a]" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold tracking-tight text-white">
+                  <p className="dash-mono-tag text-[#3bf09a]/70">Insights</p>
+                  <h3 className="dash-serif text-xl font-normal leading-none tracking-tight text-[#faf0dc]">
                     Analytics
                   </h3>
-                  <p className="text-[11px] text-white/40">
-                    Performance for this idea
-                  </p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setAnalyticsIdeaId(null)}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+                className="dash-icon-btn h-9 w-9"
                 aria-label="Close analytics"
               >
                 <X className="size-5" />

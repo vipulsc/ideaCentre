@@ -3,62 +3,24 @@
  *  Trending / Hot-Score Ranking Algorithm
  * ──────────────────────────────────────────────────────────────────────────
  *
- *  This module ranks ideas in the reel feed. It is a hybrid of four
- *  well-known production ranking formulas, adapted for a short-lived,
- *  engagement-driven social feed:
+ *  Production ranking for the idea feed. Hybrid of EdgeRank, Reddit hot,
+ *  Hacker News gravity, Twitter velocity, and YouTube freshness.
  *
- *    1. Facebook  EdgeRank        — weighted engagement with time decay.
- *    2. Reddit    "hot"           — logarithmic vote scaling.
- *    3. Hacker News               — gravity-based age decay.
- *    4. Twitter   "Heavy Ranker"  — engagement velocity + recency boost.
- *    5. YouTube   freshness push  — exponential boost for very new content.
- *
- *  Reference formulas (public sources):
- *
- *    Facebook EdgeRank:
- *        EdgeRank = Σ ( U_e × W_e × D_e )
- *        where U_e = affinity, W_e = edge weight, D_e = time decay.
- *
- *    Reddit hot:
- *        order = log10(max(|votes|, 1))
- *        hot   = sign(votes) · order + age_seconds / 45000
- *
- *    Hacker News:
- *        score = (points - 1) / (age_hours + 2) ^ gravity
- *        gravity ≈ 1.8
- *
- *    Twitter Heavy Ranker (simplified, public talks):
- *        score ≈ engagement_weight · sigmoid(velocity) · recency_factor
- *
- *    YouTube recommendation (from "Deep Neural Networks for YouTube
- *    Recommendations", Covington et al., 2016):
- *        uses an "example age" feature that boosts freshly uploaded
- *        content so the candidate generator doesn't starve new videos.
- *
- * ──────────────────────────────────────────────────────────────────────────
- *  Our combined formula (computed per idea):
- * ──────────────────────────────────────────────────────────────────────────
+ *  Global ranking contract:
+ *    1. Score a candidate window of recent published ideas (not one page).
+ *    2. `scope=trending` returns only the capped Hot slice (max TRENDING_FEED_LIMIT),
+ *       sorted by hotScore and paginated.
+ *    3. Home/saved/mine feeds stay chronological; Hot badges use the same
+ *       global top slice so badges match the Trending feed.
  *
  *      engagement = W_LIKE · likes + W_COMMENT · comments + W_SHARE · shares
- *      engScore   = log10( 1 + engagement )                       // EdgeRank
- *      velocity   = engagement / max( ageHours, MIN_VELOCITY_H )  // per-hour
- *      velBoost   = log10( 1 + velocity )                         // Twitter
- *      freshness  = 1 + exp( -ageHours / FRESH_TAU )              // YouTube
- *      decay      = ( ageHours + TIME_OFFSET ) ^ GRAVITY          // HN / Reddit
+ *      engScore   = log10( 1 + engagement )
+ *      velocity   = engagement / max( ageHours, MIN_VELOCITY_H )
+ *      velBoost   = log10( 1 + velocity )
+ *      freshness  = 1 + exp( -ageHours / FRESH_TAU )
+ *      decay      = ( ageHours + TIME_OFFSET ) ^ GRAVITY
  *
  *      hotScore   = ( engScore + V_WEIGHT · velBoost ) · freshness / decay
- *
- *  Intuition:
- *    - `engScore`  : base engagement, log-scaled so one viral post doesn't
- *                    nuke everything else (Reddit/Facebook style).
- *    - `velBoost`  : rewards posts that are earning engagement *fast*
- *                    (Twitter's velocity signal — something going "up" now).
- *    - `freshness` : asymmetric bonus for content < a few hours old, fades
- *                    quickly (YouTube's new-upload boost).
- *    - `decay`     : polynomial age penalty with gravity — proven on
- *                    Hacker News / Reddit to give a natural half-life.
- *
- *  All constants below can be tuned without touching caller code.
  */
 
 // ─── Tunable Constants ────────────────────────────────────────────────────
@@ -66,41 +28,47 @@
 /** Edge weights for each engagement type (Facebook EdgeRank style). */
 export const ENGAGEMENT_WEIGHTS = {
   LIKE: 1,
-  COMMENT: 3, // comments are a much stronger signal than a tap
-  SHARE: 5, // shares spread content; strongest organic signal
+  COMMENT: 3,
+  SHARE: 5,
 } as const;
 
 /** Polynomial age-decay exponent. Higher = faster cool-down. */
 export const GRAVITY = 1.5;
 
-/**
- * Additive offset on age before applying decay. Prevents divide-by-zero
- * and gives brand-new posts a small grace window.
- */
-export const TIME_OFFSET = 2; // hours
+/** Additive offset on age before decay (hours). */
+export const TIME_OFFSET = 2;
 
-/** Contribution weight of the velocity term in the final sum. */
+/** Contribution weight of the velocity term. */
 export const VELOCITY_WEIGHT = 0.6;
 
-/**
- * Minimum "age" used in the velocity denominator. Without this, a post that
- * gets its first like 2 seconds after posting would have absurd velocity.
- */
+/** Floor on age used for velocity (hours). */
 export const MIN_VELOCITY_HOURS = 0.5;
 
-/**
- * Freshness boost time constant (hours). The exponential boost roughly
- * halves every FRESH_TAU hours. At age 0 the freshness multiplier is 2;
- * at age 3·FRESH_TAU it is ≈ 1.05.
- */
+/** Freshness boost time constant (hours). */
 export const FRESH_TAU = 3;
 
-/** Fraction of the feed eligible for the "Trending" badge. */
-export const TRENDING_TOP_FRACTION = 0.4;
+/**
+ * How many recent published ideas to score for global Hot / Trending.
+ * Ranking is never page-local — always over this candidate window.
+ */
+export const TRENDING_CANDIDATE_LIMIT = 500;
 
-/** Hard bounds on the trending badge count regardless of feed size. */
-export const TRENDING_MIN_COUNT = 1;
-export const TRENDING_MAX_COUNT = 20;
+/**
+ * Hard cap on how many ideas appear in Trending / earn the Hot badge.
+ * Keeps the Hot feed selective instead of dumping the whole catalog.
+ */
+export const TRENDING_FEED_LIMIT = 15;
+
+/**
+ * Fraction of the candidate window considered for Hot, before the hard cap.
+ */
+export const TRENDING_TOP_FRACTION = 0.15;
+
+/** Soft floor when the candidate pool is tiny. */
+export const TRENDING_MIN_COUNT = 3;
+
+/** Alias used by ranking — same as the feed hard cap. */
+export const TRENDING_MAX_COUNT = TRENDING_FEED_LIMIT;
 
 // ─── Public Types ─────────────────────────────────────────────────────────
 
@@ -214,8 +182,8 @@ export type TrendingRankingEntry<T> = {
 };
 
 /**
- * Rank a list of ideas by hot score and return full metadata. Callers
- * that just want the set of trending ids can call `computeTrendingIdeaIds`.
+ * Rank a list of ideas by hot score (highest first) and mark the global Hot
+ * slice. Pass the full candidate window — never a single pagination page.
  */
 export function rankByHotScore<
   T extends { id: string } & EngagementInputs,
@@ -225,17 +193,27 @@ export function rankByHotScore<
   const scored = items.map((item) => ({
     item,
     score: computeHotScore(item),
-    engagement:
-      ENGAGEMENT_WEIGHTS.LIKE * item.likeCount +
-      ENGAGEMENT_WEIGHTS.COMMENT * item.commentCount +
-      ENGAGEMENT_WEIGHTS.SHARE * (item.shareCount ?? 0),
   }));
 
-  scored.sort((a, b) => b.score - a.score);
+  scored.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    // Stable tie-break: newer first, then id.
+    const aTime = a.item.createdAt
+      ? new Date(a.item.createdAt as string | Date).getTime()
+      : 0;
+    const bTime = b.item.createdAt
+      ? new Date(b.item.createdAt as string | Date).getTime()
+      : 0;
+    if (bTime !== aTime) return bTime - aTime;
+    return a.item.id.localeCompare(b.item.id);
+  });
 
   const topCount = Math.min(
     TRENDING_MAX_COUNT,
-    Math.max(TRENDING_MIN_COUNT, Math.ceil(items.length * TRENDING_TOP_FRACTION)),
+    Math.max(
+      TRENDING_MIN_COUNT,
+      Math.ceil(items.length * TRENDING_TOP_FRACTION),
+    ),
   );
 
   return scored.map((entry, index) => {
@@ -250,12 +228,15 @@ export function rankByHotScore<
   });
 }
 
-/** Back-compatible shortcut: set of ids that should carry the Hot badge. */
+/** Ids that should carry the Hot badge for a candidate window. */
 export function computeTrendingIdeaIds<
   T extends { id: string } & EngagementInputs,
 >(items: T[]): Set<string> {
   const ranked = rankByHotScore(items);
-  return new Set(
-    ranked.filter((r) => r.isTrending).map((r) => r.item.id),
-  );
+  return new Set(ranked.filter((r) => r.isTrending).map((r) => r.item.id));
+}
+
+/** Round hot scores for API payloads. */
+export function roundHotScore(score: number): number {
+  return Number.isFinite(score) ? Math.round(score * 1000) / 1000 : 0;
 }
