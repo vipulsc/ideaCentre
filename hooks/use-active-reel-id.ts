@@ -16,7 +16,10 @@ export function useActiveReelId(
   const [activeId, setActiveId] = useState<string | null>(stableIds[0] ?? null);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) {
+      setActiveId(null);
+      return;
+    }
     if (stableIds.length === 0) {
       setActiveId(null);
       return;

@@ -15,5 +15,9 @@ export default async function DashboardLayout({
     redirect("/");
   }
 
-  return <>{children}</>;
+  return (
+    <div className="dashboard-shell min-h-screen font-sans antialiased">
+      {children}
+    </div>
+  );
 }

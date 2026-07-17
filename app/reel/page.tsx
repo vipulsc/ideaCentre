@@ -32,6 +32,7 @@ type FeedIdea = {
   commentCount: number;
   isLiked: boolean;
   authorName: string;
+  authorImage?: string | null;
   trending: boolean;
   music?: string | null;
 };
@@ -261,7 +262,7 @@ function ReelPageContent() {
   );
 
   return (
-    <main className="h-screen overflow-hidden bg-[#0D0D0D] [&_button]:cursor-pointer">
+    <main className="h-screen overflow-hidden bg-black [&_button]:cursor-pointer">
       <div className="relative flex h-full flex-col">
         <div
           ref={scrollRef}
@@ -272,12 +273,12 @@ function ReelPageContent() {
               <p className="text-white/60">
                 {error ??
                   (showTrendingOnly
-                    ? "No trending ideas right now."
+                    ? "No hot ideas right now."
                     : "No ideas yet — be the first!")}
               </p>
               <Link
                 href="/"
-                className="text-sm text-[#00FF85] underline underline-offset-4"
+                className="text-sm text-[#3BF09A] underline underline-offset-4"
               >
                 Back to home
               </Link>
@@ -316,34 +317,51 @@ function ReelPageContent() {
                       {!reel.music ? "No music" : isMuted ? "Unmute" : "Mute"}
                     </button>
                     {reel.trending && (
-                      <span className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-[#FF0099]/15 px-3 py-1 text-xs font-semibold text-[#FF0099] backdrop-blur-sm sm:right-5 sm:top-5">
+                      <span className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-[#F472B6]/15 px-3 py-1 text-xs font-semibold text-[#F472B6] backdrop-blur-sm sm:right-5 sm:top-5">
                         <Flame className="size-3.5" />
-                        Trending
+                        Hot
                       </span>
                     )}
-                    <div className="flex w-full max-w-2xl flex-col gap-6">
-                      <span className="w-fit rounded-full bg-[#00FF85]/15 px-4 py-1 text-xs font-medium text-[#00FF85] sm:text-sm">
+                    <div className="flex w-full max-w-2xl flex-col gap-5">
+                      <span className="dash-mono-tag w-fit text-[#3BF09A]">
                         {reel.category}
                       </span>
-                      <h2 className="text-3xl font-bold leading-tight text-white sm:text-4xl md:text-5xl">
+                      <h2 className="dash-serif text-4xl font-normal leading-[1.08] tracking-tight text-white sm:text-5xl md:text-6xl">
                         {reel.title}
                       </h2>
                       <p className="text-base leading-relaxed text-white/70 sm:text-lg md:text-xl">
                         {reel.idea}
                       </p>
-                      <p className="text-sm text-white/35">by {reel.authorName}</p>
+                      <div className="mt-1 flex items-center gap-2.5">
+                        {reel.authorImage ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={reel.authorImage}
+                            alt={reel.authorName}
+                            referrerPolicy="no-referrer"
+                            className="h-8 w-8 shrink-0 rounded-full object-cover ring-2 ring-white/25"
+                          />
+                        ) : (
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/15 text-xs font-bold text-white">
+                            {reel.authorName.charAt(0).toUpperCase()}
+                          </span>
+                        )}
+                        <span className="text-sm font-medium text-white/85">
+                          {reel.authorName}
+                        </span>
+                      </div>
                     </div>
 
                     <div className="absolute bottom-28 right-5 flex flex-col items-center gap-6 sm:right-6 sm:gap-7">
                       <button
                         type="button"
                         onClick={() => toggleLike(reel.id)}
-                        className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#FF0099]"
+                        className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#F472B6]"
                       >
                         <Heart
                           className={`size-7 sm:size-8 ${
                             reel.isLiked
-                              ? "fill-[#FF0099] text-[#FF0099]"
+                              ? "fill-[#F472B6] text-[#F472B6]"
                               : "text-white"
                           }`}
                         />
@@ -360,7 +378,7 @@ function ReelPageContent() {
                               }
                             : requireAuth
                         }
-                        className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#1E90FF]"
+                        className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#60A5FA]"
                         title={
                           isAuthed
                             ? "Open dashboard to comment"
@@ -375,7 +393,7 @@ function ReelPageContent() {
                       <button
                         type="button"
                         onClick={() => handleShare(reel)}
-                        className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#00FF85]"
+                        className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#3BF09A]"
                       >
                         <Share2 className="size-7 text-white sm:size-8" />
                         <span className="text-xs text-white/60">Share</span>
@@ -386,7 +404,7 @@ function ReelPageContent() {
                       <button
                         type="button"
                         onClick={() => setSelectedIdeaId(reel.id)}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-4 py-2 text-xs font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-[#1E90FF]/40 hover:text-[#1E90FF]"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-4 py-2 text-xs font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-[#60A5FA]/40 hover:text-[#60A5FA]"
                       >
                         <FileText className="size-3.5" />
                         Info
@@ -394,7 +412,7 @@ function ReelPageContent() {
                       <button
                         type="button"
                         onClick={() => openInsights(reel.id)}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-4 py-2 text-xs font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-[#00FF85]/40 hover:text-[#00FF85]"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-4 py-2 text-xs font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-[#3BF09A]/40 hover:text-[#3BF09A]"
                       >
                         <Sparkles className="size-3.5" />
                         AI
@@ -423,7 +441,7 @@ function ReelPageContent() {
           <button
             type="button"
             onClick={requireAuth}
-            className="absolute right-4 top-4 z-20 inline-flex items-center gap-2 rounded-full bg-[#00FF85] px-4 py-2 text-sm font-semibold text-[#0D0D0D] shadow-lg transition-colors hover:bg-[#00FF85]/85"
+            className="dash-pill-primary absolute right-4 top-4 z-20 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold"
           >
             <LogIn className="size-4" />
             Login to interact

@@ -115,9 +115,9 @@ async function ensureCategoryId(category: string) {
 }
 
 const IDEA_SELECT_WITH_MUSIC =
-  "id,title,idea,description,background_color,music_track,like_count,comment_count,created_at,author_id,status,users!ideas_author_id_fkey(name),categories!ideas_category_id_fkey(name)";
+  "id,title,idea,description,background_color,music_track,like_count,comment_count,created_at,author_id,status,users!ideas_author_id_fkey(name,image),categories!ideas_category_id_fkey(name)";
 const IDEA_SELECT_NO_MUSIC =
-  "id,title,idea,description,background_color,like_count,comment_count,created_at,author_id,status,users!ideas_author_id_fkey(name),categories!ideas_category_id_fkey(name)";
+  "id,title,idea,description,background_color,like_count,comment_count,created_at,author_id,status,users!ideas_author_id_fkey(name,image),categories!ideas_category_id_fkey(name)";
 
 type IdeaListRow = {
   id: string;
@@ -131,7 +131,10 @@ type IdeaListRow = {
   created_at: string;
   author_id: string;
   status: string;
-  users: { name: string | null } | { name: string | null }[] | null;
+  users:
+    | { name: string | null; image: string | null }
+    | { name: string | null; image: string | null }[]
+    | null;
   categories: { name: string | null } | { name: string | null }[] | null;
 };
 
@@ -280,6 +283,7 @@ export async function GET(request: Request) {
         commentCount: row.comment_count,
         category: category?.name ?? "Other",
         authorName: author?.name ?? "Anonymous",
+        authorImage: author?.image ?? null,
         isOwn: viewerUserId ? row.author_id === viewerUserId : false,
         isLiked: likedIdeaIds.has(row.id),
         isBookmarked: bookmarkedIdeaIds.has(row.id),
@@ -376,7 +380,7 @@ export async function POST(request: Request) {
       .from("ideas")
       .insert(insertPayload)
       .select(
-        "id,title,idea,description,background_color,music_track,like_count,comment_count,created_at,users!ideas_author_id_fkey(name),categories!ideas_category_id_fkey(name)",
+        "id,title,idea,description,background_color,music_track,like_count,comment_count,created_at,users!ideas_author_id_fkey(name,image),categories!ideas_category_id_fkey(name)",
       )
       .single();
 
@@ -388,7 +392,7 @@ export async function POST(request: Request) {
             music_track: undefined,
           })
           .select(
-            "id,title,idea,description,background_color,like_count,comment_count,created_at,users!ideas_author_id_fkey(name),categories!ideas_category_id_fkey(name)",
+            "id,title,idea,description,background_color,like_count,comment_count,created_at,users!ideas_author_id_fkey(name,image),categories!ideas_category_id_fkey(name)",
           )
           .single()
       : null;
@@ -410,7 +414,10 @@ export async function POST(request: Request) {
     }
 
     const createdCategory = firstRelation(data.categories)?.name;
-    const createdAuthorName = firstRelation(data.users)?.name;
+    const createdAuthor = firstRelation(data.users);
+    const createdAuthorName = createdAuthor?.name;
+    const createdAuthorImage =
+      (createdAuthor as { image?: string | null } | undefined)?.image;
 
     return NextResponse.json({
       ok: true,
@@ -425,6 +432,7 @@ export async function POST(request: Request) {
         commentCount: data.comment_count,
         category: createdCategory ?? category,
         authorName: createdAuthorName ?? session.user?.name ?? "You",
+        authorImage: createdAuthorImage ?? session.user?.image ?? null,
         isOwn: true,
         isLiked: false,
         isBookmarked: false,

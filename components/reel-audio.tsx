@@ -6,17 +6,19 @@ type ReelAudioProps = {
   src?: string | null;
   active: boolean;
   muted: boolean;
+  preload?: "none" | "metadata" | "auto";
   onAutoplayBlocked?: () => void;
 };
 
 /**
- * Plays only while `active`. Pauses + resets when the reel leaves view
- * so scrolling never stacks the same/overlapping tracks.
+ * Plays only while `active`. Pauses + resets when inactive
+ * so scrolling/hover never stacks overlapping tracks.
  */
 export function ReelAudio({
   src,
   active,
   muted,
+  preload = "auto",
   onAutoplayBlocked,
 }: ReelAudioProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -81,7 +83,7 @@ export function ReelAudio({
       src={src}
       loop
       playsInline
-      preload="auto"
+      preload={preload}
       className="hidden"
     />
   );

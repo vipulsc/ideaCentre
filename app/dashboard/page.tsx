@@ -50,6 +50,7 @@ type FeedIdea = {
   isLiked: boolean;
   isBookmarked: boolean;
   authorName: string;
+  authorImage?: string | null;
   isOwn?: boolean;
   trending: boolean;
   music?: string | null;
@@ -70,11 +71,27 @@ type FeedComment = {
   isOwn: boolean;
 };
 
+const CATEGORY_ACCENTS: Record<string, string> = {
+  "AI / Health": "#5eead4",
+  Community: "#f0abfc",
+  SaaS: "#93c5fd",
+  Education: "#fcd34d",
+  Finance: "#86efac",
+  Sustainability: "#a3e635",
+  Entertainment: "#fda4af",
+  Other: "#d4d4d8",
+};
+
+function categoryAccent(category: string) {
+  return CATEGORY_ACCENTS[category] ?? "#c7c7cc";
+}
+
 function ReelCard({
   id,
   title,
   idea,
   author,
+  authorImage,
   color,
   tag,
   music,
@@ -98,6 +115,7 @@ function ReelCard({
   title: string;
   idea: string;
   author: string;
+  authorImage?: string | null;
   color: string;
   tag: string;
   music?: string | null;
@@ -117,22 +135,40 @@ function ReelCard({
   onBookmark: (ideaId: string) => void;
   onInsights: (ideaId: string) => void;
 }) {
+  const accent = categoryAccent(tag);
   return (
     <div
-      className="relative flex h-full w-full snap-start snap-always flex-col justify-center border border-white/15 bg-black px-6 pr-16 text-white sm:px-10 sm:pr-20"
-      style={{ backgroundColor: color }}
+      className="relative flex h-full w-full snap-start snap-always flex-col justify-end overflow-hidden text-white"
+      style={{
+        background: `linear-gradient(180deg, ${color}ee 0%, ${color} 45%, #000000 100%)`,
+      }}
     >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.14),transparent_55%)]"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -left-24 top-1/3 h-72 w-72 rounded-full blur-[120px]"
+        style={{ backgroundColor: accent, opacity: 0.22 }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-t from-black/90 via-black/40 to-transparent"
+      />
+
       <ReelAudio
         src={music}
         active={isActive}
         muted={isMuted}
         onAutoplayBlocked={onAutoplayBlocked}
       />
+
       <button
         type="button"
         onClick={onToggleMute}
         disabled={!music}
-        className="absolute left-4 top-4 z-20 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/30 px-3 py-1.5 text-xs font-medium text-white/85 backdrop-blur-sm transition-colors hover:bg-black/45 disabled:cursor-not-allowed disabled:opacity-60 sm:left-5 sm:top-5"
+        className="dash-icon-btn absolute left-4 top-4 z-20 h-9 gap-1.5 px-3 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50 sm:left-5 sm:top-5"
       >
         {!music || isMuted ? (
           <VolumeX className="size-3.5" />
@@ -141,82 +177,121 @@ function ReelCard({
         )}
         {!music ? "No music" : isMuted ? "Unmute" : "Mute"}
       </button>
+
       {trending && (
-        <span className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold text-white sm:right-5 sm:top-5">
-          <Flame className="size-3.5" />
-          Trending
+        <span className="absolute right-4 top-4 z-20 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold text-white backdrop-blur-xl sm:right-5 sm:top-5">
+          <Flame className="size-3.5 text-[#f472b6]" />
+          Hot
         </span>
       )}
-      <div className="relative z-10 flex w-full max-w-2xl flex-col gap-6">
-        <span className="w-fit rounded-full border border-white/20 bg-white/10 px-4 py-1 text-xs font-medium text-white sm:text-sm">
-          {tag}
-        </span>
-        <h2 className="text-3xl font-bold leading-tight text-white sm:text-4xl md:text-5xl">
+
+      <div className="relative z-10 flex w-full max-w-2xl flex-col gap-4 px-6 pb-32 pr-20 sm:px-10 sm:pr-24">
+        <div className="flex items-center gap-2.5">
+          {authorImage ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={authorImage}
+              alt={author}
+              referrerPolicy="no-referrer"
+              className="h-9 w-9 shrink-0 rounded-full object-cover ring-2 ring-white/25"
+            />
+          ) : (
+            <span
+              className="flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold text-[#241812]"
+              style={{ backgroundColor: accent }}
+            >
+              {author.charAt(0).toUpperCase()}
+            </span>
+          )}
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold tracking-tight">
+              {author}
+            </p>
+            <p className="dash-mono-tag" style={{ color: accent }}>
+              {tag}
+            </p>
+          </div>
+        </div>
+        <h2 className="dash-serif text-4xl font-normal leading-[1.08] tracking-tight text-white sm:text-5xl md:text-[3.25rem]">
           {title}
         </h2>
-        <p className="text-base leading-relaxed text-white/70 sm:text-lg md:text-xl">
+        <p className="max-w-xl text-base leading-relaxed text-white/75 sm:text-lg">
           {idea}
         </p>
-        <p className="text-sm text-white/35">by {author}</p>
+        <div className="flex gap-2 pt-1">
+          <button
+            type="button"
+            onClick={() => onInfo(id)}
+            className="dash-icon-btn h-8 gap-1.5 px-3.5 text-[11px] font-medium"
+          >
+            <FileText className="size-3.5" />
+            Info
+          </button>
+          <button
+            type="button"
+            onClick={() => onInsights(id)}
+            className="dash-icon-btn h-8 gap-1.5 px-3.5 text-[11px] font-medium"
+          >
+            <Sparkles className="size-3.5" />
+            AI
+          </button>
+        </div>
       </div>
 
-      <div className="absolute bottom-28 right-5 z-10 flex flex-col items-center gap-6 sm:right-6 sm:gap-7">
+      <div className="absolute bottom-28 right-4 z-10 flex flex-col items-center gap-5 sm:right-6 sm:bottom-32 sm:gap-6">
         <button
           type="button"
           onClick={() => onLike(id)}
-          className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#FF2A6D]"
+          className="flex flex-col items-center gap-1 transition-transform active:scale-90"
         >
-          <Heart
-            className={`size-7 sm:size-8 ${isLiked ? "fill-[#FF0099] text-[#FF0099]" : "text-white"}`}
-          />
-          <span className="text-xs text-white/60">{likeCount}</span>
+          <span className="dash-icon-btn h-11 w-11">
+            <Heart
+              className={`size-6 ${
+                isLiked ? "fill-[#f472b6] text-[#f472b6]" : "text-white"
+              }`}
+            />
+          </span>
+          <span className="text-[11px] font-medium tabular-nums text-white/80">
+            {likeCount}
+          </span>
         </button>
         <button
           type="button"
           onClick={() => onComment(id)}
-          className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#35A8FF]"
+          className="flex flex-col items-center gap-1 transition-transform active:scale-90"
         >
-          <MessageCircle className="size-7 text-white sm:size-8" />
-          <span className="text-xs text-white/60">{commentCount}</span>
+          <span className="dash-icon-btn h-11 w-11">
+            <MessageCircle className="size-6 text-white" />
+          </span>
+          <span className="text-[11px] font-medium tabular-nums text-white/80">
+            {commentCount}
+          </span>
         </button>
         <button
           type="button"
           onClick={() => onShare(id)}
-          className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#39FFB6]"
+          className="flex flex-col items-center gap-1 transition-transform active:scale-90"
         >
-          <Share2 className="size-7 text-white sm:size-8" />
-          <span className="text-xs text-white/60">Share</span>
+          <span className="dash-icon-btn h-11 w-11">
+            <Share2 className="size-5.5 text-white" />
+          </span>
+          <span className="text-[11px] font-medium text-white/80">Share</span>
         </button>
         <button
           type="button"
           onClick={() => onBookmark(id)}
-          className="flex flex-col items-center gap-1.5 transition-colors hover:text-[#FFD54A]"
+          className="flex flex-col items-center gap-1 transition-transform active:scale-90"
         >
-          <Bookmark
-            className={`size-7 sm:size-8 ${isBookmarked ? "fill-[#FFD54A] text-[#FFD54A]" : "text-white"}`}
-          />
-          <span className="text-xs text-white/60">Save</span>
-        </button>
-      </div>
-
-      <div className="absolute bottom-20 left-6 z-10 flex gap-3 sm:left-10">
-        <button
-          type="button"
-          onClick={() => onInfo(id)}
-          className="group relative inline-flex items-center gap-1.5 overflow-hidden rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-medium text-white/90 backdrop-blur-sm transition-all duration-300 hover:bg-white/16 hover:shadow-[0_10px_20px_rgba(0,0,0,0.22)]"
-        >
-          <span className="pointer-events-none absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-          <FileText className="size-3.5" />
-          Info
-        </button>
-        <button
-          type="button"
-          onClick={() => onInsights(id)}
-          className="group relative inline-flex items-center gap-1.5 overflow-hidden rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-medium text-white/90 backdrop-blur-sm transition-all duration-300 hover:bg-white/16 hover:shadow-[0_10px_20px_rgba(0,0,0,0.22)]"
-        >
-          <span className="pointer-events-none absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-          <Sparkles className="size-3.5" />
-          AI
+          <span className="dash-icon-btn h-11 w-11">
+            <Bookmark
+              className={`size-6 ${
+                isBookmarked
+                  ? "fill-[#fbbf24] text-[#fbbf24]"
+                  : "text-white"
+              }`}
+            />
+          </span>
+          <span className="text-[11px] font-medium text-white/80">Save</span>
         </button>
       </div>
     </div>
@@ -228,14 +303,19 @@ function IdeaCard({
   title,
   idea,
   author,
+  authorImage,
   color,
   tag,
+  music,
+  musicActive,
   trending,
   showAnalytics,
   likeCount,
   commentCount,
   isLiked,
   isBookmarked,
+  onHoverStart,
+  onHoverEnd,
   onLike,
   onAnalytics,
   onInfo,
@@ -248,14 +328,19 @@ function IdeaCard({
   title: string;
   idea: string;
   author: string;
+  authorImage?: string | null;
   color: string;
   tag: string;
+  music?: string | null;
+  musicActive: boolean;
   trending?: boolean;
   showAnalytics?: boolean;
   likeCount: number;
   commentCount: number;
   isLiked: boolean;
   isBookmarked: boolean;
+  onHoverStart: (ideaId: string) => void;
+  onHoverEnd: (ideaId: string) => void;
   onLike: (ideaId: string) => void;
   onAnalytics?: (ideaId: string) => void;
   onInfo: (ideaId: string) => void;
@@ -264,97 +349,193 @@ function IdeaCard({
   onBookmark: (ideaId: string) => void;
   onInsights: (ideaId: string) => void;
 }) {
+  const accent = categoryAccent(tag);
+  const [likePulse, setLikePulse] = useState(false);
+
   return (
-    <div
-      className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-white/12 p-5 ring-1 ring-inset ring-white/8 transition-all duration-300 hover:border-white/22"
-      style={{ backgroundColor: color }}
+    <article
+      className="dash-idea-card group flex flex-col overflow-hidden"
+      onMouseEnter={() => onHoverStart(id)}
+      onMouseLeave={() => onHoverEnd(id)}
     >
-      <div className="absolute right-3 top-3 z-20 flex items-center gap-2">
-        {showAnalytics && onAnalytics && (
-          <button
-            type="button"
-            onClick={() => onAnalytics(id)}
-            className="group relative inline-flex items-center gap-1.5 overflow-hidden rounded-full border border-white/20 bg-white/7 px-2.5 py-1.5 text-[10px] font-semibold tracking-wide text-white/90 backdrop-blur-sm transition-all duration-300 hover:border-white/30 hover:bg-white/14 hover:shadow-[0_12px_24px_rgba(0,0,0,0.26)]"
+      <ReelAudio
+        src={music}
+        active={musicActive}
+        muted={false}
+        preload="none"
+      />
+      {/* Media / headline block */}
+      <div
+        className="relative flex min-h-[188px] flex-col justify-between overflow-hidden px-5 pb-4 pt-5"
+        style={{
+          background: `linear-gradient(155deg, ${color} 0%, ${color}cc 38%, rgba(8,8,10,0.96) 100%)`,
+        }}
+      >
+        {/* ambient light + accent glow */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_78%_18%,rgba(255,255,255,0.22),transparent_55%)]"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full blur-3xl transition-opacity duration-500 group-hover:opacity-80"
+          style={{ backgroundColor: accent, opacity: 0.28 }}
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-black/55 to-transparent"
+        />
+
+        <div className="relative z-10 flex items-start justify-between gap-3">
+          <span
+            className="dash-mono-tag"
+            style={{ color: accent }}
           >
-            <span className="pointer-events-none absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-            <BarChart3 className="size-3.5 opacity-85" />
-            <span>Analytics</span>
-          </button>
-        )}
-        <button
-          type="button"
-          onClick={() => onInfo(id)}
-          className="group relative inline-flex items-center gap-1.5 overflow-hidden rounded-full border border-white/15 bg-white/8 px-3 py-1.5 text-[11px] font-semibold text-white/90 transition-all duration-300 hover:bg-white/14 hover:shadow-[0_10px_20px_rgba(0,0,0,0.22)]"
-        >
-          <span className="pointer-events-none absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-          <FileText className="size-3.5" />
-          <span>Info</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => onInsights(id)}
-          className="group relative inline-flex items-center gap-1.5 overflow-hidden rounded-full border border-white/15 bg-white/8 px-3 py-1.5 text-[11px] font-semibold text-white/90 transition-all duration-300 hover:bg-white/14 hover:shadow-[0_10px_20px_rgba(0,0,0,0.22)]"
-        >
-          <span className="pointer-events-none absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-          <Sparkles className="size-3.5" />
-          <span>AI</span>
-        </button>
-      </div>
-      <div className="relative z-10 flex flex-col gap-3">
-        <span className="w-fit rounded-full border border-white/15 bg-white/8 px-3 py-0.5 text-[11px] font-medium text-white/90">
-          {tag}
-        </span>
-        <p className="text-lg font-bold text-white/95">{title}</p>
-        <p className="text-sm leading-relaxed text-white/75">{idea}</p>
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-xs text-white/55">by {author}</p>
-          {trending && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-[#FF2A6D]/60 bg-[#FF2A6D]/14 px-2.5 py-0.5 text-[10px] font-semibold text-[#FF2A6D] shadow-[0_0_10px_rgba(255,42,109,0.45)]">
-              <Flame className="size-3" />
-              Trending
-            </span>
-          )}
+            {tag}
+          </span>
+          <div className="flex shrink-0 items-center gap-1.5">
+            {music && (
+              <span
+                className={`dash-chip border border-white/20 bg-black/40 text-white transition-opacity ${
+                  musicActive ? "opacity-100" : "opacity-70"
+                }`}
+                aria-hidden
+              >
+                <Volume2
+                  className={`size-3 ${
+                    musicActive ? "text-[#3bf09a]" : "text-white/80"
+                  }`}
+                />
+                {musicActive ? "Playing" : "Music"}
+              </span>
+            )}
+            {trending && (
+              <span className="dash-chip border border-white/20 bg-black/35 text-white">
+                <Flame className="size-3 text-[#f472b6]" />
+                Hot
+              </span>
+            )}
+            {showAnalytics && onAnalytics && (
+              <button
+                type="button"
+                onClick={() => onAnalytics(id)}
+                className="dash-icon-btn h-8 gap-1 px-2.5 text-[10px] font-semibold"
+              >
+                <BarChart3 className="size-3.5" />
+                Stats
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="relative z-10 mt-4">
+          <h3 className="dash-serif text-[24px] font-normal leading-[1.12] tracking-tight text-white [text-wrap:balance]">
+            {title}
+          </h3>
+          <p className="mt-2.5 line-clamp-2 text-[13px] leading-relaxed text-white/70">
+            {idea}
+          </p>
         </div>
       </div>
-      <div className="relative z-10 mt-4 flex items-center gap-4 border-t border-white/8 pt-4 text-white/85">
-        <button
-          type="button"
-          onClick={() => onLike(id)}
-          className="flex items-center gap-1.5 transition-colors hover:text-[#FF2A6D]"
-        >
-          <Heart
-            className={`size-4 ${isLiked ? "fill-[#FF0099] text-[#FF0099]" : ""}`}
-          />
-          <span className="text-xs">{likeCount}</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => onComment(id)}
-          className="flex items-center gap-1.5 transition-colors hover:text-[#35A8FF]"
-        >
-          <MessageCircle className="size-4" />
-          <span className="text-xs">{commentCount}</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => onShare(id)}
-          className="flex items-center gap-1.5 transition-colors hover:text-[#39FFB6]"
-        >
-          <Share2 className="size-4" />
-          <span className="text-xs">Share</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => onBookmark(id)}
-          className="flex items-center gap-1.5 transition-colors hover:text-[#FFD54A]"
-        >
-          <Bookmark
-            className={`size-4 ${isBookmarked ? "fill-[#FFD54A] text-[#FFD54A]" : ""}`}
-          />
-          <span className="text-xs">Save</span>
-        </button>
+
+      {/* Author + actions footer */}
+      <div className="flex flex-col gap-3 bg-[#faf0dc]/[0.04] px-4 pb-4 pt-3.5 backdrop-blur-xl">
+        <div className="flex items-center gap-2.5">
+          {authorImage ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={authorImage}
+              alt={author}
+              referrerPolicy="no-referrer"
+              className="h-8 w-8 shrink-0 rounded-full object-cover ring-2 ring-[#faf0dc]/20"
+            />
+          ) : (
+            <span
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-[#241812]"
+              style={{ backgroundColor: accent }}
+            >
+              {author.charAt(0).toUpperCase()}
+            </span>
+          )}
+          <div className="min-w-0">
+            <p className="truncate text-[13px] font-semibold text-[#faf0dc]">
+              {author}
+            </p>
+            <p className="dash-mono-tag truncate text-[#faf0dc]/40">
+              #{tag.replace(/[^a-zA-Z0-9]/g, "").toLowerCase()}
+            </p>
+          </div>
+          <div className="ml-auto flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => onInfo(id)}
+              className="dash-icon-btn h-8 w-8"
+              aria-label="Info"
+            >
+              <FileText className="size-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => onInsights(id)}
+              className="dash-icon-btn h-8 gap-1 px-2.5 text-[11px] font-semibold"
+              style={{ color: accent }}
+            >
+              <Sparkles className="size-3.5" />
+              AI
+            </button>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between border-t border-[#faf0dc]/10 pt-3">
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => {
+                setLikePulse(true);
+                onLike(id);
+              }}
+              className="dash-nav-pill inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[13px] text-[#faf0dc]/85 hover:bg-[#faf0dc]/8"
+            >
+              <Heart
+                onAnimationEnd={() => setLikePulse(false)}
+                className={`size-[18px] transition-colors ${
+                  isLiked ? "fill-[#f472b6] text-[#f472b6]" : ""
+                } ${likePulse ? "dash-like-pop" : ""}`}
+              />
+              <span className="tabular-nums">{likeCount}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onComment(id)}
+              className="dash-nav-pill inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[13px] text-[#faf0dc]/85 hover:bg-[#faf0dc]/8"
+            >
+              <MessageCircle className="size-[18px]" />
+              <span className="tabular-nums">{commentCount}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onShare(id)}
+              className="dash-nav-pill inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[13px] text-[#faf0dc]/85 hover:bg-[#faf0dc]/8"
+              aria-label="Share"
+            >
+              <Share2 className="size-[18px]" />
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={() => onBookmark(id)}
+            className="dash-nav-pill inline-flex items-center rounded-full px-2.5 py-1.5 text-[#faf0dc]/85 hover:bg-[#faf0dc]/8"
+            aria-label="Save"
+          >
+            <Bookmark
+              className={`size-[18px] ${
+                isBookmarked ? "fill-[#fbbf24] text-[#fbbf24]" : ""
+              }`}
+            />
+          </button>
+        </div>
       </div>
-    </div>
+    </article>
   );
 }
 
@@ -434,20 +615,20 @@ function IdeaAnalyticsCard({
     maxHotScore > 0 ? Math.round((hotScore / maxHotScore) * 100) : 0;
 
   const isTop = rank === 1 && engagement > 0;
-  const ringColor = isTop ? "#00FF85" : rank === 2 ? "#FFD54A" : "#1E90FF";
+  const ringColor = isTop ? "#3BF09A" : rank === 2 ? "#FBBF24" : "#60A5FA";
 
   return (
     <article
       className={`group relative overflow-hidden rounded-2xl border p-5 transition-all ${
         isTop
-          ? "border-[#00FF85]/30 bg-linear-to-br from-[#00FF85]/[0.07] via-[#0D0D0D] to-[#0D0D0D]"
+          ? "border-[#3BF09A]/30 bg-linear-to-br from-[#3BF09A]/[0.07] via-[#0D0D0D] to-[#0D0D0D]"
           : "border-white/8 bg-[#0D0D0D] hover:border-white/15"
       }`}
     >
       {isTop && (
         <div
           aria-hidden
-          className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-[#00FF85]/10 blur-3xl"
+          className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-[#3BF09A]/10 blur-3xl"
         />
       )}
 
@@ -460,7 +641,7 @@ function IdeaAnalyticsCard({
             <span
               className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 ${
                 isTop
-                  ? "bg-[#00FF85]/15 text-[#00FF85]"
+                  ? "bg-[#3BF09A]/15 text-[#3BF09A]"
                   : "bg-white/6 text-white/50"
               }`}
             >
@@ -469,8 +650,8 @@ function IdeaAnalyticsCard({
             </span>
             {idea.trending && (
               <span
-                className="inline-flex items-center gap-1 rounded-full bg-[#FF0099]/15 px-2 py-0.5 text-[#FF0099]"
-                title="Trending — high engagement adjusted for recency"
+                className="inline-flex items-center gap-1 rounded-full bg-[#f472b6]/15 px-2 py-0.5 text-[#f472b6]"
+                title="Hot — high engagement adjusted for recency"
               >
                 <Flame className="size-3" />
                 Hot
@@ -495,10 +676,10 @@ function IdeaAnalyticsCard({
           color="#FF0099"
         />
         <StatPill
-          icon={<MessageCircle className="size-3.5 text-[#1E90FF]" />}
+          icon={<MessageCircle className="size-3.5 text-[#60A5FA]" />}
           label="Comments"
           value={idea.commentCount}
-          color="#1E90FF"
+          color="#60A5FA"
         />
       </div>
     </article>
@@ -547,6 +728,7 @@ export default function DashboardPage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [reelFocusIdeaId, setReelFocusIdeaId] = useState<string | null>(null);
   const [isReelMuted, setIsReelMuted] = useState(false);
+  const [hoveredMusicId, setHoveredMusicId] = useState<string | null>(null);
   const [selectedIdeaId, setSelectedIdeaId] = useState<string | null>(null);
   const [analyticsIdeaId, setAnalyticsIdeaId] = useState<string | null>(null);
   const [insightsIdeaId, setInsightsIdeaId] = useState<string | null>(null);
@@ -569,6 +751,35 @@ export default function DashboardPage() {
   const feedOffsetRef = useRef(0);
   const likeInFlightRef = useRef(new Set<string>());
   const bookmarkInFlightRef = useRef(new Set<string>());
+  /** Blocks grid hover-music after feed switches (remount mouseenter under cursor). */
+  const suppressGridMusicUntilRef = useRef(0);
+
+  const stopGridMusic = useCallback(() => {
+    suppressGridMusicUntilRef.current = Date.now() + 400;
+    setHoveredMusicId(null);
+  }, []);
+
+  const changeFeed = useCallback(
+    (next: typeof activeFeed | ((prev: typeof activeFeed) => typeof activeFeed)) => {
+      stopGridMusic();
+      setActiveFeed(next);
+    },
+    [stopGridMusic],
+  );
+
+  const handleGridMusicHoverStart = useCallback((ideaId: string) => {
+    if (Date.now() < suppressGridMusicUntilRef.current) return;
+    setHoveredMusicId(ideaId);
+  }, []);
+
+  const handleGridMusicHoverEnd = useCallback((ideaId: string) => {
+    setHoveredMusicId((prev) => (prev === ideaId ? null : prev));
+  }, []);
+
+  useEffect(() => {
+    // Feed switches remount cards under the cursor and fire a synthetic mouseenter.
+    stopGridMusic();
+  }, [activeFeed, stopGridMusic]);
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
@@ -626,10 +837,23 @@ export default function DashboardPage() {
     () => displayedIdeas.map((idea) => idea.id),
     [displayedIdeas],
   );
+
+  // Desktop grid keeps the reel pane mounted (`lg:hidden`) — never let it play audio there.
+  // Mobile always shows the reel pane. Default narrow=false so desktop never autoplays before measure.
+  const [isNarrowViewport, setIsNarrowViewport] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const sync = () => setIsNarrowViewport(!mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  const reelAudioEnabled = reelMode || isNarrowViewport;
   const activeReelId = useActiveReelId(
     reelScrollRef,
     reelItemIds,
-    true,
+    reelAudioEnabled,
   );
   const handleReelAutoplayBlocked = useCallback(() => {
     setIsReelMuted(true);
@@ -926,6 +1150,31 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
+    if (reelMode) stopGridMusic();
+  }, [reelMode, stopGridMusic]);
+
+  useEffect(() => {
+    if (
+      selectedIdeaId ||
+      commentsIdeaId ||
+      analyticsIdeaId ||
+      insightsIdeaId ||
+      showNewIdea ||
+      showProfile
+    ) {
+      stopGridMusic();
+    }
+  }, [
+    selectedIdeaId,
+    commentsIdeaId,
+    analyticsIdeaId,
+    insightsIdeaId,
+    showNewIdea,
+    showProfile,
+    stopGridMusic,
+  ]);
+
+  useEffect(() => {
     if (!profileMenu) return;
     function onClickOutside(e: MouseEvent) {
       if (
@@ -970,7 +1219,7 @@ export default function DashboardPage() {
   }, [isPostingIdea]);
 
   return (
-    <main className="relative h-screen overflow-hidden bg-black [&_button]:cursor-pointer">
+    <main className="relative h-screen overflow-hidden bg-transparent [&_button]:cursor-pointer">
       {/* ─── REEL MODE (mobile always, desktop when toggled) ─── */}
       <div
         className={`relative flex h-full flex-col ${reelMode ? "" : "lg:hidden"}`}
@@ -980,10 +1229,15 @@ export default function DashboardPage() {
           className="hide-scrollbar flex-1 snap-y snap-mandatory overflow-y-auto"
         >
           {displayedIdeas.length === 0 ? (
-            <div className="flex h-full items-center justify-center px-6 text-center text-white/60">
-              {activeFeed === "saved"
-                ? "No saved ideas yet. Tap Save on any card."
-                : "No ideas found."}
+            <div className="flex h-full flex-col items-center justify-center gap-3 px-8 text-center">
+              <div className="dash-glass flex h-16 w-16 items-center justify-center rounded-full">
+                <Sparkles className="size-6 text-white/40" />
+              </div>
+              <p className="text-sm text-white/55">
+                {activeFeed === "saved"
+                  ? "No saved ideas yet. Tap Save on any card."
+                  : "No ideas found."}
+              </p>
             </div>
           ) : (
             displayedIdeas.map((reel) => (
@@ -997,10 +1251,11 @@ export default function DashboardPage() {
                   title={reel.title}
                   idea={reel.idea}
                   author={reel.authorName}
+                  authorImage={reel.authorImage}
                   color={reel.color}
                   tag={reel.category}
-                  music={reel.music}
-                  isActive={activeReelId === reel.id}
+                  music={reelAudioEnabled ? reel.music : null}
+                  isActive={reelAudioEnabled && activeReelId === reel.id}
                   isMuted={isReelMuted}
                   onToggleMute={() => setIsReelMuted((prev) => !prev)}
                   onAutoplayBlocked={handleReelAutoplayBlocked}
@@ -1020,12 +1275,12 @@ export default function DashboardPage() {
             ))
           )}
           {hasMoreIdeas && (
-            <div className="flex shrink-0 items-center justify-center py-6">
+            <div className="flex shrink-0 items-center justify-center py-8">
               <button
                 type="button"
                 onClick={() => void loadIdeas("append")}
                 disabled={isLoadingMoreIdeas}
-                className="rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm text-white/80 backdrop-blur-sm transition-colors hover:bg-white/15 disabled:opacity-50"
+                className="dash-glass rounded-full px-5 py-2.5 text-sm font-medium text-white/85 disabled:opacity-50"
               >
                 {isLoadingMoreIdeas ? "Loading…" : "Load more"}
               </button>
@@ -1037,32 +1292,32 @@ export default function DashboardPage() {
           <button
             type="button"
             onClick={() => setReelMode(false)}
-            className="absolute left-4 top-4 z-20 hidden items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-medium text-white/90 backdrop-blur-md transition-colors hover:bg-white/15 lg:inline-flex"
+            className="dash-glass absolute left-4 top-4 z-20 hidden items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-white/90 lg:inline-flex"
           >
             <Grid className="size-4" />
             Grid View
           </button>
         )}
 
-        <nav className="absolute inset-x-0 bottom-0 z-10 border-t border-white/15 bg-black/75 px-6 py-3 backdrop-blur-xl">
+        <nav className="absolute inset-x-3 bottom-3 z-10 rounded-[22px] border border-white/12 bg-black/45 px-5 py-2.5 shadow-[0_12px_40px_rgba(0,0,0,0.45)] backdrop-blur-2xl">
           <ul className="flex items-center justify-between">
             <li>
               <button
                 type="button"
                 onClick={() =>
-                  setActiveFeed((prev) =>
+                  changeFeed((prev) =>
                     prev === "trending" ? "home" : "trending",
                   )
                 }
-                className="inline-flex flex-col items-center gap-1 text-white/70 transition-colors hover:text-[#00FF85]"
+                className="dash-nav-pill inline-flex flex-col items-center gap-0.5 px-3 py-1 text-white/60 transition-colors hover:text-white"
               >
                 {activeFeed === "trending" ? (
-                  <Home className="size-6" />
+                  <Home className="size-6" strokeWidth={1.75} />
                 ) : (
-                  <Flame className="size-6" />
+                  <Flame className="size-6" strokeWidth={1.75} />
                 )}
-                <span className="text-[11px] font-medium">
-                  {activeFeed === "trending" ? "Home" : "Trending"}
+                <span className="text-[10px] font-medium">
+                  {activeFeed === "trending" ? "Home" : "Hot"}
                 </span>
               </button>
             </li>
@@ -1070,38 +1325,38 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={() => setShowNewIdea(true)}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition-colors hover:bg-white/20"
+                className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/25 bg-white text-black shadow-[0_8px_24px_rgba(255,255,255,0.18)] transition-transform active:scale-95"
                 aria-label="Create"
               >
-                <Plus className="size-5 stroke-[2.5]" />
+                <Plus className="size-6 stroke-[2.25]" />
               </button>
             </li>
             <li className="relative">
               <button
                 type="button"
                 onClick={() => setProfileMenu((v) => !v)}
-                className="inline-flex flex-col items-center gap-1 text-white/70 transition-colors hover:text-[#1E90FF]"
+                className="dash-nav-pill inline-flex flex-col items-center gap-0.5 px-3 py-1 text-white/60 transition-colors hover:text-white"
               >
                 {profileImage ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={profileImage}
                     alt={userName}
-                    className="h-6 w-6 rounded-full object-cover ring-2 ring-[#1E90FF]"
+                    className="h-6 w-6 rounded-full object-cover ring-2 ring-white/40"
                     referrerPolicy="no-referrer"
                   />
                 ) : (
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#1E90FF] text-[10px] font-semibold text-white">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/20 text-[10px] font-semibold text-white">
                     {userName.charAt(0).toUpperCase()}
                   </span>
                 )}
-                <span className="text-[11px] font-medium">Profile</span>
+                <span className="text-[10px] font-medium">Profile</span>
               </button>
 
               {profileMenu && (
                 <div
                   ref={profileRef}
-                  className="absolute bottom-full right-0 z-20 mb-3 w-44 overflow-hidden rounded-xl border border-white/15 bg-black/85 py-1 shadow-lg shadow-black/50 backdrop-blur-xl"
+                  className="dash-glass-strong absolute bottom-full right-0 z-20 mb-3 w-48 overflow-hidden rounded-2xl py-1.5"
                 >
                   <button
                     type="button"
@@ -1109,7 +1364,7 @@ export default function DashboardPage() {
                       setProfileMenu(false);
                       setShowProfile(true);
                     }}
-                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-white/70 transition-colors hover:bg-white/8 hover:text-white"
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-white/75 transition-colors hover:bg-white/8 hover:text-white"
                   >
                     <User className="size-4" />
                     My Ideas
@@ -1118,17 +1373,18 @@ export default function DashboardPage() {
                     type="button"
                     onClick={() => {
                       setProfileMenu(false);
-                      setActiveFeed("saved");
+                      changeFeed("saved");
                     }}
-                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-white/70 transition-colors hover:bg-white/8 hover:text-[#1E90FF]"
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-white/75 transition-colors hover:bg-white/8 hover:text-white"
                   >
                     <Bookmark className="size-4" />
                     Saved
                   </button>
+                  <div className="mx-3 my-1 h-px bg-white/10" />
                   <button
                     type="button"
                     onClick={() => signOut({ callbackUrl: "/" })}
-                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-[#FF0099] transition-colors hover:bg-white/8"
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-[#ff6b78] transition-colors hover:bg-white/8"
                   >
                     <LogOut className="size-4" />
                     Logout
@@ -1143,26 +1399,26 @@ export default function DashboardPage() {
       {/* ─── DESKTOP: sidebar + scrollable grid feed ─── */}
       <div className={`hidden h-full ${reelMode ? "" : "lg:flex"}`}>
         <aside
-          className={`relative flex shrink-0 flex-col border-r border-white/15 bg-black/70 py-8 backdrop-blur-xl transition-all duration-300 ${
-            sidebarCollapsed ? "w-20 px-3" : "w-56 px-5 lg:w-64"
+          className={`relative m-3 flex shrink-0 flex-col rounded-[24px] border border-white/10 bg-black/40 py-6 shadow-[0_12px_40px_rgba(0,0,0,0.35)] backdrop-blur-2xl transition-all duration-300 ${
+            sidebarCollapsed ? "w-[76px] px-2.5" : "w-56 px-4 lg:w-60"
           }`}
         >
           <div
-            className={`mb-10 flex items-center ${
-              sidebarCollapsed ? "justify-center" : "justify-between"
+            className={`mb-8 flex items-center ${
+              sidebarCollapsed ? "justify-center" : "justify-between px-1"
             }`}
           >
             <p
-              className={`text-lg font-bold tracking-tight text-white ${
+              className={`dash-serif text-[26px] font-normal leading-none tracking-tight text-[#faf0dc] ${
                 sidebarCollapsed ? "hidden" : ""
               }`}
             >
-              idea<span className="text-[#a67a5b]">Centre</span>
+              idea<span className="text-[#3bf09a]">Centre</span>
             </p>
             <button
               type="button"
               onClick={() => setSidebarCollapsed((prev) => !prev)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/15 bg-white/8 text-white/75 transition-colors hover:bg-white/15 hover:text-white"
+              className="dash-icon-btn h-9 w-9"
               aria-label={
                 sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
               }
@@ -1179,62 +1435,64 @@ export default function DashboardPage() {
           <nav className="flex flex-col gap-1">
             <button
               type="button"
-              onClick={() => setActiveFeed("home")}
-              className={`flex items-center rounded-xl px-4 py-2.5 text-sm transition-colors ${
+              onClick={() => changeFeed("home")}
+              className={`dash-nav-pill flex items-center rounded-2xl px-3.5 py-2.5 text-sm transition-colors ${
                 activeFeed === "home"
-                  ? "bg-white/15 font-medium text-white"
-                  : "text-white/45 hover:bg-white/8 hover:text-white/80"
+                  ? "bg-[#faf0dc]/14 font-semibold text-[#faf0dc]"
+                  : "text-[#faf0dc]/45 hover:bg-[#faf0dc]/8 hover:text-[#faf0dc]/85"
               } ${sidebarCollapsed ? "justify-center px-2" : "gap-3"}`}
               title="Home"
             >
-              <Home className="size-5 shrink-0" />
+              <Home className="size-5 shrink-0" strokeWidth={activeFeed === "home" ? 2.25 : 1.75} />
               <span className={sidebarCollapsed ? "hidden" : ""}>Home</span>
             </button>
             <button
               type="button"
-              onClick={() => setActiveFeed("trending")}
-              className={`flex items-center rounded-xl px-4 py-2.5 text-sm transition-colors ${
+              onClick={() => changeFeed("trending")}
+              className={`dash-nav-pill flex items-center rounded-2xl px-3.5 py-2.5 text-sm transition-colors ${
                 activeFeed === "trending"
-                  ? "bg-white/15 font-medium text-white"
-                  : "text-white/45 hover:bg-white/8 hover:text-white/80"
+                  ? "bg-[#faf0dc]/14 font-semibold text-[#faf0dc]"
+                  : "text-[#faf0dc]/45 hover:bg-[#faf0dc]/8 hover:text-[#faf0dc]/85"
               } ${sidebarCollapsed ? "justify-center px-2" : "gap-3"}`}
-              title="Trending"
+              title="Hot"
             >
-              <Flame className="size-5 shrink-0" />
-              <span className={sidebarCollapsed ? "hidden" : ""}>Trending</span>
+              <Flame className="size-5 shrink-0" strokeWidth={activeFeed === "trending" ? 2.25 : 1.75} />
+              <span className={sidebarCollapsed ? "hidden" : ""}>Hot</span>
             </button>
             <button
               type="button"
-              onClick={() => setActiveFeed("saved")}
-              className={`flex items-center rounded-xl px-4 py-2.5 text-sm transition-colors ${
+              onClick={() => changeFeed("saved")}
+              className={`dash-nav-pill flex items-center rounded-2xl px-3.5 py-2.5 text-sm transition-colors ${
                 activeFeed === "saved"
-                  ? "bg-white/15 font-medium text-white"
-                  : "text-white/45 hover:bg-white/8 hover:text-white/80"
+                  ? "bg-[#faf0dc]/14 font-semibold text-[#faf0dc]"
+                  : "text-[#faf0dc]/45 hover:bg-[#faf0dc]/8 hover:text-[#faf0dc]/85"
               } ${sidebarCollapsed ? "justify-center px-2" : "gap-3"}`}
               title="Saved"
             >
-              <Bookmark className="size-5 shrink-0" />
+              <Bookmark className="size-5 shrink-0" strokeWidth={activeFeed === "saved" ? 2.25 : 1.75} />
               <span className={sidebarCollapsed ? "hidden" : ""}>Saved</span>
             </button>
             <button
               type="button"
-              onClick={() => setActiveFeed("myIdeas")}
-              className={`flex items-center rounded-xl px-4 py-2.5 text-sm transition-colors ${
+              onClick={() => changeFeed("myIdeas")}
+              className={`dash-nav-pill flex items-center rounded-2xl px-3.5 py-2.5 text-sm transition-colors ${
                 activeFeed === "myIdeas"
-                  ? "bg-white/15 font-medium text-white"
-                  : "text-white/45 hover:bg-white/8 hover:text-white/80"
+                  ? "bg-[#faf0dc]/14 font-semibold text-[#faf0dc]"
+                  : "text-[#faf0dc]/45 hover:bg-[#faf0dc]/8 hover:text-[#faf0dc]/85"
               } ${sidebarCollapsed ? "justify-center px-2" : "gap-3"}`}
               title="My Ideas"
             >
-              <User className="size-5 shrink-0" />
+              <User className="size-5 shrink-0" strokeWidth={activeFeed === "myIdeas" ? 2.25 : 1.75} />
               <span className={sidebarCollapsed ? "hidden" : ""}>My Ideas</span>
             </button>
           </nav>
 
-          <div className={`mt-auto ${sidebarCollapsed ? "" : "px-4"}`}>
+          <div className={`mt-auto ${sidebarCollapsed ? "" : "px-1"}`}>
             <div
-              className={`flex items-center ${
-                sidebarCollapsed ? "justify-center" : "gap-2.5 px-3 py-2.5"
+              className={`dash-glass flex items-center rounded-2xl ${
+                sidebarCollapsed
+                  ? "justify-center p-2"
+                  : "gap-2.5 px-3 py-2.5"
               }`}
             >
               {profileImage ? (
@@ -1242,16 +1500,16 @@ export default function DashboardPage() {
                 <img
                   src={profileImage}
                   alt={userName}
-                  className="h-8 w-8 rounded-full object-cover ring-2 ring-white/30"
+                  className="h-8 w-8 rounded-full object-cover ring-2 ring-[#faf0dc]/25"
                   referrerPolicy="no-referrer"
                 />
               ) : (
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15 text-xs font-semibold text-white">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#faf0dc]/15 text-xs font-semibold text-[#faf0dc]">
                   {userName.charAt(0).toUpperCase()}
                 </span>
               )}
               <span
-                className={`text-sm font-medium text-white/70 ${
+                className={`truncate text-sm font-medium text-[#faf0dc]/75 ${
                   sidebarCollapsed ? "hidden" : ""
                 }`}
               >
@@ -1261,7 +1519,7 @@ export default function DashboardPage() {
             <button
               type="button"
               onClick={() => signOut({ callbackUrl: "/" })}
-              className={`mt-3 flex w-full items-center rounded-xl border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-white/20 ${
+              className={`mt-3 flex w-full items-center rounded-2xl border border-[#faf0dc]/12 bg-[#faf0dc]/6 px-3.5 py-2.5 text-sm font-medium text-[#faf0dc]/80 transition-colors hover:bg-[#faf0dc]/12 ${
                 sidebarCollapsed
                   ? "justify-center gap-0 px-2"
                   : "justify-center gap-2"
@@ -1274,21 +1532,24 @@ export default function DashboardPage() {
           </div>
         </aside>
 
-        <div className="flex-1 overflow-y-auto bg-transparent px-8 py-8 lg:px-12">
-          <div className="mb-6 flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-white">
-              {activeFeed === "saved"
-                ? "Saved Ideas"
-                : activeFeed === "trending"
-                  ? "Trending Ideas"
-                  : activeFeed === "myIdeas"
-                    ? "My Ideas"
-                    : "All Ideas"}
-            </h1>
+        <div className="flex-1 overflow-y-auto px-6 py-6 lg:px-10">
+          <div className="mb-7 flex items-center justify-between gap-4">
+            <div>
+              <p className="dash-mono-tag text-[#3bf09a]/70">Feed</p>
+              <h1 className="dash-serif mt-1 text-[34px] font-normal leading-none tracking-tight text-[#faf0dc]">
+                {activeFeed === "saved"
+                  ? "Saved Ideas"
+                  : activeFeed === "trending"
+                    ? "Hot"
+                    : activeFeed === "myIdeas"
+                      ? "My Ideas"
+                      : "For You"}
+              </h1>
+            </div>
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 pr-1 animate-reel-hint-in">
+              <div className="animate-reel-hint-in flex items-center gap-2 pr-1">
                 <span
-                  className="relative top-px hidden text-[18px] leading-none tracking-wide text-[#7DFF00] drop-shadow-[0_0_8px_rgba(125,255,0,0.65)] sm:inline-block"
+                  className="relative top-px hidden text-[18px] leading-none tracking-wide text-[#3bf09a] drop-shadow-[0_0_8px_rgba(59,240,154,0.6)] sm:inline-block"
                   style={{
                     fontFamily:
                       "var(--font-handwritten), 'Caveat', 'Bradley Hand', cursive",
@@ -1298,7 +1559,7 @@ export default function DashboardPage() {
                 </span>
                 <span
                   aria-hidden="true"
-                  className="hidden items-center text-[#7DFF00] drop-shadow-[0_0_8px_rgba(125,255,0,0.65)] sm:inline-flex"
+                  className="hidden items-center text-[#3bf09a] drop-shadow-[0_0_8px_rgba(59,240,154,0.6)] sm:inline-flex"
                 >
                   <ChevronRight
                     className="-mr-2 size-5 animate-reel-chevron opacity-30 [animation-delay:0ms]"
@@ -1317,26 +1578,25 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={() => setReelMode(true)}
-                className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full border border-[#7DFF00]/70 px-5 py-2 text-sm font-medium text-white/90 shadow-[0_0_16px_rgba(125,255,0,0.22)] transition-all duration-300 hover:border-[#7DFF00] hover:shadow-[0_0_22px_rgba(125,255,0,0.4)]"
+                className="dash-pill-primary inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold"
               >
-                <span className="pointer-events-none absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/15 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-                <Play className="size-4 fill-white" />
-                Reel Mode
+                <Play className="size-3.5 fill-[#241812]" />
+                Start Idea Reel
               </button>
             </div>
           </div>
           {displayedIdeas.length === 0 ? (
-            <div className="rounded-2xl border border-white/15 bg-white/6 p-10 text-center text-white/65 backdrop-blur-lg">
+            <div className="dash-glass rounded-[22px] p-12 text-center text-[#faf0dc]/55">
               {activeFeed === "saved"
                 ? "No saved ideas yet. Use Save on any idea card."
                 : activeFeed === "trending"
-                  ? "No trending ideas yet."
+                  ? "No hot ideas yet."
                   : activeFeed === "myIdeas"
                     ? "You haven't posted any ideas yet."
                     : "No ideas found."}
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
+            <div className="mx-auto grid max-w-6xl grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
               {displayedIdeas.map((reel) => (
                 <IdeaCard
                   key={reel.id}
@@ -1344,14 +1604,19 @@ export default function DashboardPage() {
                   title={reel.title}
                   idea={reel.idea}
                   author={reel.authorName}
+                  authorImage={reel.authorImage}
                   color={reel.color}
                   tag={reel.category}
+                  music={reel.music}
+                  musicActive={hoveredMusicId === reel.id}
                   trending={reel.trending}
                   showAnalytics={activeFeed === "myIdeas"}
                   likeCount={reel.likeCount}
                   commentCount={reel.commentCount}
                   isLiked={reel.isLiked}
                   isBookmarked={reel.isBookmarked}
+                  onHoverStart={handleGridMusicHoverStart}
+                  onHoverEnd={handleGridMusicHoverEnd}
                   onLike={toggleLike}
                   onAnalytics={setAnalyticsIdeaId}
                   onInfo={setSelectedIdeaId}
@@ -1369,7 +1634,7 @@ export default function DashboardPage() {
                 type="button"
                 onClick={() => void loadIdeas("append")}
                 disabled={isLoadingMoreIdeas}
-                className="rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm text-white/80 transition-colors hover:bg-white/15 disabled:opacity-50"
+                className="dash-glass rounded-full px-5 py-2 text-sm text-[#faf0dc]/80 transition-colors hover:bg-[#faf0dc]/12 disabled:opacity-50"
               >
                 {isLoadingMoreIdeas ? "Loading…" : "Load more"}
               </button>
@@ -1380,7 +1645,7 @@ export default function DashboardPage() {
         <button
           type="button"
           onClick={() => setShowNewIdea(true)}
-          className="fixed bottom-6 right-6 z-30 hidden items-center gap-2 rounded-full border border-white/25 bg-white/12 px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(0,0,0,0.45)] backdrop-blur-xl transition-colors hover:bg-white/20 lg:inline-flex"
+          className="dash-pill-primary fixed bottom-7 right-7 z-30 hidden items-center gap-2 rounded-full px-5 py-3 text-sm font-bold lg:inline-flex"
         >
           <Plus className="size-4 stroke-[2.5]" />
           New Idea
@@ -1412,6 +1677,15 @@ export default function DashboardPage() {
 
             setIdeas((prev) => [payload.idea as FeedIdea, ...prev]);
             setPostIdeaProgress(100);
+
+            // Pre-warm AI insights in the background so other users' "AI summary"
+            // loads instantly (the endpoint caches the result on the idea row).
+            void fetch(`/api/ideas/${payload.idea.id}/insights`, {
+              method: "GET",
+              keepalive: true,
+            }).catch(() => {
+              // Best-effort warm-up; on-demand generation still works if this fails.
+            });
           } catch (err) {
             setPostIdeaProgress(100);
             throw err;
@@ -1425,19 +1699,15 @@ export default function DashboardPage() {
       />
 
       {isPostingIdea && (
-        <div className="pointer-events-none fixed inset-x-0 bottom-3 z-60 flex justify-center px-3 sm:px-4">
-          <div className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-white/20 bg-linear-to-b from-black/90 via-black/82 to-black/90 p-2 shadow-[0_10px_35px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.2)] backdrop-blur-xl sm:max-w-2xl">
-            <div
-              aria-hidden
-              className="absolute inset-0 bg-linear-to-r from-transparent via-white/12 to-transparent opacity-70"
-            />
-            <div className="relative z-10 mb-1 flex items-center justify-between px-2 text-[11px] font-medium text-white/85">
+        <div className="pointer-events-none fixed inset-x-0 bottom-4 z-60 flex justify-center px-3 sm:px-4">
+          <div className="dash-glass-strong relative w-full max-w-md overflow-hidden rounded-2xl p-3 sm:max-w-lg">
+            <div className="mb-1.5 flex items-center justify-between px-1 text-[11px] font-medium text-white/80">
               <span>Posting idea...</span>
-              <span>{postIdeaProgress}%</span>
+              <span className="tabular-nums">{postIdeaProgress}%</span>
             </div>
-            <div className="relative z-10 h-2 overflow-hidden rounded-full border border-white/10 bg-white/8">
+            <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
               <div
-                className="h-full rounded-full bg-linear-to-r from-[#FF2A6D] via-[#35A8FF] to-[#39FFB6] shadow-[0_0_16px_rgba(53,168,255,0.55)] transition-all duration-200"
+                className="h-full rounded-full bg-white transition-all duration-200"
                 style={{ width: `${postIdeaProgress}%` }}
               />
             </div>
@@ -1447,16 +1717,18 @@ export default function DashboardPage() {
 
       {/* Profile / My Ideas panel */}
       {showProfile && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-[#0D0D0D]">
-          <div className="flex items-center gap-4 border-b border-white/8 px-5 py-4">
+        <div className="fixed inset-0 z-50 flex flex-col bg-black/80 backdrop-blur-2xl">
+          <div className="flex items-center gap-4 border-b border-white/10 px-5 py-4">
             <button
               type="button"
               onClick={() => setShowProfile(false)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+              className="dash-icon-btn h-9 w-9"
             >
               <ArrowLeft className="size-5" />
             </button>
-            <h2 className="text-lg font-bold text-white">My Ideas</h2>
+            <h2 className="text-lg font-semibold tracking-tight text-white">
+              My Ideas
+            </h2>
           </div>
 
           <div className="hide-scrollbar flex-1 overflow-y-auto px-5 py-6">
@@ -1472,7 +1744,7 @@ export default function DashboardPage() {
                     setShowProfile(false);
                     setShowNewIdea(true);
                   }}
-                  className="mt-4 rounded-full bg-[#00FF85]/10 px-5 py-2 text-sm font-medium text-[#00FF85] transition-colors hover:bg-[#00FF85]/20"
+                  className="mt-4 rounded-full bg-[#3BF09A]/10 px-5 py-2 text-sm font-medium text-[#3BF09A] transition-colors hover:bg-[#3BF09A]/20"
                 >
                   Post your first idea
                 </button>
@@ -1482,7 +1754,7 @@ export default function DashboardPage() {
                 {myIdeas.map((item) => (
                   <div
                     key={item.id}
-                    className="group relative flex flex-col gap-3 rounded-2xl border border-white/15 p-5 ring-1 ring-inset ring-white/8 transition-all duration-300 hover:border-[#00FF85]/45 hover:ring-[#00FF85]/25"
+                    className="group relative flex flex-col gap-3 rounded-2xl border border-white/15 p-5 ring-1 ring-inset ring-white/8 transition-all duration-300 hover:border-[#3BF09A]/45 hover:ring-[#3BF09A]/25"
                     style={{ backgroundColor: item.color }}
                     role="button"
                     tabIndex={0}
@@ -1500,7 +1772,7 @@ export default function DashboardPage() {
                       }
                     }}
                   >
-                    <span className="w-fit rounded-full bg-[#00FF85]/15 px-3 py-0.5 text-[11px] font-medium text-[#00FF85]">
+                    <span className="w-fit rounded-full bg-[#3BF09A]/15 px-3 py-0.5 text-[11px] font-medium text-[#3BF09A]">
                       {item.category}
                     </span>
                     <p className="text-lg font-bold text-white">{item.title}</p>
@@ -1514,7 +1786,7 @@ export default function DashboardPage() {
                           e.stopPropagation();
                           setAnalyticsIdeaId(item.id);
                         }}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/25 px-3 py-1.5 text-[11px] font-semibold text-white/80 backdrop-blur-sm transition-colors hover:border-[#00FF85]/40 hover:bg-[#00FF85]/10 hover:text-[#00FF85]"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/25 px-3 py-1.5 text-[11px] font-semibold text-white/80 backdrop-blur-sm transition-colors hover:border-[#3BF09A]/40 hover:bg-[#3BF09A]/10 hover:text-[#3BF09A]"
                       >
                         <BarChart3 className="size-3.5" />
                         Analytics
@@ -1563,12 +1835,12 @@ export default function DashboardPage() {
         </div>
       )}
       {analyticsIdea && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm">
-          <div className="relative w-full max-w-lg rounded-2xl border border-white/10 bg-[#161616] p-5 shadow-2xl sm:p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-md">
+          <div className="dash-glass-strong relative w-full max-w-lg rounded-[24px] p-5 sm:p-6">
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-[#00FF85]/25 to-[#1E90FF]/15 ring-1 ring-[#00FF85]/30">
-                  <BarChart3 className="size-4 text-[#00FF85]" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-[#3BF09A]/25 to-[#60A5FA]/15 ring-1 ring-[#3BF09A]/30">
+                  <BarChart3 className="size-4 text-[#3BF09A]" />
                 </div>
                 <div>
                   <h3 className="text-sm font-bold tracking-tight text-white">
@@ -1598,17 +1870,20 @@ export default function DashboardPage() {
         </div>
       )}
       {selectedIdea && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm">
-          <div className="relative w-full max-w-xl rounded-2xl border border-white/10 bg-[#161616] p-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-md">
+          <div className="dash-glass-strong relative w-full max-w-xl rounded-[24px] p-6">
             <button
               type="button"
               onClick={() => setSelectedIdeaId(null)}
-              className="absolute right-2 top-1 inline-flex h-8 w-8 items-center justify-center rounded-full text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+              className="dash-icon-btn absolute right-3 top-3 h-8 w-8"
               aria-label="Close info"
             >
-              ×
+              <X className="size-4" />
             </button>
-            <p className="text-sm leading-relaxed text-white/80">
+            <p className="pr-8 text-[11px] font-medium uppercase tracking-[0.16em] text-white/40">
+              Details
+            </p>
+            <p className="mt-3 text-sm leading-relaxed text-white/80">
               {selectedIdea.description?.trim()
                 ? selectedIdea.description
                 : "No description was provided for this idea yet."}
@@ -1617,14 +1892,16 @@ export default function DashboardPage() {
         </div>
       )}
       {commentsIdea && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center">
-          <div className="relative flex h-[85vh] w-full flex-col overflow-hidden rounded-t-2xl border border-white/10 bg-[#161616] shadow-2xl sm:h-[80vh] sm:max-w-lg sm:rounded-2xl">
-            <div className="flex items-center justify-between gap-4 border-b border-white/8 px-5 py-4">
-              <h3 className="text-lg font-bold text-white">Comments</h3>
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-md sm:items-center">
+          <div className="dash-glass-strong relative flex h-[85vh] w-full flex-col overflow-hidden rounded-t-[28px] sm:h-[80vh] sm:max-w-lg sm:rounded-[28px]">
+            <div className="flex items-center justify-between gap-4 border-b border-white/10 px-5 py-4">
+              <h3 className="text-lg font-semibold tracking-tight text-white">
+                Comments
+              </h3>
               <button
                 type="button"
                 onClick={closeComments}
-                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+                className="dash-icon-btn h-9 w-9 shrink-0"
                 aria-label="Close comments"
               >
                 <X className="size-5" />
@@ -1656,11 +1933,11 @@ export default function DashboardPage() {
                           referrerPolicy="no-referrer"
                         />
                       ) : (
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1E90FF] text-xs font-semibold text-white">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15 text-xs font-semibold text-white">
                           {c.authorName.charAt(0).toUpperCase()}
                         </span>
                       )}
-                      <div className="min-w-0 flex-1 rounded-xl bg-white/5 px-3 py-2">
+                      <div className="min-w-0 flex-1 rounded-2xl border border-white/8 bg-white/6 px-3 py-2 backdrop-blur-sm">
                         <div className="flex items-center justify-between gap-3">
                           <p className="truncate text-sm font-semibold text-white">
                             {c.authorName}
@@ -1682,10 +1959,10 @@ export default function DashboardPage() {
                             type="button"
                             onClick={() => toggleCommentLike(c.id)}
                             disabled={!userEmail}
-                            className="inline-flex items-center gap-1 text-[11px] font-medium text-white/40 transition-colors hover:text-[#FF0099] disabled:opacity-50"
+                            className="inline-flex items-center gap-1 text-[11px] font-medium text-white/40 transition-colors hover:text-[#ff3040] disabled:opacity-50"
                           >
                             <Heart
-                              className={`size-3.5 ${c.isLiked ? "fill-[#FF0099] text-[#FF0099]" : ""}`}
+                              className={`size-3.5 ${c.isLiked ? "fill-[#ff3040] text-[#ff3040]" : ""}`}
                             />
                             <span>{c.likeCount}</span>
                           </button>
@@ -1693,7 +1970,7 @@ export default function DashboardPage() {
                             <button
                               type="button"
                               onClick={() => deleteComment(c.id)}
-                              className="text-[11px] font-medium text-[#FF0099]/70 transition-colors hover:text-[#FF0099]"
+                              className="text-[11px] font-medium text-[#ff6b78]/80 transition-colors hover:text-[#ff6b78]"
                             >
                               Delete
                             </button>
@@ -1711,7 +1988,7 @@ export default function DashboardPage() {
                 e.preventDefault();
                 void postComment();
               }}
-              className="flex items-end gap-2 border-t border-white/8 bg-[#0D0D0D] px-4 py-3"
+              className="flex items-end gap-2 border-t border-white/10 bg-black/40 px-4 py-3 backdrop-blur-xl"
             >
               <textarea
                 value={commentDraft}
@@ -1728,14 +2005,14 @@ export default function DashboardPage() {
                 rows={1}
                 maxLength={500}
                 disabled={!userEmail || isPostingComment}
-                className="max-h-28 flex-1 resize-none rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/30 outline-none transition-colors focus:border-[#1E90FF]/50 disabled:opacity-50"
+                className="max-h-28 flex-1 resize-none rounded-2xl border border-white/12 bg-white/8 px-3.5 py-2.5 text-sm text-white placeholder-white/30 outline-none transition-colors focus:border-white/25 disabled:opacity-50"
               />
               <button
                 type="submit"
                 disabled={
                   !userEmail || isPostingComment || !commentDraft.trim()
                 }
-                className="inline-flex h-10 shrink-0 items-center justify-center rounded-xl bg-[#00FF85] px-4 text-sm font-semibold text-[#0D0D0D] transition-colors hover:bg-[#00FF85]/85 disabled:opacity-40"
+                className="inline-flex h-10 shrink-0 items-center justify-center rounded-2xl bg-white px-4 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-40"
               >
                 {isPostingComment ? "..." : "Post"}
               </button>
@@ -1749,7 +2026,7 @@ export default function DashboardPage() {
         onClose={() => setInsightsIdeaId(null)}
       />
       {(isLoadingIdeas || ideasError || toast) && (
-        <div className="pointer-events-none fixed bottom-4 right-4 z-40 rounded-lg border border-white/10 bg-[#161616]/95 px-4 py-2 text-xs text-white/85 shadow-lg">
+        <div className="dash-glass pointer-events-none fixed bottom-5 right-5 z-40 rounded-2xl px-4 py-2.5 text-xs text-white/85">
           {toast ?? (isLoadingIdeas ? "Loading ideas..." : ideasError)}
         </div>
       )}

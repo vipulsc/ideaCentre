@@ -140,18 +140,18 @@ export default function NewIdeaModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-      <div className="hide-scrollbar relative mx-4 flex max-h-[92vh] w-full max-w-4xl flex-col overflow-y-auto rounded-2xl border border-white/10 bg-[#161616] shadow-2xl md:flex-row md:overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md">
+      <div className="hide-scrollbar relative mx-4 flex max-h-[92vh] w-full max-w-4xl flex-col overflow-y-auto rounded-[28px] border border-white/12 bg-[rgba(18,18,20,0.88)] shadow-[0_24px_80px_rgba(0,0,0,0.55)] backdrop-blur-2xl md:flex-row md:overflow-hidden">
         {/* Live preview — exact reel card */}
         <div
           className="relative flex shrink-0 flex-col justify-center px-6 py-10 md:w-[340px] md:py-6 lg:w-[400px]"
           style={{ backgroundColor: color }}
         >
           <div className="flex w-full flex-col gap-4">
-            <span className="w-fit rounded-full bg-[#00FF85]/15 px-4 py-1 text-xs font-medium text-[#00FF85]">
+            <span className="w-fit rounded-full border border-white/20 bg-white/10 px-4 py-1 text-xs font-medium text-white/90 backdrop-blur-md">
               {category}
             </span>
-            <h2 className="text-2xl font-bold leading-tight text-white lg:text-3xl">
+            <h2 className="text-2xl font-semibold leading-tight tracking-tight text-white lg:text-3xl">
               {title || "Your title here…"}
             </h2>
             <p className="text-sm leading-relaxed text-white/70 lg:text-base">
@@ -202,7 +202,7 @@ export default function NewIdeaModal({
                   onClick={() => setColor(c.value)}
                   className={`h-9 w-9 rounded-full border-2 transition-all ${
                     color === c.value
-                      ? "border-[#00FF85] scale-110"
+                      ? "border-white scale-110"
                       : "border-white/15 hover:border-white/40"
                   }`}
                   style={{ backgroundColor: c.value }}
@@ -370,7 +370,7 @@ export default function NewIdeaModal({
                 type="button"
                 onClick={() => void handleSubmit()}
                 disabled={!canSubmit}
-                className="flex-1 rounded-xl bg-[#00FF85] px-4 py-2.5 text-sm font-semibold text-[#0D0D0D] transition-colors hover:bg-[#00FF85]/85 disabled:opacity-40 disabled:hover:bg-[#00FF85]"
+                className="flex-1 rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-40 disabled:hover:opacity-40"
               >
                 {isSubmitting ? "Posting…" : "Post Idea"}
               </button>

@@ -107,7 +107,7 @@ export function AiInsightsModal({ ideaId, title, onClose }: Props) {
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/6 px-3 py-1">
-                <Sparkles className="size-3.5 text-[#7DFF00]" />
+                <Sparkles className="size-3.5 text-[#32d74b]" />
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/65">
                   AI Insights
                 </p>
