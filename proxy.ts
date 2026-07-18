@@ -29,5 +29,6 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
+  // Only protect the dashboard. Keep sitemap/robots completely out of auth.
   matcher: ["/dashboard/:path*"],
 };
