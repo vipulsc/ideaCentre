@@ -1,7 +1,7 @@
 /**
  * Central site configuration used across metadata, sitemap, robots,
  * structured data and Open Graph. Set NEXT_PUBLIC_SITE_URL in production to
- * your canonical origin (e.g. https://ideacentre.xyz).
+ * your canonical origin (e.g. https://www.ideacentre.xyz).
  */
 const rawUrl =
   process.env.NEXT_PUBLIC_SITE_URL?.trim() || "https://www.ideacentre.xyz";
