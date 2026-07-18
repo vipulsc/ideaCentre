@@ -4,7 +4,7 @@
  * your canonical origin (e.g. https://ideacentre.xyz).
  */
 const rawUrl =
-  process.env.NEXT_PUBLIC_SITE_URL?.trim() || "https://ideacentre.xyz";
+  process.env.NEXT_PUBLIC_SITE_URL?.trim() || "https://www.ideacentre.xyz";
 
 export const siteConfig = {
   name: "ideaCentre",
