@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { LoginGoogleRedirect } from "@/components/login-google-redirect";
 import { safeInternalPath } from "@/lib/auth-path";
+
+export const metadata: Metadata = {
+  title: "Sign in",
+  robots: { index: false, follow: false },
+};
 
 type LoginPageProps = {
   searchParams: Promise<{ callbackUrl?: string | string[]; error?: string | string[] }>;

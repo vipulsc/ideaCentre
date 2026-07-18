@@ -1,4 +1,13 @@
+import type { Metadata } from "next";
+
 const LAST_UPDATED = "April 22, 2026";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description:
+    "How ideaCentre collects, uses, and protects your data.",
+  alternates: { canonical: "/privacy" },
+};
 
 export default function PrivacyPage() {
   return (

@@ -10,12 +10,17 @@ import { LandingGateIntro } from "@/components/landing-gate-intro";
 import { Navbar } from "@/components/navbar";
 import { PostIdeaFab } from "@/components/post-idea-fab";
 import { Tagline } from "@/components/tagline";
+import type { Metadata } from "next";
 import { authOptions } from "@/lib/auth";
 import { safeInternalPath } from "@/lib/auth-path";
 import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default async function Home({
   searchParams,

@@ -1,4 +1,12 @@
+import type { Metadata } from "next";
+
 const LAST_UPDATED = "April 22, 2026";
+
+export const metadata: Metadata = {
+  title: "Terms of Use",
+  description: "The terms that govern your use of ideaCentre.",
+  alternates: { canonical: "/terms" },
+};
 
 export default function TermsPage() {
   return (

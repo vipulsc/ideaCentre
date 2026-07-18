@@ -12,6 +12,8 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { cn } from "@/lib/utils";
 import { Providers } from "@/app/providers";
+import { StructuredData } from "@/components/structured-data";
+import { siteConfig } from "@/lib/site";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -43,26 +45,48 @@ const caveat = Caveat({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteConfig.url),
   title: {
-    default: "ideaCentre — Your next idea is one swipe away",
+    default: siteConfig.title,
     template: "%s · ideaCentre",
   },
-  description:
-    "Discover startup ideas in seconds. Save the ones that spark something, vote for the best, and turn inspiration into action.",
+  description: siteConfig.description,
   applicationName: "ideaCentre",
+  keywords: [...siteConfig.keywords],
+  authors: [{ name: "ideaCentre", url: siteConfig.url }],
+  creator: "ideaCentre",
+  publisher: "ideaCentre",
+  category: "technology",
   openGraph: {
-    title: "ideaCentre — Your next idea is one swipe away",
-    description:
-      "Discover, share, and shape startup ideas in a fast, reel-style feed.",
+    title: siteConfig.title,
+    description: siteConfig.description,
+    url: siteConfig.url,
     siteName: "ideaCentre",
+    locale: siteConfig.locale,
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "ideaCentre",
-    description:
-      "Discover, share, and shape startup ideas in a fast, reel-style feed.",
+    title: siteConfig.title,
+    description: siteConfig.description,
   },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  icons: {
+    icon: [{ url: "/logo.svg", type: "image/svg+xml" }],
+    shortcut: "/logo.svg",
+    apple: "/logo.svg",
+  },
+  manifest: "/manifest.webmanifest",
 };
 
 export default function RootLayout({
@@ -87,6 +111,7 @@ export default function RootLayout({
       )}
     >
       <body className="min-h-full flex flex-col font-sans">
+        <StructuredData />
         <Providers>{children}</Providers>
         <Analytics />
         <SpeedInsights />

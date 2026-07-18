@@ -1,5 +1,20 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Submit a startup idea",
+  description:
+    "Publish your startup idea to ideaCentre and get upvotes, comments, and AI-powered feedback from a community of builders.",
+  alternates: { canonical: "/submit" },
+  openGraph: {
+    title: "Submit a startup idea · ideaCentre",
+    description:
+      "Publish your startup idea and get upvotes, comments, and AI feedback from builders.",
+    url: "/submit",
+    type: "website",
+  },
+};
 
 export default function SubmitIdeaPage() {
   return (
